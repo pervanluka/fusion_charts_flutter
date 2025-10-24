@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../configuration/fusion_axis_configuration.dart';
 import '../../core/axis/base/fusion_axis_renderer.dart';
 import '../../core/axis/fusion_axis_renderer_factory.dart';
+import '../../core/enums/axis_position.dart';
 import '../../core/models/axis_bounds.dart';
 import '../../core/models/axis_label.dart';
 import '../engine/fusion_render_context.dart';
@@ -350,6 +351,7 @@ class FusionAxisLayer extends FusionRenderLayer {
     AxisBounds bounds,
   ) {
     final chartArea = context.chartArea;
+    final position = context.xAxis?.getEffectivePosition(isVertical: false) ?? AxisPosition.bottom;
 
     // Convert data value to screen position
     final screenX =
@@ -367,20 +369,42 @@ class FusionAxisLayer extends FusionRenderLayer {
       textDirection: TextDirection.ltr,
     )..layout();
 
-    // Draw label below axis
-    final offset = Offset(screenX - (textPainter.width / 2), chartArea.bottom + 8);
+    final Offset labelOffset;
+    final Offset tickStart;
+    final Offset tickEnd;
 
-    textPainter.paint(canvas, offset);
+    switch (position) {
+      case AxisPosition.bottom:
+        // Default: Labels below axis
+        labelOffset = Offset(screenX - (textPainter.width / 2), chartArea.bottom + 8);
+        tickStart = Offset(screenX, chartArea.bottom);
+        tickEnd = Offset(screenX, chartArea.bottom + 5);
+        break;
+
+      case AxisPosition.top:
+        // Reversed: Labels above axis
+        labelOffset = Offset(
+          screenX - (textPainter.width / 2),
+          chartArea.top - textPainter.height - 8,
+        );
+        tickStart = Offset(screenX, chartArea.top);
+        tickEnd = Offset(screenX, chartArea.top - 5);
+        break;
+
+      default:
+        // Should not happen for X-axis
+        labelOffset = Offset(screenX, chartArea.bottom);
+        tickStart = Offset(screenX, chartArea.bottom);
+        tickEnd = Offset(screenX, chartArea.bottom + 5);
+    }
+
+    // Draw label
+    textPainter.paint(canvas, labelOffset);
 
     // Draw tick mark
     final tickPaint = context.getPaint(color: context.theme.axisColor, strokeWidth: 1.0);
 
-    canvas.drawLine(
-      Offset(screenX, chartArea.bottom),
-      Offset(screenX, chartArea.bottom + 5),
-      tickPaint,
-    );
-
+    canvas.drawLine(tickStart, tickEnd, tickPaint);
     context.returnPaint(tickPaint);
   }
 
@@ -392,6 +416,7 @@ class FusionAxisLayer extends FusionRenderLayer {
     AxisBounds bounds,
   ) {
     final chartArea = context.chartArea;
+    final position = context.yAxis?.getEffectivePosition(isVertical: true) ?? AxisPosition.left;
 
     // Convert data value to screen position
     final screenY =
@@ -410,23 +435,46 @@ class FusionAxisLayer extends FusionRenderLayer {
       textDirection: TextDirection.ltr,
     )..layout();
 
-    // Draw label to the left of axis
-    final offset = Offset(
-      chartArea.left - textPainter.width - 8,
-      screenY - (textPainter.height / 2),
-    );
+    // 🆕 POSITION-AWARE RENDERING
+    final Offset labelOffset;
+    final Offset tickStart;
+    final Offset tickEnd;
 
-    textPainter.paint(canvas, offset);
+    switch (position) {
+      case AxisPosition.left:
+        // Default: Labels to the left of axis
+        labelOffset = Offset(
+          chartArea.left - textPainter.width - 8,
+          screenY - (textPainter.height / 2),
+        );
+        tickStart = Offset(chartArea.left - 5, screenY);
+        tickEnd = Offset(chartArea.left, screenY);
+        break;
+
+      case AxisPosition.right:
+        // Secondary: Labels to the right of axis
+        labelOffset = Offset(chartArea.right + 8, screenY - (textPainter.height / 2));
+        tickStart = Offset(chartArea.right, screenY);
+        tickEnd = Offset(chartArea.right + 5, screenY);
+        break;
+
+      default:
+        // Should not happen for Y-axis
+        labelOffset = Offset(
+          chartArea.left - textPainter.width - 8,
+          screenY - (textPainter.height / 2),
+        );
+        tickStart = Offset(chartArea.left - 5, screenY);
+        tickEnd = Offset(chartArea.left, screenY);
+    }
+
+    // Draw label
+    textPainter.paint(canvas, labelOffset);
 
     // Draw tick mark
     final tickPaint = context.getPaint(color: context.theme.axisColor, strokeWidth: 1.0);
 
-    canvas.drawLine(
-      Offset(chartArea.left - 5, screenY),
-      Offset(chartArea.left, screenY),
-      tickPaint,
-    );
-
+    canvas.drawLine(tickStart, tickEnd, tickPaint);
     context.returnPaint(tickPaint);
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/src/configuration/fusion_crosshair_configuration.dart';
 import '../../core/axis/base/fusion_axis_base.dart';
 import '../../core/axis/numeric/fusion_numeric_axis.dart';
+import '../../core/enums/axis_position.dart';
 import '../../data/fusion_data_point.dart';
 import '../layers/fusion_render_layer.dart';
 import '../fusion_coordinate_system.dart';
@@ -250,11 +251,35 @@ class FusionLineChartPainter extends CustomPainter {
   Rect _calculateChartArea(Size size) {
     final effectiveConfig = config ?? const FusionChartConfiguration();
 
-    // Margins for axes and labels
-    final leftMargin = effectiveConfig.enableAxis ? 60.0 : 10.0;
-    final rightMargin = 10.0;
-    final topMargin = 10.0;
-    final bottomMargin = effectiveConfig.enableAxis ? 40.0 : 10.0;
+    if (!effectiveConfig.enableAxis) {
+      // No axes - minimal margins
+      return Rect.fromLTRB(10.0, 10.0, size.width - 10.0, size.height - 10.0);
+    }
+
+    double leftMargin = 10.0;
+    double rightMargin = 10.0;
+    double topMargin = 10.0;
+    double bottomMargin = 10.0;
+
+    // X-axis margin
+    if (xAxis != null) {
+      final xPosition = xAxis!.getEffectivePosition(isVertical: false);
+      if (xPosition == AxisPosition.bottom) {
+        bottomMargin = 40.0; // Space for labels below
+      } else {
+        topMargin = 40.0; // Space for labels above
+      }
+    }
+
+    // Y-axis margin
+    if (yAxis != null) {
+      final yPosition = yAxis!.getEffectivePosition(isVertical: true);
+      if (yPosition == AxisPosition.left) {
+        leftMargin = 60.0; // Space for labels on left
+      } else {
+        rightMargin = 60.0; // Space for labels on right
+      }
+    }
 
     return Rect.fromLTRB(
       leftMargin,

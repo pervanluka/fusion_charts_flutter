@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/enums/axis_position.dart';
 import '../core/enums/label_alignment.dart';
 
 /// Configuration for a chart axis.
@@ -48,6 +49,7 @@ class FusionAxisConfiguration {
     this.showTicks = true,
     this.showLabels = true,
     this.showAxisLine = true,
+    this.position,
     this.majorTickColor,
     this.majorTickWidth,
     this.majorTickLength,
@@ -188,6 +190,9 @@ class FusionAxisConfiguration {
   /// Whether to show axis line
   final bool showAxisLine;
 
+  /// Position of the axis.
+  final AxisPosition? position;
+
   // ==========================================================================
   // STYLING PROPERTIES
   // ==========================================================================
@@ -231,6 +236,16 @@ class FusionAxisConfiguration {
   // ==========================================================================
   // COMPUTED PROPERTIES (NEW - FIXES ANALYZER ERRORS)
   // ==========================================================================
+
+  /// Gets the effective position for this axis.
+  ///
+  /// Returns [position] if set, otherwise returns default based on orientation.
+  AxisPosition getEffectivePosition({required bool isVertical}) {
+    if (position != null) {
+      return position!;
+    }
+    return isVertical ? AxisPosition.defaultVertical : AxisPosition.defaultHorizontal;
+  }
 
   /// Gets the effective minimum value for the axis.
   ///
@@ -410,6 +425,7 @@ class FusionAxisConfiguration {
     bool? showTicks,
     bool? showLabels,
     bool? showAxisLine,
+    AxisPosition? position,
     Color? majorTickColor,
     double? majorTickWidth,
     double? majorTickLength,
@@ -447,6 +463,7 @@ class FusionAxisConfiguration {
       showTicks: showTicks ?? this.showTicks,
       showLabels: showLabels ?? this.showLabels,
       showAxisLine: showAxisLine ?? this.showAxisLine,
+      position: position ?? this.position,
       majorTickColor: majorTickColor ?? this.majorTickColor,
       majorTickWidth: majorTickWidth ?? this.majorTickWidth,
       majorTickLength: majorTickLength ?? this.majorTickLength,
@@ -491,6 +508,7 @@ class FusionAxisConfiguration {
         other.visible == visible &&
         other.autoRange == autoRange &&
         other.autoInterval == autoInterval &&
+        other.position == position &&
         other.desiredIntervals == desiredIntervals;
   }
 
@@ -504,6 +522,7 @@ class FusionAxisConfiguration {
       visible,
       autoRange,
       autoInterval,
+      position,
       desiredIntervals,
     );
   }
