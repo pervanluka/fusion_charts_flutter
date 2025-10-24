@@ -5,6 +5,8 @@ import 'package:fusion_charts_flutter/src/rendering/engine/fusion_shader_cache.d
 import 'package:fusion_charts_flutter/src/rendering/fusion_coordinate_system.dart';
 import 'package:fusion_charts_flutter/src/themes/fusion_chart_theme.dart';
 
+import '../../core/axis/base/fusion_axis_base.dart';
+
 /// Context object that holds all rendering state and resources.
 ///
 /// This is passed to every render layer and contains:
@@ -43,6 +45,8 @@ class FusionRenderContext {
     required this.shaderCache,
     this.xAxis,
     this.yAxis,
+    this.xAxisDefinition,
+    this.yAxisDefinition,
     this.animationProgress = 1.0,
     this.enableAntiAliasing = true,
     this.devicePixelRatio = 1.0,
@@ -85,6 +89,12 @@ class FusionRenderContext {
 
   /// Y-axis configuration.
   final FusionAxisConfiguration? yAxis;
+
+  /// X-axis definition (type: numeric, category, or datetime).
+  final FusionAxisBase? xAxisDefinition;
+
+  /// Y-axis definition (type: numeric, category, or datetime).
+  final FusionAxisBase? yAxisDefinition;
 
   // ==========================================================================
   // PERFORMANCE RESOURCES

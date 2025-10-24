@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/src/configuration/fusion_crosshair_configuration.dart';
+import '../../core/axis/base/fusion_axis_base.dart';
+import '../../core/axis/numeric/fusion_numeric_axis.dart';
 import '../../data/fusion_data_point.dart';
 import '../layers/fusion_render_layer.dart';
 import '../fusion_coordinate_system.dart';
@@ -209,6 +211,10 @@ class FusionLineChartPainter extends CustomPainter {
     // Calculate data bounds from all visible series
     final dataBounds = _calculateDataBounds();
 
+    // Determine axis types
+    final xAxisDefinition = _determineXAxisType(series);
+    final yAxisDefinition = _determineYAxisType(series);
+
     return FusionRenderContext(
       chartArea: chartArea,
       coordSystem: coordSystem,
@@ -217,12 +223,27 @@ class FusionLineChartPainter extends CustomPainter {
       shaderCache: shaderCache,
       xAxis: xAxis,
       yAxis: yAxis,
+      xAxisDefinition: xAxisDefinition,
+      yAxisDefinition: yAxisDefinition,
       animationProgress: animationProgress,
       enableAntiAliasing: true,
       devicePixelRatio: 1.0,
       dataBounds: dataBounds,
       viewportBounds: null, // No zoom/pan yet
     );
+  }
+
+  // 🆕 NEW METHOD: Determine X-axis type
+  FusionAxisBase _determineXAxisType(List<FusionLineSeries> series) {
+    // For now, default to numeric
+    // Can be enhanced to auto-detect datetime or category
+    return const FusionNumericAxis();
+  }
+
+  // 🆕 NEW METHOD: Determine Y-axis type
+  FusionAxisBase _determineYAxisType(List<FusionLineSeries> series) {
+    // Always numeric for line charts
+    return const FusionNumericAxis();
   }
 
   /// Calculates chart area (plot area excluding margins for axes).

@@ -3,6 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 
+import '../../core/axis/base/fusion_axis_base.dart';
+import '../../core/axis/category/fusion_category_axis.dart';
+import '../../core/axis/numeric/fusion_numeric_axis.dart';
 import '../engine/fusion_render_pipeline.dart';
 import '../engine/fusion_render_context.dart';
 import '../engine/fusion_paint_pool.dart';
@@ -198,8 +201,15 @@ class FusionBarChartPainter extends CustomPainter {
 
   /// Creates render context with all necessary information.
   FusionRenderContext _createRenderContext(Size size) {
+    // Calculate chart area (plot area excluding margins)
     final chartArea = _calculateChartArea(size);
+
+    // Calculate data bounds from all visible series
     final dataBounds = _calculateDataBounds();
+
+    // Determine axis types
+    final xAxisDefinition = _determineXAxisType(series);
+    final yAxisDefinition = _determineYAxisType(series);
 
     return FusionRenderContext(
       chartArea: chartArea,
@@ -209,12 +219,39 @@ class FusionBarChartPainter extends CustomPainter {
       shaderCache: shaderCache,
       xAxis: xAxis,
       yAxis: yAxis,
+      xAxisDefinition: xAxisDefinition,
+      yAxisDefinition: yAxisDefinition,
       animationProgress: animationProgress,
       enableAntiAliasing: true,
       devicePixelRatio: 1.0,
       dataBounds: dataBounds,
       viewportBounds: null,
     );
+  }
+
+  // 🆕 NEW METHOD: Determine X-axis type for bars
+  FusionAxisBase _determineXAxisType(List<FusionBarSeries> series) {
+    // For vertical bars, X-axis can be category
+    // Check if all series have labels
+    final hasLabels = series.every(
+      (s) => s.dataPoints.every((p) => p.label != null && p.label!.isNotEmpty),
+    );
+
+    if (hasLabels) {
+      // Extract categories from first series
+      final categories = series.first.dataPoints.map((p) => p.label!).toList();
+
+      return FusionCategoryAxis(categories: categories);
+    }
+
+    // Default to numeric
+    return const FusionNumericAxis();
+  }
+
+  // 🆕 NEW METHOD: Determine Y-axis type for bars
+  FusionAxisBase _determineYAxisType(List<FusionBarSeries> series) {
+    // Always numeric for bar values
+    return const FusionNumericAxis();
   }
 
   /// Calculates chart area (plot area excluding margins for axes).

@@ -1,6 +1,11 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import '../../configuration/fusion_axis_configuration.dart';
+import '../../core/axis/base/fusion_axis_renderer.dart';
+import '../../core/axis/fusion_axis_renderer_factory.dart';
+import '../../core/models/axis_bounds.dart';
+import '../../core/models/axis_label.dart';
 import '../engine/fusion_render_context.dart';
 
 /// Abstract base class for render layers.
@@ -246,6 +251,10 @@ class FusionAxisLayer extends FusionRenderLayer {
   final bool showXAxis;
   final bool showYAxis;
 
+  // Cache renderers for performance
+  FusionAxisRenderer? _xAxisRenderer;
+  FusionAxisRenderer? _yAxisRenderer;
+
   @override
   void paint(Canvas canvas, Size size, FusionRenderContext context) {
     final paint = context.getPaint(
@@ -256,88 +265,180 @@ class FusionAxisLayer extends FusionRenderLayer {
 
     final chartArea = context.chartArea;
 
-    // X-axis line
-    if (showXAxis) {
+    // ===============================
+    // X-AXIS RENDERING
+    // ===============================
+    if (showXAxis && context.xAxisDefinition != null) {
+      // Draw X-axis line
       canvas.drawLine(
         Offset(chartArea.left, chartArea.bottom),
         Offset(chartArea.right, chartArea.bottom),
         paint,
       );
 
-      _drawXAxisLabels(canvas, context);
+      // Create or reuse X-axis renderer
+      _xAxisRenderer ??= FusionAxisRendererFactory.create(
+        axis: context.xAxisDefinition,
+        configuration: context.xAxis ?? FusionAxisConfiguration(),
+        isVertical: false,
+      );
+
+      // Render X-axis labels and ticks
+      _renderAxis(canvas, size, context, _xAxisRenderer!, isVertical: false);
     }
 
-    // Y-axis line
-    if (showYAxis) {
+    // ===============================
+    // Y-AXIS RENDERING
+    // ===============================
+    if (showYAxis && context.yAxisDefinition != null) {
+      // Draw Y-axis line
       canvas.drawLine(
         Offset(chartArea.left, chartArea.top),
         Offset(chartArea.left, chartArea.bottom),
         paint,
       );
 
-      _drawYAxisLabels(canvas, context);
+      // Create or reuse Y-axis renderer
+      _yAxisRenderer ??= FusionAxisRendererFactory.create(
+        axis: context.yAxisDefinition,
+        configuration: context.yAxis ?? FusionAxisConfiguration(),
+        isVertical: true,
+      );
+
+      // Render Y-axis labels and ticks
+      _renderAxis(canvas, size, context, _yAxisRenderer!, isVertical: true);
     }
 
     context.returnPaint(paint);
   }
 
-  void _drawXAxisLabels(Canvas canvas, FusionRenderContext context) {
-    if (context.xAxis == null) return;
-
-    final labelStyle = context.xAxis!.labelStyle ?? context.theme.axisLabelStyle;
+  /// Renders an axis using the professional renderer.
+  void _renderAxis(
+    Canvas canvas,
+    Size size,
+    FusionRenderContext context,
+    FusionAxisRenderer renderer, {
+    required bool isVertical,
+  }) {
     final dataBounds = context.effectiveViewport;
-    final xInterval = context.xAxis!.getEffectiveInterval(dataBounds.left, dataBounds.right);
 
-    double currentX = dataBounds.left;
-    while (currentX <= dataBounds.right) {
-      final screenX = context.dataXToScreenX(currentX);
-      final labelText =
-          context.xAxis!.labelFormatter?.call(currentX) ?? currentX.toStringAsFixed(0);
+    // Calculate axis bounds
+    final dataValues = isVertical
+        ? [dataBounds.top, dataBounds.bottom]
+        : [dataBounds.left, dataBounds.right];
 
-      final textPainter = TextPainter(
-        text: TextSpan(text: labelText, style: labelStyle),
-        textDirection: TextDirection.ltr,
-      )..layout();
+    final axisBounds = renderer.calculateBounds(dataValues);
 
-      final offset = Offset(screenX - (textPainter.width / 2), context.chartArea.bottom + 8);
+    // Generate labels
+    final labels = renderer.generateLabels(axisBounds);
 
-      textPainter.paint(canvas, offset);
-
-      currentX += xInterval ?? 0;
+    // Render each label
+    for (final label in labels) {
+      if (isVertical) {
+        _renderYAxisLabel(canvas, context, label, axisBounds);
+      } else {
+        _renderXAxisLabel(canvas, context, label, axisBounds);
+      }
     }
   }
 
-  void _drawYAxisLabels(Canvas canvas, FusionRenderContext context) {
-    if (context.yAxis == null) return;
+  /// Renders an X-axis label.
+  void _renderXAxisLabel(
+    Canvas canvas,
+    FusionRenderContext context,
+    AxisLabel label,
+    AxisBounds bounds,
+  ) {
+    final chartArea = context.chartArea;
 
-    final labelStyle = context.yAxis!.labelStyle ?? context.theme.axisLabelStyle;
-    final dataBounds = context.effectiveViewport;
-    final yInterval = context.yAxis!.getEffectiveInterval(dataBounds.top, dataBounds.bottom);
+    // Convert data value to screen position
+    final screenX =
+        chartArea.left + ((label.value - bounds.min) / (bounds.max - bounds.min)) * chartArea.width;
 
-    double currentY = dataBounds.top;
-    while (currentY <= dataBounds.bottom) {
-      final screenY = context.dataYToScreenY(currentY);
-      final labelText =
-          context.yAxis!.labelFormatter?.call(currentY) ?? currentY.toStringAsFixed(0);
-
-      final textPainter = TextPainter(
-        text: TextSpan(text: labelText, style: labelStyle),
-        textDirection: TextDirection.ltr,
-      )..layout();
-
-      final offset = Offset(
-        context.chartArea.left - textPainter.width - 8,
-        screenY - (textPainter.height / 2),
-      );
-
-      textPainter.paint(canvas, offset);
-
-      currentY += yInterval ?? 0;
+    // Skip if outside chart area
+    if (screenX < chartArea.left || screenX > chartArea.right) {
+      return;
     }
+
+    // Create text painter
+    final textStyle = context.xAxis?.labelStyle ?? context.theme.axisLabelStyle;
+    final textPainter = TextPainter(
+      text: TextSpan(text: label.text, style: textStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    // Draw label below axis
+    final offset = Offset(screenX - (textPainter.width / 2), chartArea.bottom + 8);
+
+    textPainter.paint(canvas, offset);
+
+    // Draw tick mark
+    final tickPaint = context.getPaint(color: context.theme.axisColor, strokeWidth: 1.0);
+
+    canvas.drawLine(
+      Offset(screenX, chartArea.bottom),
+      Offset(screenX, chartArea.bottom + 5),
+      tickPaint,
+    );
+
+    context.returnPaint(tickPaint);
+  }
+
+  /// Renders a Y-axis label.
+  void _renderYAxisLabel(
+    Canvas canvas,
+    FusionRenderContext context,
+    AxisLabel label,
+    AxisBounds bounds,
+  ) {
+    final chartArea = context.chartArea;
+
+    // Convert data value to screen position
+    final screenY =
+        chartArea.bottom -
+        ((label.value - bounds.min) / (bounds.max - bounds.min)) * chartArea.height;
+
+    // Skip if outside chart area
+    if (screenY < chartArea.top || screenY > chartArea.bottom) {
+      return;
+    }
+
+    // Create text painter
+    final textStyle = context.yAxis?.labelStyle ?? context.theme.axisLabelStyle;
+    final textPainter = TextPainter(
+      text: TextSpan(text: label.text, style: textStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    // Draw label to the left of axis
+    final offset = Offset(
+      chartArea.left - textPainter.width - 8,
+      screenY - (textPainter.height / 2),
+    );
+
+    textPainter.paint(canvas, offset);
+
+    // Draw tick mark
+    final tickPaint = context.getPaint(color: context.theme.axisColor, strokeWidth: 1.0);
+
+    canvas.drawLine(
+      Offset(chartArea.left - 5, screenY),
+      Offset(chartArea.left, screenY),
+      tickPaint,
+    );
+
+    context.returnPaint(tickPaint);
   }
 
   @override
   bool shouldRepaint(covariant FusionAxisLayer oldLayer) {
     return oldLayer.showXAxis != showXAxis || oldLayer.showYAxis != showYAxis;
+  }
+
+  /// Invalidate cached renderers when axis definitions change.
+  @override
+  void invalidateCache() {
+    _xAxisRenderer = null;
+    _yAxisRenderer = null;
   }
 }
