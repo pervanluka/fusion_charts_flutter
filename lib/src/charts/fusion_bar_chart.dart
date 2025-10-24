@@ -158,7 +158,7 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
                     return RawGestureDetector(
                       gestures: _interactiveState.getGestureRecognizers(),
                       child: CustomPaint(
-                        size: Size.infinite,
+                        size: size,
                         painter: FusionBarChartPainter(
                           series: widget.series,
                           coordSystem: _interactiveState.coordSystem,
