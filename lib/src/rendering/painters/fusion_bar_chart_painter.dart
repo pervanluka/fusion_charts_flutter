@@ -1,5 +1,3 @@
-// lib/src/rendering/painters/fusion_bar_chart_painter.dart
-
 import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 
@@ -229,7 +227,7 @@ class FusionBarChartPainter extends CustomPainter {
     );
   }
 
-  // 🆕 NEW METHOD: Determine X-axis type for bars
+  // Determine X-axis type for bars
   FusionAxisBase _determineXAxisType(List<FusionBarSeries> series) {
     // For vertical bars, X-axis can be category
     // Check if all series have labels
@@ -248,7 +246,7 @@ class FusionBarChartPainter extends CustomPainter {
     return const FusionNumericAxis();
   }
 
-  // 🆕 NEW METHOD: Determine Y-axis type for bars
+  // Determine Y-axis type for bars
   FusionAxisBase _determineYAxisType(List<FusionBarSeries> series) {
     // Always numeric for bar values
     return const FusionNumericAxis();
