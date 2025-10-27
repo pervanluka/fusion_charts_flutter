@@ -140,14 +140,16 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     final config = widget.config ?? const FusionChartConfiguration();
+    final title = widget.title;
+    final subtitle = widget.subtitle;
 
     return Padding(
       padding: config.padding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (widget.title != null) _buildTitle(),
-          if (widget.subtitle != null) _buildSubtitle(),
+          if (title != null) _BuildTitle(title: title),
+          if (subtitle != null) _BuildSubtitle(subtitle: subtitle),
           Expanded(
             child: AnimatedBuilder(
               animation: _animation,
@@ -158,23 +160,40 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
                     final dpr = MediaQuery.devicePixelRatioOf(context);
                     _updateCoordinateSystem(size, dpr);
 
-                    return RawGestureDetector(
-                      gestures: _interactiveState.getGestureRecognizers(),
-                      child: CustomPaint(
-                        size: size,
-                        painter: FusionLineChartPainter(
-                          series: widget.series,
-                          coordSystem: _interactiveState.coordSystem,
-                          theme: config.theme,
-                          xAxis: widget.xAxis,
-                          yAxis: widget.yAxis,
-                          animationProgress: _animation.value,
-                          tooltipData: _interactiveState.tooltipData,
-                          crosshairPosition: _interactiveState.crosshairPosition,
-                          crosshairPoint: _interactiveState.crosshairPoint,
-                          config: config,
-                          paintPool: _paintPool,
-                          shaderCache: _shaderCache,
+                    return Listener(
+                      onPointerDown: (event) {
+                        _interactiveState.handlePointerDown(event);
+                      },
+                      onPointerMove: (event) {
+                        _interactiveState.handlePointerMove(event);
+                      },
+                      onPointerUp: (event) {
+                        _interactiveState.handlePointerUp(event);
+                      },
+                      onPointerCancel: (event) {
+                        _interactiveState.handlePointerCancel(event);
+                      },
+                      onPointerHover: (event) {
+                        _interactiveState.handlePointerHover(event);
+                      },
+                      child: RawGestureDetector(
+                        gestures: _interactiveState.getGestureRecognizers(),
+                        child: CustomPaint(
+                          size: size,
+                          painter: FusionLineChartPainter(
+                            series: widget.series,
+                            coordSystem: _interactiveState.coordSystem,
+                            theme: config.theme,
+                            xAxis: widget.xAxis,
+                            yAxis: widget.yAxis,
+                            animationProgress: _animation.value,
+                            tooltipData: _interactiveState.tooltipData,
+                            crosshairPosition: _interactiveState.crosshairPosition,
+                            crosshairPoint: _interactiveState.crosshairPoint,
+                            config: config,
+                            paintPool: _paintPool,
+                            shaderCache: _shaderCache,
+                          ),
                         ),
                       ),
                     );
@@ -257,24 +276,38 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
     }
     return hash;
   }
+}
 
-  Widget _buildTitle() {
+class _BuildSubtitle extends StatelessWidget {
+  const _BuildSubtitle({required this.subtitle});
+
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Text(
-        widget.title!,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        subtitle,
+        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
         textAlign: TextAlign.center,
       ),
     );
   }
+}
 
-  Widget _buildSubtitle() {
+class _BuildTitle extends StatelessWidget {
+  const _BuildTitle({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Text(
-        widget.subtitle!,
-        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+        title,
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         textAlign: TextAlign.center,
       ),
     );
