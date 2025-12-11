@@ -12,12 +12,6 @@ import '../base/fusion_axis_renderer.dart';
 import 'fusion_numeric_axis.dart';
 
 /// Renders numeric axes with continuous numeric values.
-///
-/// ✅ FIX #2: PRECISION LABEL ALIGNMENT
-/// - Removed floating-point accumulation errors
-/// - Implemented index-based label generation
-/// - Added epsilon-based equality checks
-/// - Pixel-perfect label positioning
 class NumericAxisRenderer extends FusionAxisRenderer {
   NumericAxisRenderer({
     required this.axis,
@@ -35,10 +29,10 @@ class NumericAxisRenderer extends FusionAxisRenderer {
   // PRECISION CONSTANTS
   // ==========================================================================
 
-  /// ✅ CRITICAL: Epsilon for floating-point comparisons
+  /// Epsilon for floating-point comparisons
   static const double _epsilon = 1e-10;
 
-  /// ✅ Maximum labels to prevent infinite loops
+  /// Maximum labels to prevent infinite loops
   static const int _maxLabels = 1000;
 
   // ==========================================================================
@@ -128,30 +122,30 @@ class NumericAxisRenderer extends FusionAxisRenderer {
   }
 
   // ==========================================================================
-  // ✅ FIX #2: PRECISION LABEL GENERATION
+  // PRECISION LABEL GENERATION
   // ==========================================================================
 
   @override
   List<AxisLabel> generateLabels(AxisBounds bounds) {
     final labels = <AxisLabel>[];
 
-    // ✅ FIX: Calculate label count FIRST to avoid accumulation
+    // Calculate label count FIRST to avoid accumulation
     final labelCount = _calculateLabelCount(bounds);
 
-    // ✅ FIX: Generate labels using INDEX-BASED calculation
+    // Generate labels using INDEX-BASED calculation
     for (int i = 0; i < labelCount; i++) {
-      // ✅ Calculate each value INDEPENDENTLY (no accumulation)
+      //  Calculate each value INDEPENDENTLY (no accumulation)
       final currentValue = bounds.min + (bounds.interval * i);
 
-      // ✅ Precision check - don't exceed max
+      // Precision check - don't exceed max
       if (currentValue > bounds.max + _epsilon) break;
 
-      // ✅ Clean floating-point errors
+      // Clean floating-point errors
       final cleanValue = _cleanFloatingPoint(currentValue, bounds.interval);
 
       final text = _formatValue(cleanValue);
 
-      // ✅ Calculate normalized position with high precision
+      // Calculate normalized position with high precision
       final position = _calculatePrecisePosition(cleanValue, bounds);
 
       labels.add(AxisLabel(value: cleanValue, text: text, position: position.clamp(0.0, 1.0)));
@@ -161,7 +155,7 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     return labels;
   }
 
-  /// ✅ Calculates the number of labels based on bounds.
+  /// Calculates the number of labels based on bounds.
   int _calculateLabelCount(AxisBounds bounds) {
     if (bounds.range <= 0 || bounds.interval <= 0) return 1;
 
@@ -172,7 +166,7 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     return theoreticalCount.clamp(1, _maxLabels);
   }
 
-  /// ✅ Calculates position with maximum precision.
+  /// Calculates position with maximum precision.
   ///
   /// **Algorithm:**
   /// 1. Handle zero-range edge case
@@ -185,14 +179,14 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     // Use high-precision division
     final normalized = (value - bounds.min) / bounds.range;
 
-    // ✅ Clean floating-point errors at boundaries
+    // Clean floating-point errors at boundaries
     if (normalized.abs() < _epsilon) return 0.0;
     if ((1.0 - normalized).abs() < _epsilon) return 1.0;
 
     return normalized.clamp(0.0, 1.0);
   }
 
-  /// ✅ Cleans floating-point precision errors.
+  /// Cleans floating-point precision errors.
   ///
   /// **Example:**
   /// - Input: 0.30000000000000004
@@ -304,7 +298,7 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     }
   }
 
-  /// ✅ FIX: Pixel-perfect tick positioning
+  ///  Pixel-perfect tick positioning
   void _drawTicks(Canvas canvas, Rect axisArea, AxisBounds bounds) {
     final paint = Paint()
       ..color = configuration.majorTickColor ?? theme?.axisColor ?? Colors.grey
@@ -320,7 +314,7 @@ class NumericAxisRenderer extends FusionAxisRenderer {
 
       if (isVertical) {
         final y = axisArea.bottom - (position * axisArea.height);
-        // ✅ Snap to pixel boundary for crisp rendering
+        // Snap to pixel boundary for crisp rendering
         final snappedY = y.roundToDouble();
         canvas.drawLine(
           Offset(axisArea.right, snappedY),
@@ -329,7 +323,7 @@ class NumericAxisRenderer extends FusionAxisRenderer {
         );
       } else {
         final x = axisArea.left + (position * axisArea.width);
-        // ✅ Snap to pixel boundary for crisp rendering
+        // Snap to pixel boundary for crisp rendering
         final snappedX = x.roundToDouble();
         canvas.drawLine(
           Offset(snappedX, axisArea.top),
@@ -340,7 +334,7 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     }
   }
 
-  /// ✅ FIX: Pixel-perfect label positioning
+  /// Pixel-perfect label positioning
   void _drawLabels(Canvas canvas, Rect axisArea, AxisBounds bounds) {
     final labels = _cachedLabels ?? generateLabels(bounds);
 
@@ -358,12 +352,12 @@ class NumericAxisRenderer extends FusionAxisRenderer {
       final Offset offset;
       if (isVertical) {
         final y = axisArea.bottom - (position * axisArea.height);
-        // ✅ Snap to pixel boundary
+        // Snap to pixel boundary
         final snappedY = y.roundToDouble();
         offset = Offset(axisArea.left - textPainter.width - 8, snappedY - (textPainter.height / 2));
       } else {
         final x = axisArea.left + (position * axisArea.width);
-        // ✅ Snap to pixel boundary
+        //  Snap to pixel boundary
         final snappedX = x.roundToDouble();
         offset = Offset(snappedX - (textPainter.width / 2), axisArea.top + 8);
       }
@@ -372,7 +366,7 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     }
   }
 
-  /// ✅ FIX: Pixel-perfect grid line rendering
+  /// Pixel-perfect grid line rendering
   @override
   void renderGridLines(Canvas canvas, Rect plotArea, AxisBounds bounds) {
     if (!configuration.showGrid) return;
@@ -391,12 +385,12 @@ class NumericAxisRenderer extends FusionAxisRenderer {
 
       if (isVertical) {
         final y = plotArea.bottom - (position * plotArea.height);
-        // ✅ Snap to pixel boundary for crisp lines
+        // Snap to pixel boundary for crisp lines
         final snappedY = y.roundToDouble();
         canvas.drawLine(Offset(plotArea.left, snappedY), Offset(plotArea.right, snappedY), paint);
       } else {
         final x = plotArea.left + (position * plotArea.width);
-        // ✅ Snap to pixel boundary for crisp lines
+        // Snap to pixel boundary for crisp lines
         final snappedX = x.roundToDouble();
         canvas.drawLine(Offset(snappedX, plotArea.top), Offset(snappedX, plotArea.bottom), paint);
       }

@@ -7,14 +7,7 @@ import '../../series/series_with_data_points.dart';
 import '../engine/fusion_render_context.dart';
 import 'fusion_render_layer.dart';
 
-/// Renders tooltip overlay on charts with PRECISION positioning.
-///
-/// ## FIX SUMMARY
-/// ✅ Smart quadrant-aware positioning
-/// ✅ Marker-size aware spacing
-/// ✅ DPI-aware measurements
-/// ✅ Boundary collision detection
-/// ✅ Arrow points to exact data point
+/// Renders tooltip overlay on charts with presision positioning.
 class FusionTooltipLayer extends FusionRenderLayer {
   FusionTooltipLayer({
     required this.tooltipData,
@@ -114,7 +107,7 @@ class FusionTooltipLayer extends FusionRenderLayer {
   }
 
   // ==========================================================================
-  // ✅ PRECISION POSITIONING ALGORITHM
+  // PRECISION POSITIONING ALGORITHM
   // ==========================================================================
 
   Offset _calculateOptimalTooltipPosition({

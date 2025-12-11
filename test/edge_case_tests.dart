@@ -60,7 +60,7 @@ void main() {
         final bounds = AxisBounds.fromDataRange(dataMin: 1e9, dataMax: 5e9, desiredTickCount: 5);
 
         expect(bounds.interval, greaterThan(1e8), reason: 'Interval should scale with data');
-        // ✅ FIXED: Account for padding which increases range
+        // Account for padding which increases range
         expect(
           bounds.range,
           greaterThanOrEqualTo(4e9),
@@ -235,7 +235,7 @@ void main() {
         final screenX = coordSystem.dataXToScreenX(original);
         final backToData = coordSystem.screenXToDataX(screenX);
 
-        // ✅ FIXED: Relaxed tolerance due to floating-point round-trip
+        // Relaxed tolerance due to floating-point round-trip
         expect(
           backToData,
           closeTo(original, 0.1),
@@ -467,7 +467,7 @@ void main() {
       );
 
       expect(bounds.interval, greaterThan(0));
-      // ✅ FIXED: Padding adds to range, making it larger than raw difference
+      // Padding adds to range, making it larger than raw difference
       expect(
         bounds.range,
         greaterThanOrEqualTo(0.1),

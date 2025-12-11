@@ -221,21 +221,21 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
     final labels = <AxisLabel>[];
     final format = _cachedFormat ?? _selectDateFormat(bounds.range);
 
-    // ✅ FIX: Calculate label count FIRST
+    // Calculate label count FIRST
     final labelCount = _calculateLabelCount(bounds);
 
-    // ✅ FIX: Index-based generation (no accumulation)
+    // Index-based generation (no accumulation)
     for (int i = 0; i < labelCount; i++) {
-      // ✅ Calculate each value INDEPENDENTLY
+      // Calculate each value INDEPENDENTLY
       final currentMs = bounds.min + (bounds.interval * i);
 
-      // ✅ Precision check
+      // Precision check
       if (currentMs > bounds.max + _epsilon) break;
 
       final date = DateTime.fromMillisecondsSinceEpoch(currentMs.toInt());
       final text = format.format(date);
 
-      // ✅ Precise position calculation
+      // Precise position calculation
       final position = _calculatePrecisePosition(currentMs, bounds);
 
       labels.add(AxisLabel(value: currentMs, text: text, position: position.clamp(0.0, 1.0)));
@@ -377,7 +377,7 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
 
       if (isVertical) {
         final y = axisArea.bottom - (position * axisArea.height);
-        final snappedY = y.roundToDouble(); // ✅ PIXEL SNAP
+        final snappedY = y.roundToDouble();
         canvas.drawLine(
           Offset(axisArea.right, snappedY),
           Offset(axisArea.right + tickLength, snappedY),
@@ -385,7 +385,7 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
         );
       } else {
         final x = axisArea.left + (position * axisArea.width);
-        final snappedX = x.roundToDouble(); // ✅ PIXEL SNAP
+        final snappedX = x.roundToDouble();
         canvas.drawLine(
           Offset(snappedX, axisArea.top),
           Offset(snappedX, axisArea.top + tickLength),
@@ -412,11 +412,11 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
       final Offset offset;
       if (isVertical) {
         final y = axisArea.bottom - (position * axisArea.height);
-        final snappedY = y.roundToDouble(); // ✅ PIXEL SNAP
+        final snappedY = y.roundToDouble();
         offset = Offset(axisArea.left - textPainter.width - 8, snappedY - (textPainter.height / 2));
       } else {
         final x = axisArea.left + (position * axisArea.width);
-        final snappedX = x.roundToDouble(); // ✅ PIXEL SNAP
+        final snappedX = x.roundToDouble();
 
         // Handle rotation if needed
         if (configuration.labelRotation != null && configuration.labelRotation!.abs() > 0) {
@@ -452,11 +452,11 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
 
       if (isVertical) {
         final y = plotArea.bottom - (position * plotArea.height);
-        final snappedY = y.roundToDouble(); // ✅ PIXEL SNAP
+        final snappedY = y.roundToDouble();
         canvas.drawLine(Offset(plotArea.left, snappedY), Offset(plotArea.right, snappedY), paint);
       } else {
         final x = plotArea.left + (position * plotArea.width);
-        final snappedX = x.roundToDouble(); // ✅ PIXEL SNAP
+        final snappedX = x.roundToDouble();
         canvas.drawLine(Offset(snappedX, plotArea.top), Offset(snappedX, plotArea.bottom), paint);
       }
     }

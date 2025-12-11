@@ -111,7 +111,7 @@ class FusionInteractionHandler {
   FusionDataPoint? _findNearestPointOptimized(Offset screenPosition) {
     if (_spatialIndex == null) return null;
 
-    // ✅ Use the public findNearest API
+    // Use the public findNearest API
     return _spatialIndex!.findNearest(screenPosition, maxDistance: hitTestRadius);
   }
 

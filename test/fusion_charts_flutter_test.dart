@@ -180,7 +180,7 @@ void main() {
 
       expect(config.enableAnimation, true);
       expect(config.enableTooltip, true);
-      expect(config.enableCrosshair, true); // ✅ FIXED: Default is true
+      expect(config.enableCrosshair, true);
       expect(config.enableZoom, false);
       expect(config.enablePanning, false);
       expect(config.enableSelection, true);
