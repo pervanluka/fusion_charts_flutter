@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../core/enums/fusion_dismiss_strategy.dart';
+import '../core/enums/fusion_tooltip_activation_mode.dart';
+import '../core/enums/fusion_tooltip_trackball_mode.dart';
 import '../data/fusion_data_point.dart';
 
 // ============================================================================
@@ -17,7 +20,7 @@ class FusionTooltipBehavior {
     this.activationDelay = Duration.zero,
 
     // 🚀 DISMISS CONTROL - Revolutionary!
-    this.dismissStrategy = FusionTooltipDismissStrategy.onRelease,
+    this.dismissStrategy = FusionDismissStrategy.onRelease,
     this.dismissDelay = const Duration(milliseconds: 300),
     this.duration = const Duration(milliseconds: 3000),
 
@@ -91,7 +94,7 @@ class FusionTooltipBehavior {
   /// **onReleaseDelayed** - Brief delay after release
   /// **never** - Manual hide only
   /// **smart** - Adapts to interaction pattern
-  final FusionTooltipDismissStrategy dismissStrategy;
+  final FusionDismissStrategy dismissStrategy;
 
   /// Additional delay before dismissing (only for onReleaseDelayed)
   final Duration dismissDelay;
@@ -202,7 +205,7 @@ class FusionTooltipBehavior {
   // LEGACY SUPPORT (Deprecated)
   // ========================================================================
 
-  /// @deprecated Use [dismissStrategy] = [FusionTooltipDismissStrategy.never] instead
+  /// @deprecated Use [dismissStrategy] = [FusionDismissStrategy.never] instead
   final bool shouldAlwaysShow;
 
   // ========================================================================
@@ -235,9 +238,9 @@ class FusionTooltipBehavior {
     // ignore: deprecated_member_use_from_same_package
     if (shouldAlwaysShow) return false;
 
-    return dismissStrategy == FusionTooltipDismissStrategy.onRelease ||
-        dismissStrategy == FusionTooltipDismissStrategy.onReleaseDelayed ||
-        dismissStrategy == FusionTooltipDismissStrategy.smart;
+    return dismissStrategy == FusionDismissStrategy.onRelease ||
+        dismissStrategy == FusionDismissStrategy.onReleaseDelayed ||
+        dismissStrategy == FusionDismissStrategy.smart;
   }
 
   /// Should use timer for dismissal?
@@ -246,8 +249,8 @@ class FusionTooltipBehavior {
     // ignore: deprecated_member_use_from_same_package
     if (shouldAlwaysShow) return false;
 
-    return dismissStrategy == FusionTooltipDismissStrategy.onTimer ||
-        dismissStrategy == FusionTooltipDismissStrategy.smart;
+    return dismissStrategy == FusionDismissStrategy.onTimer ||
+        dismissStrategy == FusionDismissStrategy.smart;
   }
 
   /// Get dismiss delay duration
@@ -259,19 +262,19 @@ class FusionTooltipBehavior {
     }
 
     switch (dismissStrategy) {
-      case FusionTooltipDismissStrategy.onRelease:
+      case FusionDismissStrategy.onRelease:
         return Duration.zero;
 
-      case FusionTooltipDismissStrategy.onReleaseDelayed:
+      case FusionDismissStrategy.onReleaseDelayed:
         return dismissDelay;
 
-      case FusionTooltipDismissStrategy.onTimer:
+      case FusionDismissStrategy.onTimer:
         return duration;
 
-      case FusionTooltipDismissStrategy.never:
+      case FusionDismissStrategy.never:
         return const Duration(days: 365); // Effectively never
 
-      case FusionTooltipDismissStrategy.smart:
+      case FusionDismissStrategy.smart:
         // If it was a long press, keep it longer
         return wasLongPress ? duration : dismissDelay;
     }
@@ -285,7 +288,7 @@ class FusionTooltipBehavior {
     bool? enable,
     FusionTooltipActivationMode? activationMode,
     Duration? activationDelay,
-    FusionTooltipDismissStrategy? dismissStrategy,
+    FusionDismissStrategy? dismissStrategy,
     Duration? dismissDelay,
     Duration? duration,
     FusionTooltipTrackballMode? trackballMode,
@@ -383,80 +386,4 @@ class TooltipRenderData {
       activationTime: activationTime ?? this.activationTime,
     );
   }
-}
-
-// ============================================================================
-// 🚀 ENHANCED TOOLTIP CONFIGURATION - Better than Syncfusion!
-// ============================================================================
-
-/// 🎯 Tooltip activation modes
-///
-/// Defines how the tooltip is triggered.
-/// Syncfusion has 4, we have 6 including smart auto-detection!
-enum FusionTooltipActivationMode {
-  /// Show on single tap (mobile default)
-  singleTap,
-
-  /// Show on long press (for dense data)
-  longPress,
-
-  /// Show on double tap (prevents accidental activation)
-  doubleTap,
-
-  /// Show on hover (desktop/web default)
-  hover,
-
-  /// 🚀 NEW: Context-aware activation
-  /// Auto-detects platform and uses best mode:
-  /// - Mobile/Tablet: singleTap
-  /// - Desktop/Web: hover
-  auto,
-
-  /// Disable automatic activation (programmatic only)
-  none,
-}
-
-/// 🎯 Tooltip dismiss strategies
-///
-/// Defines when and how the tooltip is hidden.
-/// Syncfusion only has timer-based, we have 5 intelligent strategies!
-enum FusionTooltipDismissStrategy {
-  /// ⚡ Dismiss immediately when finger/pointer lifts (BEST UX)
-  /// This is what users expect on mobile!
-  onRelease,
-
-  /// ⏱️ Dismiss after duration timer (Syncfusion's default)
-  /// Timer starts when tooltip appears
-  onTimer,
-
-  /// 🎯 Dismiss after delay from release (hybrid approach)
-  /// Shows tooltip while touching + brief delay after release
-  onReleaseDelayed,
-
-  /// 🔒 Never dismiss (manual hide only)
-  /// Equivalent to Syncfusion's shouldAlwaysShow: true
-  never,
-
-  /// 🧠 Smart dismiss - adapts to user interaction
-  /// - Quick tap: dismiss on release
-  /// - Long press: persist with timer
-  smart,
-}
-
-/// 🎯 Trackball modes
-///
-/// Defines how tooltip follows touch during drag.
-/// Syncfusion has basic trackball, we have 4 modes including magnetic!
-enum FusionTooltipTrackballMode {
-  /// No trackball
-  none,
-
-  /// Tooltip follows finger during drag
-  follow,
-
-  /// Snap to nearest data point while dragging
-  snap,
-
-  /// 🧲 Magnetic snap - smooth transition to nearby points
-  magnetic,
 }

@@ -116,7 +116,7 @@ class FusionSeriesLayer extends FusionRenderLayer {
     if (points.isEmpty) return;
 
     // Build the path
-    final path = series.isCurved
+    var path = series.isCurved
         ? FusionPathBuilder.createSmoothPath(
             points,
             context.coordSystem,
@@ -124,7 +124,10 @@ class FusionSeriesLayer extends FusionRenderLayer {
           )
         : FusionPathBuilder.createLinePath(points, context.coordSystem);
 
-    // Get paint from pool
+    if (series.lineDashArray != null && series.lineDashArray!.isNotEmpty) {
+      path = FusionPathBuilder.createDashedPath(path, series.lineDashArray!);
+    }
+
     final paint = context.getPaint(
       color: series.color,
       strokeWidth: series.lineWidth,

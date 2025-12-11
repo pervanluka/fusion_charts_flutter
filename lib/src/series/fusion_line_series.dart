@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/src/series/series_with_data_points.dart';
 import '../core/enums/marker_shape.dart';
@@ -56,6 +57,7 @@ class FusionLineSeries extends FusionSeries
     this.lineWidth = 3.0,
     this.isCurved = true,
     this.smoothness = 0.35,
+    this.lineDashArray,
     this.gradient,
     this.showMarkers = false,
     this.markerSize = 6.0,
@@ -113,6 +115,27 @@ class FusionLineSeries extends FusionSeries
   /// Range: 0.0-1.0
   /// Default: 0.35
   final double smoothness;
+
+  /// Dash pattern for the line.
+  ///
+  /// ## Examples:
+  ///
+  /// ```dart
+  /// // Dashed line
+  /// lineDashArray: [10, 5]  // 10px dash, 5px gap
+  ///
+  /// // Dotted line
+  /// lineDashArray: [2, 3]   // 2px dot, 3px gap
+  ///
+  /// // Complex pattern
+  /// lineDashArray: [10, 5, 2, 5]  // Long dash, gap, dot, gap
+  ///
+  /// // Solid line (default)
+  /// lineDashArray: null
+  /// ```
+  ///
+  /// If null, line is solid.
+  final List<double>? lineDashArray;
 
   // ==========================================================================
   // GRADIENT
@@ -232,6 +255,7 @@ class FusionLineSeries extends FusionSeries
     double? lineWidth,
     bool? isCurved,
     double? smoothness,
+    List<double>? lineDashArray,
     LinearGradient? gradient,
     bool? showMarkers,
     double? markerSize,
@@ -255,6 +279,7 @@ class FusionLineSeries extends FusionSeries
       lineWidth: lineWidth ?? this.lineWidth,
       isCurved: isCurved ?? this.isCurved,
       smoothness: smoothness ?? this.smoothness,
+      lineDashArray: lineDashArray ?? this.lineDashArray,
       gradient: gradient ?? this.gradient,
       showMarkers: showMarkers ?? this.showMarkers,
       markerSize: markerSize ?? this.markerSize,
@@ -288,33 +313,57 @@ class FusionLineSeries extends FusionSeries
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-
     return other is FusionLineSeries &&
+        listEquals(other.dataPoints, dataPoints) &&
+        listEquals(other.lineDashArray, lineDashArray) &&
         other.name == name &&
         other.color == color &&
         other.visible == visible &&
         other.lineWidth == lineWidth &&
         other.isCurved == isCurved &&
         other.smoothness == smoothness &&
+        other.gradient == gradient &&
         other.showMarkers == showMarkers &&
         other.markerSize == markerSize &&
+        other.markerShape == markerShape &&
+        other.showShadow == showShadow &&
+        other.shadow == shadow &&
+        other.showDataLabels == showDataLabels &&
+        other.dataLabelStyle == dataLabelStyle &&
+        other.dataLabelFormatter == dataLabelFormatter &&
+        other.animationCurve == animationCurve &&
+        other.animationDuration == animationDuration &&
+        other.interaction == interaction &&
         other.showArea == showArea &&
         other.areaOpacity == areaOpacity;
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
+    Object.hashAll(dataPoints),
     name,
     color,
     visible,
     lineWidth,
     isCurved,
     smoothness,
+    Object.hashAll(lineDashArray ?? []),
     showMarkers,
     markerSize,
+    markerShape,
+    markerColor,
     showArea,
     areaOpacity,
-  );
+    gradient,
+    shadow,
+    showShadow,
+    showDataLabels,
+    dataLabelStyle,
+    dataLabelFormatter,
+    animationDuration,
+    animationCurve,
+    interaction,
+  ]);
 
   @override
   String toString() {

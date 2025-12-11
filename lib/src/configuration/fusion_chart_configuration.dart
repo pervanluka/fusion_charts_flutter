@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/src/configuration/fusion_tooltip_configuration.dart';
 import '../themes/fusion_chart_theme.dart';
 import '../themes/fusion_light_theme.dart';
+import 'fusion_crosshair_configuration.dart';
+import 'fusion_zoom_configuration.dart';
 
 /// Configuration class for Fusion Charts.
 ///
@@ -40,6 +42,8 @@ class FusionChartConfiguration {
   const FusionChartConfiguration({
     FusionChartTheme? theme,
     this.tooltipBehavior = const FusionTooltipBehavior(),
+    this.crosshairBehavior = const FusionCrosshairConfiguration(),
+    this.zoomBehavior = const FusionZoomConfiguration(),
     this.enableAnimation = true,
     this.enableTooltip = true,
     this.enableCrosshair = true,
@@ -67,6 +71,12 @@ class FusionChartConfiguration {
 
   /// Tooltip behavior configuration
   final FusionTooltipBehavior tooltipBehavior;
+
+  /// Crosshair behavior configuration
+  final FusionCrosshairConfiguration crosshairBehavior;
+
+  /// Zoom behavior configuration
+  final FusionZoomConfiguration zoomBehavior;
 
   // ==========================================================================
   // FEATURE FLAGS
@@ -235,6 +245,8 @@ class FusionChartConfiguration {
   FusionChartConfiguration copyWith({
     FusionChartTheme? theme,
     FusionTooltipBehavior? tooltipBehavior,
+    FusionCrosshairConfiguration? crosshairBehavior,
+    FusionZoomConfiguration? zoomBehavior,
     bool? enableAnimation,
     bool? enableTooltip,
     bool? enableCrosshair,
@@ -255,6 +267,8 @@ class FusionChartConfiguration {
     return FusionChartConfiguration(
       theme: theme ?? this.theme,
       tooltipBehavior: tooltipBehavior ?? this.tooltipBehavior,
+      crosshairBehavior: crosshairBehavior ?? this.crosshairBehavior,
+      zoomBehavior: zoomBehavior ?? this.zoomBehavior,
       enableAnimation: enableAnimation ?? this.enableAnimation,
       enableTooltip: enableTooltip ?? this.enableTooltip,
       enableCrosshair: enableCrosshair ?? this.enableCrosshair,
@@ -281,6 +295,8 @@ class FusionChartConfiguration {
     return other is FusionChartConfiguration &&
         other.theme == theme &&
         other.tooltipBehavior == tooltipBehavior &&
+        other.crosshairBehavior == crosshairBehavior &&
+        other.zoomBehavior == zoomBehavior &&
         other.enableAnimation == enableAnimation &&
         other.enableTooltip == enableTooltip &&
         other.enableCrosshair == enableCrosshair &&
@@ -304,6 +320,8 @@ class FusionChartConfiguration {
     return Object.hash(
       theme,
       tooltipBehavior,
+      crosshairBehavior,
+      zoomBehavior,
       enableAnimation,
       enableTooltip,
       enableCrosshair,

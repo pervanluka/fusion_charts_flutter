@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
 import '../configuration/fusion_chart_configuration.dart';
 import '../configuration/fusion_tooltip_configuration.dart';
+import '../core/enums/fusion_dismiss_strategy.dart';
+import '../core/enums/fusion_tooltip_trackball_mode.dart';
 import '../data/fusion_data_point.dart';
 import '../rendering/fusion_coordinate_system.dart';
 import '../rendering/fusion_interaction_handler.dart';
@@ -54,6 +56,7 @@ class FusionInteractiveChartState extends ChangeNotifier {
   // Crosshair state
   Offset? _crosshairPosition;
   FusionDataPoint? _crosshairPoint;
+  Timer? _crosshairHideTimer;
 
   // Zoom/Pan state
   bool _isPanning = false;
@@ -187,30 +190,37 @@ class FusionInteractiveChartState extends ChangeNotifier {
 
     final wasLongPress = pressDuration.inMilliseconds > 500;
 
-    if (!config.enableTooltip || _tooltipData == null) {
-      _pointerDownTime = null;
-      return;
-    }
+    if (config.enableTooltip && _tooltipData != null) {
+      final tooltipBehavior = config.tooltipBehavior;
 
-    // Determine dismissal strategy
-    final behavior = config.tooltipBehavior;
-
-    if (behavior.shouldDismissOnRelease()) {
-      // Get appropriate delay based on interaction type
-      final delay = behavior.getDismissDelay(wasLongPress);
-
-      if (delay == Duration.zero) {
-        // Immediate dismissal
-        _hideTooltipAnimated();
-      } else {
-        // Delayed dismissal
-        _startHideTimer(delay);
+      if (tooltipBehavior.shouldDismissOnRelease()) {
+        final delay = tooltipBehavior.getDismissDelay(wasLongPress);
+        if (delay == Duration.zero) {
+          _hideTooltipAnimated();
+        } else {
+          _startHideTimer(delay);
+        }
+      } else if (tooltipBehavior.shouldUseTimer()) {
+        _startHideTimer(tooltipBehavior.duration);
       }
-    } else if (behavior.shouldUseTimer()) {
-      // Timer-based dismissal (Syncfusion's default)
-      _startHideTimer(behavior.duration);
     }
-    // else: never dismiss automatically
+
+    if (config.enableCrosshair && _crosshairPosition != null) {
+      final crosshairBehavior = config.crosshairBehavior;
+
+      if (crosshairBehavior.shouldDismissOnRelease()) {
+        final delay = crosshairBehavior.getDismissDelay(wasLongPress);
+
+        if (delay == Duration.zero) {
+          _hideCrosshairAnimated();
+        } else {
+          _startCrosshairHideTimer(delay);
+        }
+      } else if (crosshairBehavior.shouldUseTimer()) {
+        _startCrosshairHideTimer(crosshairBehavior.duration);
+      }
+      // else: never dismiss automatically
+    }
 
     _pointerDownTime = null;
   }
@@ -417,7 +427,7 @@ class FusionInteractiveChartState extends ChangeNotifier {
     }
   }
 
-  /// âœ… CLEAN: Single loop works for ALL series types
+  /// CLEAN: Single loop works for ALL series types
   SeriesWithDataPoints _findSeriesForPoint(FusionDataPoint point) {
     for (final s in series) {
       // Check if this point exists in this series
@@ -440,12 +450,39 @@ class FusionInteractiveChartState extends ChangeNotifier {
   }
 
   void _showCrosshair(Offset position, FusionDataPoint? snappedPoint) {
+    _crosshairHideTimer?.cancel();
+
     _crosshairPosition = position;
     _crosshairPoint = snappedPoint;
     notifyListeners();
+
+    // Auto-hide based on strategy (only if not 'never')
+    final behavior = config.crosshairBehavior;
+    if (behavior.dismissStrategy != FusionDismissStrategy.never) {
+      if (behavior.shouldUseTimer()) {
+        _startCrosshairHideTimer(behavior.duration);
+      }
+    }
   }
 
   void _hideCrosshair() {
+    if (_crosshairPosition != null) {
+      _crosshairPosition = null;
+      _crosshairPoint = null;
+      notifyListeners();
+    }
+  }
+
+  void _startCrosshairHideTimer(Duration delay) {
+    _crosshairHideTimer?.cancel();
+    _crosshairHideTimer = Timer(delay, () {
+      _hideCrosshairAnimated();
+    });
+  }
+
+  void _hideCrosshairAnimated() {
+    _crosshairHideTimer?.cancel();
+
     if (_crosshairPosition != null) {
       _crosshairPosition = null;
       _crosshairPoint = null;
