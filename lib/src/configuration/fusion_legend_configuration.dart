@@ -5,10 +5,6 @@ import 'package:flutter/material.dart';
 /// Controls appearance, position, and behavior of the chart legend
 /// that identifies different series.
 ///
-/// Replaces:
-/// - `Legend` from Syncfusion
-/// - Custom legend implementations from fl_chart
-///
 /// ## Example
 ///
 /// ```dart

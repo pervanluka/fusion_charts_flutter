@@ -3,7 +3,7 @@ enum FusionDismissStrategy {
   /// This is what users expect on mobile!
   onRelease,
 
-  /// ⏱️ Dismiss after duration timer (Syncfusion's default)
+  /// ⏱️ Dismiss after duration timer
   /// Timer starts when tooltip appears
   onTimer,
 
@@ -12,7 +12,6 @@ enum FusionDismissStrategy {
   onReleaseDelayed,
 
   /// 🔒 Never dismiss (manual hide only)
-  /// Equivalent to Syncfusion's shouldAlwaysShow: true
   never,
 
   /// 🧠 Smart dismiss - adapts to user interaction

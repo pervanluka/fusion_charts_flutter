@@ -4,7 +4,6 @@ import 'fusion_chart_theme.dart';
 /// Dark theme for Fusion Charts.
 ///
 /// Professional dark color scheme perfect for dark mode applications.
-/// Based on Syncfusion's dark theme with enhanced contrast.
 ///
 /// ## Color Scheme
 ///

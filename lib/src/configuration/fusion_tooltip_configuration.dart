@@ -15,7 +15,7 @@ class FusionTooltipBehavior {
     // Basic configuration
     this.enable = true,
 
-    // 🚀 ACTIVATION CONTROL - Superior to Syncfusion
+    // 🚀 ACTIVATION CONTROL - Superior
     this.activationMode = FusionTooltipActivationMode.auto,
     this.activationDelay = Duration.zero,
 
@@ -69,7 +69,7 @@ class FusionTooltipBehavior {
   final bool enable;
 
   // ========================================================================
-  // 🚀 ACTIVATION CONTROL (Better than Syncfusion)
+  // 🚀 ACTIVATION CONTROL
   // ========================================================================
 
   /// How to activate the tooltip
@@ -90,7 +90,7 @@ class FusionTooltipBehavior {
   /// Strategy for dismissing tooltip
   ///
   /// **onRelease** (default) - Best UX! Dismisses when finger lifts
-  /// **onTimer** - Syncfusion's behavior (show for duration)
+  /// **onTimer** - Show for duration
   /// **onReleaseDelayed** - Brief delay after release
   /// **never** - Manual hide only
   /// **smart** - Adapts to interaction pattern
@@ -103,7 +103,7 @@ class FusionTooltipBehavior {
   final Duration duration;
 
   // ========================================================================
-  // 🚀 TRACKBALL MODE (Enhanced over Syncfusion)
+  // 🚀 TRACKBALL MODE
   // ========================================================================
 
   /// Trackball behavior

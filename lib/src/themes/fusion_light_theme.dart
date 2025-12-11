@@ -4,7 +4,6 @@ import 'fusion_chart_theme.dart';
 /// Light theme for Fusion Charts.
 ///
 /// Professional light color scheme suitable for most applications.
-/// Based on Syncfusion's light theme with Material Design influences.
 ///
 /// ## Color Scheme
 ///

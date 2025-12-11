@@ -6,7 +6,6 @@ import 'dart:math' as math;
 /// Provides rich gradient options for series, areas, and backgrounds.
 /// Supports linear, radial, and sweep gradients with multiple stops.
 ///
-/// Based on Syncfusion's gradient system with additional flexibility.
 @immutable
 class FusionGradient {
   /// Creates a gradient configuration.
@@ -146,8 +145,7 @@ class FusionGradient {
   // PRESET GRADIENTS
   // ==========================================================================
 
-  /// Syncfusion-style default gradient (purple to green).
-  static final syncfusionDefault = FusionGradient.vertical(
+  static final fusionDefault = FusionGradient.vertical(
     colors: [const Color(0xFF6C63FF), const Color(0xFF4CAF50)],
   );
 

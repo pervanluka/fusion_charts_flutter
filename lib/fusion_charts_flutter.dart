@@ -111,6 +111,9 @@ export 'src/series/fusion_line_series.dart';
 /// Bar series for bar charts.
 export 'src/series/fusion_bar_series.dart';
 
+/// Stacked bar series for cumulative data visualization.
+export 'src/series/fusion_stacked_bar_series.dart';
+
 /// Area series for area charts.
 export 'src/series/fusion_area_series.dart';
 
@@ -126,6 +129,9 @@ export 'src/charts/fusion_line_chart.dart';
 
 /// Bar chart widget.
 export 'src/charts/fusion_bar_chart.dart';
+
+/// Stacked bar chart widget.
+export 'src/charts/fusion_stacked_bar_chart.dart';
 
 // ============================================================================
 // THEMES
@@ -158,6 +164,9 @@ export 'src/configuration/fusion_legend_configuration.dart';
 
 /// Crosshair configuration.
 export 'src/configuration/fusion_crosshair_configuration.dart';
+
+/// Stacked tooltip builder types.
+export 'src/configuration/fusion_stacked_tooltip_builder.dart';
 
 // ============================================================================
 // ENUMS & CONSTANTS
@@ -229,16 +238,16 @@ const String fusionChartsDescription =
     'Professional Flutter charting library with stunning visuals and enterprise-grade features';
 
 /// Repository URL.
-const String fusionChartsRepository = 'https://github.com/your-org/fusion_charts_flutter';
+const String fusionChartsRepository = 'https://github.com/pervanluka/fusion_charts_flutter';
 
 /// License.
 const String fusionChartsLicense = 'MIT';
 
 /// Author.
-const String fusionChartsAuthor = 'Fusion Charts Team';
+const String fusionChartsAuthor = 'Luka Pervan';
 
 /// Homepage.
-const String fusionChartsHomepage = 'https://fusioncharts.dev';
+const String fusionChartsHomepage = 'https://github.com/pervanluka/fusion_charts_flutter';
 
 // ============================================================================
 // EXTENSIONS (for convenience)

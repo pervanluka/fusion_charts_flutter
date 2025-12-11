@@ -5,13 +5,10 @@ import 'fusion_coordinate_system.dart';
 
 /// Builder for creating smooth, high-quality paths for chart rendering.
 ///
-/// This class is responsible for converting data points into beautiful,
-/// smooth curves that look professional and match Syncfusion quality.
-///
 /// ## Features
 ///
 /// - Straight line paths
-/// - Smooth Bezier curves (Syncfusion SplineSeries style)
+/// - Smooth Bezier curves
 /// - Catmull-Rom splines
 /// - Area fills
 /// - Optimized for performance
@@ -60,17 +57,15 @@ class FusionPathBuilder {
   }
 
   // ==========================================================================
-  // SMOOTH CURVED PATHS (Syncfusion Style)
+  // SMOOTH CURVED PATHS
   // ==========================================================================
 
   /// Creates a smooth curved path using cubic Bezier curves.
   ///
-  /// This matches Syncfusion's SplineSeries rendering quality.
-  ///
   /// Parameters:
   /// - [dataPoints]: The data to render
   /// - [coordSystem]: Coordinate transformation system
-  /// - [smoothness]: Curve smoothness (0.0-1.0), default 0.35 (Syncfusion standard)
+  /// - [smoothness]: Curve smoothness (0.0-1.0), default 0.35
   ///
   /// Example:
   /// ```dart
@@ -113,7 +108,7 @@ class FusionPathBuilder {
       final p2 = screenPoints[i + 1];
       final p3 = i < screenPoints.length - 2 ? screenPoints[i + 2] : screenPoints[i + 1];
 
-      // Calculate control points using Syncfusion's algorithm
+      // Calculate control points
       final cp1 = Offset(
         p1.dx + (p2.dx - p0.dx) * smoothness,
         p1.dy + (p2.dy - p0.dy) * smoothness,

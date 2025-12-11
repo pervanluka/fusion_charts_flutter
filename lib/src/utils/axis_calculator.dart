@@ -1,5 +1,3 @@
-// lib/src/utils/axis_calculator.dart
-
 import 'dart:math' as math;
 import '../core/enums/chart_range_padding.dart';
 import '../core/models/axis_bounds.dart';

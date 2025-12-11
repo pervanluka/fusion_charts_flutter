@@ -1,5 +1,3 @@
-// lib/src/core/axis/numeric/numeric_axis_renderer.dart
-
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 

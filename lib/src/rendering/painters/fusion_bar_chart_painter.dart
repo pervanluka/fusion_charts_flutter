@@ -165,6 +165,7 @@ class FusionBarChartPainter extends CustomPainter {
           series: series.cast<SeriesWithDataPoints>(),
           enableAntiAliasing: true,
           clipToChartArea: true,
+          enableSideBySideSeriesPlacement: effectiveConfig.enableSideBySideSeriesPlacement,
         ),
 
         // Layer 70: Data Labels (if enabled)

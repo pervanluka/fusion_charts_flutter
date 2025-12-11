@@ -1,5 +1,3 @@
-// lib/src/rendering/fusion_interaction_handler.dart
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../data/fusion_data_point.dart';

@@ -10,10 +10,6 @@ import 'fusion_series.dart';
 /// Displays data as a series of points connected by straight or curved lines.
 /// Perfect for showing trends, patterns, and changes over time.
 ///
-/// Replaces:
-/// - `LineChartBarData` from fl_chart
-/// - `LineSeries` from Syncfusion
-///
 /// ## Example
 ///
 /// ```dart
@@ -93,13 +89,13 @@ class FusionLineSeries extends FusionSeries
   /// Thicker lines are more prominent but can clutter dense data.
   ///
   /// Range: 1.0-10.0
-  /// Default: 3.0 (Syncfusion standard)
+  /// Default: 3.0
   final double lineWidth;
 
   /// Whether to draw curved lines between points.
   ///
-  /// When `true`, uses smooth Bezier curves (like Syncfusion's SplineSeries).
-  /// When `false`, uses straight lines (like Syncfusion's LineSeries).
+  /// When `true`, uses smooth Bezier curves
+  /// When `false`, uses straight lines
   ///
   /// Default: `true`
   final bool isCurved;
@@ -109,7 +105,7 @@ class FusionLineSeries extends FusionSeries
   /// Only applies when [isCurved] is `true`.
   ///
   /// - 0.0 = Almost straight lines
-  /// - 0.35 = Syncfusion default (balanced)
+  /// - 0.35 = Balanced
   /// - 1.0 = Very smooth, flowing curves
   ///
   /// Range: 0.0-1.0
@@ -184,7 +180,7 @@ class FusionLineSeries extends FusionSeries
   /// Only applies when [showArea] is `true`.
   ///
   /// Range: 0.0 (transparent) - 1.0 (opaque)
-  /// Default: 0.3 (Syncfusion standard)
+  /// Default: 0.3
   final double areaOpacity;
 
   // ==========================================================================

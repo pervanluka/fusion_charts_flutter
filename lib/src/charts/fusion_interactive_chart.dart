@@ -69,6 +69,32 @@ class FusionInteractiveChartState extends ChangeNotifier {
   FusionDataPoint? get crosshairPoint => _crosshairPoint;
   bool get isInteracting => _isPanning || _isZooming;
 
+  /// Updates the coordinate system when chart dimensions change.
+  ///
+  /// This should be called when the chart's layout changes (resize, data update)
+  /// to keep the interactive state in sync with the visual representation.
+  void updateCoordinateSystem(FusionCoordinateSystem newCoordSystem) {
+    if (_currentCoordSystem != newCoordSystem) {
+      _currentCoordSystem = newCoordSystem;
+      
+      // Update interaction handler with new coordinate system
+      if (_interactionHandler != null) {
+        _interactionHandler = FusionInteractionHandler(
+          coordSystem: _currentCoordSystem,
+          onTap: _handleTap,
+          onLongPress: _handleLongPress,
+          onPanStart: _handlePanStart,
+          onPanUpdate: _handlePanUpdate,
+          onPanEnd: _handlePanEnd,
+          onScaleStart: _handleScaleStart,
+          onScaleUpdate: _handleScaleUpdate,
+          onScaleEnd: _handleScaleEnd,
+          onHover: _handleHover,
+        );
+      }
+    }
+  }
+
   // Enhanced getters
   double get tooltipOpacity => _tooltipOpacity;
   bool get isPointerDown => _isPointerDown;

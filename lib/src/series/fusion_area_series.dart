@@ -1,5 +1,3 @@
-// lib/src/series/fusion_area_series.dart
-
 import 'package:flutter/material.dart';
 import '../core/enums/marker_shape.dart';
 import 'fusion_series.dart';

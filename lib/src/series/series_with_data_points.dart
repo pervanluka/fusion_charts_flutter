@@ -1,5 +1,3 @@
-// lib/src/series/series_with_data_points.dart
-
 import 'package:flutter/material.dart';
 import '../data/fusion_data_point.dart';
 

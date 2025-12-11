@@ -5,10 +5,6 @@ import 'package:flutter/material.dart';
 /// Defines the visual style and appearance of all charts.
 /// Implement this interface to create custom themes.
 ///
-/// Replaces:
-/// - Custom theme systems from Syncfusion
-/// - Manual styling in fl_chart
-///
 /// Follows the **Open/Closed Principle** (SOLID):
 /// - Open for extension (create new themes)
 /// - Closed for modification (don't change this interface)
@@ -156,13 +152,11 @@ abstract class FusionChartTheme {
 
   /// Border radius for chart containers and tooltips.
   ///
-  /// Syncfusion uses 12px for modern rounded look.
   /// Range: 8-16px
   double get borderRadius;
 
   /// Elevation (shadow depth) for the chart card.
   ///
-  /// Syncfusion uses 4dp for light theme, 8dp for dark theme.
   /// Range: 0-16dp
   double get elevation;
 
@@ -174,13 +168,11 @@ abstract class FusionChartTheme {
   /// Width of grid lines.
   ///
   /// Should be thinner than axis lines.
-  /// Syncfusion uses 0.8px for subtle grid.
   /// Recommended: 0.5-1.0px
   double get gridLineWidth;
 
   /// Default line width for series.
   ///
-  /// Syncfusion uses 3px for prominent, clear lines.
   /// Range: 2-4px
   double get seriesLineWidth => 3.0;
 
@@ -214,7 +206,6 @@ abstract class FusionChartTheme {
 
   /// Opacity for area fill under line charts.
   ///
-  /// Syncfusion uses 0.3 for subtle area fill.
   /// Range: 0.1-0.5
   double get areaFillOpacity => 0.3;
 
@@ -224,15 +215,13 @@ abstract class FusionChartTheme {
 
   /// Duration for chart animations.
   ///
-  /// Syncfusion uses 1500ms for smooth, professional feel.
   /// Range: 500-2000ms
   Duration get animationDuration;
 
   /// Curve for chart animations.
   ///
-  /// Syncfusion uses easeInOutCubic for natural motion.
   /// Popular choices:
-  /// - Curves.easeInOutCubic (Syncfusion default)
+  /// - Curves.easeInOutCubic
   /// - Curves.easeOut
   /// - Curves.fastOutSlowIn (Material Design)
   Curve get animationCurve;
@@ -243,7 +232,7 @@ abstract class FusionChartTheme {
 
   /// Shadow for chart series lines/bars.
   ///
-  /// Adds depth to the chart. Syncfusion uses subtle shadows.
+  /// Adds depth to the chart.
   BoxShadow get seriesShadow => BoxShadow(
     color: primaryColor.withValues(alpha: 0.2),
     offset: const Offset(0, 2),

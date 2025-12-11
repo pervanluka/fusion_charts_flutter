@@ -3,53 +3,67 @@ import '../data/fusion_data_point.dart';
 import 'fusion_series.dart';
 import 'series_with_data_points.dart';
 
-/// Bar series for bar charts.
+/// Stacked bar series for displaying cumulative data.
 ///
-/// Displays data as vertical or horizontal bars.
-/// Perfect for comparing values across categories.
+/// Stacked bar charts display bars stacked on top of each other,
+/// showing both individual values and their sum.
+///
+/// ## Stacking Modes
+///
+/// - **Regular stacking** (`isStacked100: false`): Shows actual cumulative values
+/// - **100% stacking** (`isStacked100: true`): Normalizes to 100%, showing percentages
+///
+/// ## Use Cases
+///
+/// - Revenue breakdown by product category
+/// - Portfolio allocation over time
+/// - Expense distribution
+/// - Market share comparison (100% mode)
 ///
 /// ## Example
 ///
 /// ```dart
-/// FusionBarSeries(
-///   name: 'Sales',
+/// // Regular stacked bar
+/// FusionStackedBarSeries(
+///   name: 'Product A',
 ///   dataPoints: [
-///     FusionDataPoint(0, 10, label: 'Q1'),
-///     FusionDataPoint(1, 15, label: 'Q2'),
-///     FusionDataPoint(2, 12, label: 'Q3'),
-///     FusionDataPoint(3, 18, label: 'Q4'),
+///     FusionDataPoint(0, 30, label: 'Q1'),
+///     FusionDataPoint(1, 40, label: 'Q2'),
 ///   ],
 ///   color: Colors.blue,
-///   barWidth: 0.6,
+/// )
+///
+/// // 100% stacked bar (percentage mode)
+/// FusionStackedBarSeries(
+///   name: 'Product A',
+///   dataPoints: [...],
+///   color: Colors.blue,
+///   isStacked100: true,
 /// )
 /// ```
 ///
-/// ## Features
+/// ## Grouping
 ///
-/// - Vertical or horizontal orientation
-/// - Customizable bar width
-/// - Rounded corners
-/// - Gradient support
-/// - Spacing control
-/// - Border styling
-/// - Shadows for depth
+/// Multiple stacked series with the same [groupName] are stacked together.
+/// This allows multiple independent stacks in the same chart.
 @immutable
-class FusionBarSeries extends FusionSeries
+class FusionStackedBarSeries extends FusionSeries
     with FusionGradientSupport, FusionShadowSupport, FusionDataLabelSupport, FusionAnimationSupport
     implements SeriesWithDataPoints {
-  /// Creates a bar series.
-  const FusionBarSeries({
+  /// Creates a stacked bar series.
+  const FusionStackedBarSeries({
     required this.dataPoints,
     required super.name,
     required super.color,
     super.visible,
-    this.barWidth = 0.6,
-    this.borderRadius = 4.0,
-    this.spacing = 0.2,
+    this.barWidth = 0.7,
+    this.borderRadius = 0.0,
+    this.spacing = 0.0,
+    this.groupName = '',
     this.gradient,
     this.borderColor,
     this.borderWidth = 0.0,
-    this.showShadow = true,
+    this.showShadow = false,
     this.shadow,
     this.showDataLabels = false,
     this.dataLabelStyle,
@@ -57,18 +71,10 @@ class FusionBarSeries extends FusionSeries
     this.animationDuration,
     this.animationCurve,
     this.isVertical = true,
-    this.isTrackVisible = false,
-    this.trackColor,
-    this.trackBorderWidth = 0.0,
-    this.trackBorderColor,
-    this.trackPadding = 0.0,
     this.interaction = const FusionSeriesInteraction(),
   }) : assert(barWidth > 0 && barWidth <= 1.0, 'Bar width must be between 0 and 1'),
-       assert(spacing >= 0 && spacing < 1.0, 'Spacing must be between 0 and 1'),
        assert(borderRadius >= 0, 'Border radius must be non-negative'),
-       assert(borderWidth >= 0, 'Border width must be non-negative'),
-       assert(trackBorderWidth >= 0, 'Track border width must be non-negative'),
-       assert(trackPadding >= 0, 'Track padding must be non-negative');
+       assert(borderWidth >= 0, 'Border width must be non-negative');
 
   /// The data points to be displayed in this series.
   @override
@@ -80,74 +86,50 @@ class FusionBarSeries extends FusionSeries
 
   /// Width of bars as a fraction of available space.
   ///
-  /// - 1.0 = bars touch each other (no gap)
-  /// - 0.6 = bars use 60% of space (40% gap)
-  /// - 0.4 = bars use 40% of space (60% gap)
+  /// - 1.0 = bars touch each other
+  /// - 0.7 = bars use 70% of space (default)
   ///
   /// Range: 0.0-1.0
-  /// Default: 0.6
+  /// Default: 0.7
   final double barWidth;
 
   /// Corner radius of the bars.
   ///
-  /// Creates rounded corners at the top of vertical bars
-  /// or at the end of horizontal bars.
+  /// Applied only to the topmost bar in the stack (for vertical bars)
+  /// or the rightmost bar (for horizontal bars).
   ///
-  /// Range: 0.0-20.0
-  /// Default: 4.0
+  /// Default: 0.0 (no rounding for stacked bars by default)
   final double borderRadius;
 
-  /// Spacing between bars in the same category.
-  ///
-  /// Only relevant when multiple series are shown.
+  /// Spacing between stacked bar groups.
   ///
   /// Range: 0.0-1.0
-  /// Default: 0.2 (20% of bar width)
+  /// Default: 0.0
   final double spacing;
 
-  /// Whether bars are vertical (column chart) or horizontal (bar chart).
+  /// Group name for stacking.
   ///
-  /// - `true`: Vertical bars (column chart)
-  /// - `false`: Horizontal bars (bar chart)
+  /// Series with the same [groupName] are stacked together.
+  /// Leave empty to stack all series together.
+  ///
+  /// Example:
+  /// ```dart
+  /// // These two series will be stacked together
+  /// FusionStackedBarSeries(name: 'A', groupName: 'group1', ...)
+  /// FusionStackedBarSeries(name: 'B', groupName: 'group1', ...)
+  ///
+  /// // This will be a separate stack
+  /// FusionStackedBarSeries(name: 'C', groupName: 'group2', ...)
+  /// ```
+  final String groupName;
+
+  /// Whether bars are vertical or horizontal.
+  ///
+  /// - `true`: Vertical stacked bars (column chart)
+  /// - `false`: Horizontal stacked bars (bar chart)
   ///
   /// Default: `true`
   final bool isVertical;
-
-  // ==========================================================================
-  // TRACK (BACKGROUND BAR)
-  // ==========================================================================
-
-  /// Whether to show a track (background bar) behind each bar.
-  ///
-  /// Tracks are rectangular bars rendered from the start to the end of the axis.
-  /// Useful for showing progress, capacity, or range.
-  ///
-  /// Default: `false`
-  final bool isTrackVisible;
-
-  /// Color of the track bar.
-  ///
-  /// Only visible when [isTrackVisible] is `true`.
-  ///
-  /// Default: `Colors.grey.withOpacity(0.2)`
-  final Color? trackColor;
-
-  /// Border width of the track bar.
-  ///
-  /// Default: `0.0` (no border)
-  final double trackBorderWidth;
-
-  /// Border color of the track bar.
-  ///
-  /// Only visible when [trackBorderWidth] > 0.
-  final Color? trackBorderColor;
-
-  /// Padding inside the track bar.
-  ///
-  /// Creates space between the track edges and the bar.
-  ///
-  /// Default: `0.0`
-  final double trackPadding;
 
   // ==========================================================================
   // GRADIENT
@@ -161,13 +143,10 @@ class FusionBarSeries extends FusionSeries
   // ==========================================================================
 
   /// Border color of the bars.
-  ///
-  /// If null, no border is drawn.
   final Color? borderColor;
 
   /// Width of the bar border.
   ///
-  /// Range: 0.0-5.0
   /// Default: 0.0 (no border)
   final double borderWidth;
 
@@ -233,9 +212,6 @@ class FusionBarSeries extends FusionSeries
   /// Maximum y value in this series.
   double? get maxY => dataPoints.maxY;
 
-  /// Average y value in this series.
-  double? get averageY => dataPoints.averageY;
-
   /// Total sum of y values.
   double get sum => dataPoints.sumY;
 
@@ -244,7 +220,7 @@ class FusionBarSeries extends FusionSeries
   // ==========================================================================
 
   @override
-  FusionBarSeries copyWith({
+  FusionStackedBarSeries copyWith({
     List<FusionDataPoint>? dataPoints,
     String? name,
     Color? color,
@@ -252,6 +228,7 @@ class FusionBarSeries extends FusionSeries
     double? barWidth,
     double? borderRadius,
     double? spacing,
+    String? groupName,
     LinearGradient? gradient,
     Color? borderColor,
     double? borderWidth,
@@ -263,14 +240,9 @@ class FusionBarSeries extends FusionSeries
     Duration? animationDuration,
     Curve? animationCurve,
     bool? isVertical,
-    bool? isTrackVisible,
-    Color? trackColor,
-    double? trackBorderWidth,
-    Color? trackBorderColor,
-    double? trackPadding,
     FusionSeriesInteraction? interaction,
   }) {
-    return FusionBarSeries(
+    return FusionStackedBarSeries(
       dataPoints: dataPoints ?? this.dataPoints,
       name: name ?? this.name,
       color: color ?? this.color,
@@ -278,6 +250,7 @@ class FusionBarSeries extends FusionSeries
       barWidth: barWidth ?? this.barWidth,
       borderRadius: borderRadius ?? this.borderRadius,
       spacing: spacing ?? this.spacing,
+      groupName: groupName ?? this.groupName,
       gradient: gradient ?? this.gradient,
       borderColor: borderColor ?? this.borderColor,
       borderWidth: borderWidth ?? this.borderWidth,
@@ -289,56 +262,33 @@ class FusionBarSeries extends FusionSeries
       animationDuration: animationDuration ?? this.animationDuration,
       animationCurve: animationCurve ?? this.animationCurve,
       isVertical: isVertical ?? this.isVertical,
-      isTrackVisible: isTrackVisible ?? this.isTrackVisible,
-      trackColor: trackColor ?? this.trackColor,
-      trackBorderWidth: trackBorderWidth ?? this.trackBorderWidth,
-      trackBorderColor: trackBorderColor ?? this.trackBorderColor,
-      trackPadding: trackPadding ?? this.trackPadding,
       interaction: interaction ?? this.interaction,
     );
-  }
-
-  /// Filters data points within a range.
-  FusionBarSeries filterByRange(double minX, double maxX) {
-    final filtered = dataPoints.where((p) => p.x >= minX && p.x <= maxX).toList();
-    return copyWith(dataPoints: filtered);
-  }
-
-  /// Sorts data points by x coordinate.
-  FusionBarSeries sortByX() {
-    return copyWith(dataPoints: dataPoints.sortByX());
-  }
-
-  /// Sorts data points by y coordinate (value).
-  FusionBarSeries sortByY({bool descending = false}) {
-    final sorted = dataPoints.sortByY();
-    return copyWith(dataPoints: descending ? sorted.reversed.toList() : sorted);
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is FusionBarSeries &&
+    return other is FusionStackedBarSeries &&
         other.name == name &&
         other.color == color &&
         other.visible == visible &&
         other.barWidth == barWidth &&
-        other.borderRadius == borderRadius &&
-        other.spacing == spacing &&
+        other.groupName == groupName &&
         other.isVertical == isVertical;
   }
 
   @override
   int get hashCode =>
-      Object.hash(name, color, visible, barWidth, borderRadius, spacing, isVertical);
+      Object.hash(name, color, visible, barWidth, groupName, isVertical);
 
   @override
   String toString() {
-    return 'FusionBarSeries('
+    return 'FusionStackedBarSeries('
         'name: $name, '
         'points: ${dataPoints.length}, '
-        'vertical: $isVertical, '
+        'group: $groupName, '
         'visible: $visible'
         ')';
   }

@@ -55,6 +55,7 @@ class FusionChartConfiguration {
     this.enableMarkers = false,
     this.enableGrid = true,
     this.enableAxis = true,
+    this.enableSideBySideSeriesPlacement = true,
     this.lineWidth = 1.0,
     this.markerSize = 4.0,
     this.padding = const EdgeInsets.all(16.0),
@@ -163,6 +164,18 @@ class FusionChartConfiguration {
   /// Default: `true`
   final bool enableAxis;
 
+  /// Whether to place bar series side-by-side.
+  ///
+  /// When `true` (default), multiple bar series are rendered side-by-side
+  /// within each category (grouped bars).
+  ///
+  /// When `false`, bar series are rendered on top of each other (overlapped).
+  /// Useful for comparing two related metrics where one is typically
+  /// smaller than the other (e.g., actual vs target).
+  ///
+  /// Default: `true`
+  final bool enableSideBySideSeriesPlacement;
+
   // ==========================================================================
   // DIMENSIONS
   // ==========================================================================
@@ -258,6 +271,7 @@ class FusionChartConfiguration {
     bool? enableMarkers,
     bool? enableGrid,
     bool? enableAxis,
+    bool? enableSideBySideSeriesPlacement,
     double? lineWidth,
     double? markerSize,
     EdgeInsets? padding,
@@ -280,6 +294,8 @@ class FusionChartConfiguration {
       enableMarkers: enableMarkers ?? this.enableMarkers,
       enableGrid: enableGrid ?? this.enableGrid,
       enableAxis: enableAxis ?? this.enableAxis,
+      enableSideBySideSeriesPlacement:
+          enableSideBySideSeriesPlacement ?? this.enableSideBySideSeriesPlacement,
       lineWidth: lineWidth ?? this.lineWidth,
       markerSize: markerSize ?? this.markerSize,
       padding: padding ?? this.padding,
@@ -308,6 +324,7 @@ class FusionChartConfiguration {
         other.enableMarkers == enableMarkers &&
         other.enableGrid == enableGrid &&
         other.enableAxis == enableAxis &&
+        other.enableSideBySideSeriesPlacement == enableSideBySideSeriesPlacement &&
         other.lineWidth == lineWidth &&
         other.markerSize == markerSize &&
         other.padding == padding &&

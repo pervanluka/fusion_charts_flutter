@@ -229,7 +229,7 @@ class FusionAnimationPresets {
   /// Fast animation (750ms).
   static Duration get fast => const Duration(milliseconds: 750);
 
-  /// Normal animation (1500ms) - Syncfusion standard.
+  /// Normal animation (1500ms)
   static Duration get normal => const Duration(milliseconds: 1500);
 
   /// Slow animation (2500ms).
@@ -238,7 +238,7 @@ class FusionAnimationPresets {
   /// Elastic bounce effect.
   static Curve get elastic => Curves.elasticOut;
 
-  /// Smooth cubic easing - Syncfusion standard.
+  /// Smooth cubic easing
   static Curve get smooth => Curves.easeInOutCubic;
 
   /// Fast start, slow end.

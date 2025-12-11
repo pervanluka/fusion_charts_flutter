@@ -1,5 +1,3 @@
-// lib/src/rendering/painters/fusion_line_chart_painter.dart
-
 import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/src/configuration/fusion_crosshair_configuration.dart';
 import '../../core/axis/base/fusion_axis_base.dart';
