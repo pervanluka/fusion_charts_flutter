@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/src/configuration/fusion_crosshair_configuration.dart';
+import 'package:fusion_charts_flutter/src/configuration/fusion_line_chart_configuration.dart';
 import '../../core/axis/base/fusion_axis_base.dart';
 import '../../core/axis/numeric/fusion_numeric_axis.dart';
 import '../../core/enums/axis_position.dart';
@@ -152,6 +153,11 @@ class FusionLineChartPainter extends CustomPainter {
   /// Builds the complete render pipeline with all layers.
   FusionRenderPipeline _buildRenderPipeline(Size size) {
     final effectiveConfig = config ?? const FusionChartConfiguration();
+    
+    // Get line-specific config, use defaults if base config provided
+    final enableMarkers = config is FusionLineChartConfiguration
+        ? (config as FusionLineChartConfiguration).enableMarkers
+        : false;
 
     return FusionRenderPipeline(
       layers: [
@@ -169,7 +175,7 @@ class FusionLineChartPainter extends CustomPainter {
         ),
 
         // Layer 60: Markers (if enabled)
-        if (effectiveConfig.enableMarkers)
+        if (enableMarkers)
           FusionMarkerLayer(series: series.cast<SeriesWithDataPoints>()),
 
         // Layer 70: Data Labels (if enabled)

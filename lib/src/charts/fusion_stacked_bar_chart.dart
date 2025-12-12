@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import '../series/fusion_stacked_bar_series.dart';
 import '../configuration/fusion_chart_configuration.dart';
+import '../configuration/fusion_stacked_bar_chart_configuration.dart';
 import '../configuration/fusion_axis_configuration.dart';
 import '../configuration/fusion_stacked_tooltip_builder.dart';
+import '../configuration/fusion_tooltip_configuration.dart';
+import '../configuration/fusion_crosshair_configuration.dart';
+import '../configuration/fusion_zoom_configuration.dart';
 import '../data/fusion_data_point.dart';
 import '../rendering/fusion_coordinate_system.dart';
 import '../rendering/painters/fusion_stacked_bar_chart_painter.dart';
@@ -18,23 +22,29 @@ import 'fusion_stacked_bar_interactive_state.dart';
 /// ## Features
 ///
 /// - **Regular stacking**: Shows actual cumulative values
-/// - **100% stacking**: Normalizes to 100% (set `isStacked100: true`)
+/// - **100% stacking**: Normalizes to 100% via config
 /// - **Multiple groups**: Use `groupName` to create multiple stacks
 /// - **Vertical/Horizontal**: Control via `isVertical` on series
 /// - **Animations**: Smooth entry animations
 /// - **Interactivity**: Multi-line tooltips showing all segments
+/// - **Custom tooltips**: Full control over tooltip rendering
 ///
 /// ## Example
 ///
 /// ```dart
 /// FusionStackedBarChart(
+///   config: FusionStackedBarChartConfiguration(
+///     isStacked100: false,
+///     tooltipValueFormatter: (value, segment, info) {
+///       return '\$${value.toStringAsFixed(0)}';
+///     },
+///   ),
 ///   series: [
 ///     FusionStackedBarSeries(
 ///       name: 'Product A',
 ///       dataPoints: [
 ///         FusionDataPoint(0, 30, label: 'Q1'),
 ///         FusionDataPoint(1, 40, label: 'Q2'),
-///         FusionDataPoint(2, 35, label: 'Q3'),
 ///       ],
 ///       color: Colors.blue,
 ///     ),
@@ -43,7 +53,6 @@ import 'fusion_stacked_bar_interactive_state.dart';
 ///       dataPoints: [
 ///         FusionDataPoint(0, 20, label: 'Q1'),
 ///         FusionDataPoint(1, 25, label: 'Q2'),
-///         FusionDataPoint(2, 30, label: 'Q3'),
 ///       ],
 ///       color: Colors.green,
 ///     ),
@@ -55,7 +64,9 @@ import 'fusion_stacked_bar_interactive_state.dart';
 ///
 /// ```dart
 /// FusionStackedBarChart(
-///   isStacked100: true,  // Enable 100% mode
+///   config: FusionStackedBarChartConfiguration(
+///     isStacked100: true,
+///   ),
 ///   series: [...],
 /// )
 /// ```
@@ -68,10 +79,6 @@ class FusionStackedBarChart extends StatefulWidget {
     this.yAxis,
     this.title,
     this.subtitle,
-    this.isStacked100 = false,
-    this.tooltipBuilder,
-    this.tooltipValueFormatter,
-    this.tooltipTotalFormatter,
     this.onBarTap,
     this.onBarLongPress,
   }) : assert(series.length > 0, 'At least one series is required');
@@ -79,7 +86,16 @@ class FusionStackedBarChart extends StatefulWidget {
   /// All stacked bar series to display.
   final List<FusionStackedBarSeries> series;
 
-  /// Chart configuration (animations, interactions, etc.).
+  /// Chart configuration with stacked bar-specific settings.
+  ///
+  /// Use [FusionStackedBarChartConfiguration] for full type-safe access
+  /// to stacked bar specific options like:
+  /// - `isStacked100` - Enable 100% stacking mode
+  /// - `tooltipBuilder` - Custom tooltip widget
+  /// - `tooltipValueFormatter` - Custom value formatting
+  /// - `tooltipTotalFormatter` - Custom total formatting
+  ///
+  /// Also accepts base [FusionChartConfiguration] for shared settings only.
   final FusionChartConfiguration? config;
 
   /// X-axis configuration.
@@ -93,66 +109,6 @@ class FusionStackedBarChart extends StatefulWidget {
 
   /// Optional chart subtitle.
   final String? subtitle;
-
-  /// Whether to use 100% stacking (normalize to 100%).
-  final bool isStacked100;
-
-  /// Custom builder for the tooltip widget.
-  ///
-  /// If provided, gives complete control over tooltip rendering.
-  /// Return null from the builder to use default rendering.
-  ///
-  /// ## Example
-  ///
-  /// ```dart
-  /// FusionStackedBarChart(
-  ///   tooltipBuilder: (context, info) {
-  ///     return Card(
-  ///       child: Padding(
-  ///         padding: EdgeInsets.all(8),
-  ///         child: Column(
-  ///           mainAxisSize: MainAxisSize.min,
-  ///           children: info.segments.map((s) =>
-  ///             Text('${s.seriesName}: ${s.value}')
-  ///           ).toList(),
-  ///         ),
-  ///       ),
-  ///     );
-  ///   },
-  /// )
-  /// ```
-  final FusionStackedTooltipBuilder? tooltipBuilder;
-
-  /// Formatter for segment values in the default tooltip.
-  ///
-  /// Only used when [tooltipBuilder] is not provided.
-  ///
-  /// ## Example
-  ///
-  /// ```dart
-  /// FusionStackedBarChart(
-  ///   tooltipValueFormatter: (value, segment, info) {
-  ///     return '\${value.toStringAsFixed(2)}';
-  ///   },
-  /// )
-  /// ```
-  final FusionStackedValueFormatter? tooltipValueFormatter;
-
-  /// Formatter for the total line in the default tooltip.
-  ///
-  /// Only used when [tooltipBuilder] is not provided.
-  /// Return null to hide the total line.
-  ///
-  /// ## Example
-  ///
-  /// ```dart
-  /// FusionStackedBarChart(
-  ///   tooltipTotalFormatter: (total, info) {
-  ///     return 'Total: \${total.toStringAsFixed(0)}';
-  ///   },
-  /// )
-  /// ```
-  final FusionStackedTotalFormatter? tooltipTotalFormatter;
 
   /// Callback when a bar segment is tapped.
   final void Function(FusionDataPoint point, String seriesName)? onBarTap;
@@ -176,6 +132,34 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
   Size? _cachedSize;
   int? _cachedSeriesHash;
 
+  /// Gets the stacked bar specific configuration or defaults.
+  FusionStackedBarChartConfiguration get _stackedConfig {
+    final config = widget.config;
+    if (config is FusionStackedBarChartConfiguration) {
+      return config;
+    }
+    // Wrap base config with stacked defaults
+    return FusionStackedBarChartConfiguration(
+      theme: config?.theme,
+      tooltipBehavior: config?.tooltipBehavior ?? const FusionTooltipBehavior(),
+      crosshairBehavior: config?.crosshairBehavior ?? const FusionCrosshairConfiguration(),
+      zoomBehavior: config?.zoomBehavior ?? const FusionZoomConfiguration(),
+      enableAnimation: config?.enableAnimation ?? true,
+      enableTooltip: config?.enableTooltip ?? true,
+      enableCrosshair: config?.enableCrosshair ?? true,
+      enableZoom: config?.enableZoom ?? false,
+      enablePanning: config?.enablePanning ?? false,
+      enableSelection: config?.enableSelection ?? true,
+      enableLegend: config?.enableLegend ?? true,
+      enableDataLabels: config?.enableDataLabels ?? false,
+      enableGrid: config?.enableGrid ?? true,
+      enableAxis: config?.enableAxis ?? true,
+      padding: config?.padding ?? const EdgeInsets.all(16.0),
+      animationDuration: config?.animationDuration,
+      animationCurve: config?.animationCurve,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -184,7 +168,7 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
   }
 
   void _initAnimation() {
-    final config = widget.config ?? const FusionChartConfiguration();
+    final config = _stackedConfig;
 
     _animationController = AnimationController(
       duration: config.enableAnimation ? config.effectiveAnimationDuration : Duration.zero,
@@ -204,26 +188,27 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
   }
 
   void _initInteractiveState() {
+    final config = _stackedConfig;
     _coordSystem = _createPlaceholderCoordSystem();
-    final config = widget.config ?? const FusionChartConfiguration();
 
     _interactiveState = FusionStackedBarInteractiveState(
       config: config,
       initialCoordSystem: _coordSystem!,
       series: widget.series,
-      isStacked100: widget.isStacked100,
+      isStacked100: config.isStacked100,
     );
     _interactiveState.initialize();
     _interactiveState.addListener(_onInteractionChanged);
   }
 
   FusionCoordinateSystem _createPlaceholderCoordSystem() {
+    final config = _stackedConfig;
     return FusionCoordinateSystem(
       chartArea: const Rect.fromLTWH(60, 10, 300, 200),
       dataXMin: -0.5,
       dataXMax: _getMaxPointCount() - 0.5,
       dataYMin: 0,
-      dataYMax: widget.isStacked100 ? 100 : _getStackedMaxY() * 1.1,
+      dataYMax: config.isStacked100 ? 100 : _getStackedMaxY() * 1.1,
     );
   }
 
@@ -264,9 +249,7 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
   void didUpdateWidget(FusionStackedBarChart oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.series != oldWidget.series || 
-        widget.isStacked100 != oldWidget.isStacked100 ||
-        widget.config != oldWidget.config) {
+    if (widget.series != oldWidget.series || widget.config != oldWidget.config) {
       _cachedSize = null;
       _cachedSeriesHash = null;
 
@@ -287,10 +270,10 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
 
   @override
   Widget build(BuildContext context) {
-    final config = widget.config ?? const FusionChartConfiguration();
+    final config = _stackedConfig;
     final title = widget.title;
     final subtitle = widget.subtitle;
-    final hasCustomBuilder = widget.tooltipBuilder != null;
+    final hasCustomBuilder = config.tooltipBuilder != null;
 
     return Padding(
       padding: config.padding,
@@ -337,9 +320,9 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
                             config: config,
                             paintPool: _paintPool,
                             shaderCache: _shaderCache,
-                            isStacked100: widget.isStacked100,
-                            tooltipValueFormatter: widget.tooltipValueFormatter,
-                            tooltipTotalFormatter: widget.tooltipTotalFormatter,
+                            isStacked100: config.isStacked100,
+                            tooltipValueFormatter: config.tooltipValueFormatter,
+                            tooltipTotalFormatter: config.tooltipTotalFormatter,
                           ),
                         ),
                       ),
@@ -352,7 +335,7 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
                         children: [
                           chartWidget,
                           if (_interactiveState.tooltipData != null)
-                            _buildCustomTooltip(context, _interactiveState.tooltipData!),
+                            _buildCustomTooltip(context, _interactiveState.tooltipData!, config),
                         ],
                       );
                     }
@@ -369,7 +352,11 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
   }
 
   /// Builds a custom tooltip widget using the builder.
-  Widget _buildCustomTooltip(BuildContext context, StackedTooltipData data) {
+  Widget _buildCustomTooltip(
+    BuildContext context,
+    StackedTooltipData data,
+    FusionStackedBarChartConfiguration config,
+  ) {
     final info = FusionStackedTooltipInfo(
       categoryIndex: 0,
       categoryLabel: data.categoryLabel,
@@ -384,13 +371,12 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
           )
           .toList(),
       totalValue: data.totalValue,
-      isStacked100: data.isStacked100,
+      isStacked100: config.isStacked100,
       hitSegmentIndex: data.hitSegmentIndex,
     );
 
-    final customWidget = widget.tooltipBuilder!(context, info);
+    final customWidget = config.tooltipBuilder!(context, info);
     if (customWidget == null) {
-      // Builder returned null, use default (but we already skipped it)
       return const SizedBox.shrink();
     }
 
@@ -399,7 +385,7 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
       left: data.screenPosition.dx,
       top: data.screenPosition.dy,
       child: FractionalTranslation(
-        translation: const Offset(-0.5, -1.1), // Center above the point
+        translation: const Offset(-0.5, -1.1),
         child: customWidget,
       ),
     );
@@ -412,7 +398,7 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
       return;
     }
 
-    final config = widget.config ?? const FusionChartConfiguration();
+    final config = _stackedConfig;
 
     final leftMargin = config.enableAxis ? 60.0 : 10.0;
     final rightMargin = 10.0;
@@ -431,7 +417,7 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
     final minX = -0.5;
     final maxX = pointCount - 0.5;
     final minY = 0.0;
-    final maxY = widget.isStacked100 ? 100.0 : _getStackedMaxY() * 1.1;
+    final maxY = config.isStacked100 ? 100.0 : _getStackedMaxY() * 1.1;
 
     _coordSystem = FusionCoordinateSystem(
       chartArea: chartArea,
@@ -446,7 +432,8 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
   }
 
   int _calculateSeriesHash() {
-    int hash = widget.isStacked100.hashCode;
+    final config = _stackedConfig;
+    int hash = config.isStacked100.hashCode;
     for (final s in widget.series) {
       hash ^= s.visible.hashCode;
       hash ^= s.dataPoints.length.hashCode;

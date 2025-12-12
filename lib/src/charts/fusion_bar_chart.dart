@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/src/rendering/painters/fusion_bar_chart_painter.dart';
 import '../series/fusion_bar_series.dart';
 import '../configuration/fusion_chart_configuration.dart';
+import '../configuration/fusion_bar_chart_configuration.dart';
 import '../configuration/fusion_axis_configuration.dart';
+import '../configuration/fusion_tooltip_configuration.dart';
+import '../configuration/fusion_crosshair_configuration.dart';
+import '../configuration/fusion_zoom_configuration.dart';
 import '../data/fusion_data_point.dart';
 import '../rendering/fusion_coordinate_system.dart';
 import '../rendering/fusion_render_cache.dart';
@@ -30,6 +34,10 @@ import 'fusion_bar_interactive_state.dart';
 ///
 /// ```dart
 /// FusionBarChart(
+///   config: FusionBarChartConfiguration(
+///     enableSideBySideSeriesPlacement: true,
+///     barWidthRatio: 0.8,
+///   ),
 ///   series: [
 ///     FusionBarSeries(
 ///       name: 'Sales',
@@ -62,7 +70,16 @@ class FusionBarChart extends StatefulWidget {
   /// All bar series to display.
   final List<FusionBarSeries> series;
 
-  /// Chart configuration (animations, interactions, etc.).
+  /// Chart configuration with bar-specific settings.
+  ///
+  /// Use [FusionBarChartConfiguration] for full type-safe access
+  /// to bar-specific options like:
+  /// - `enableSideBySideSeriesPlacement` - Grouped vs overlapped bars
+  /// - `barWidthRatio` - Bar width relative to category space
+  /// - `barSpacing` - Spacing between grouped bars
+  /// - `borderRadius` - Rounded corners
+  ///
+  /// Also accepts base [FusionChartConfiguration] for shared settings only.
   final FusionChartConfiguration? config;
 
   /// X-axis configuration.
@@ -101,6 +118,34 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
   int? _cachedSeriesHash;
   FusionCoordinateSystem? _cachedCoordSystem;
 
+  /// Gets the bar-specific configuration or defaults.
+  FusionBarChartConfiguration get _barConfig {
+    final config = widget.config;
+    if (config is FusionBarChartConfiguration) {
+      return config;
+    }
+    // Wrap base config with bar defaults
+    return FusionBarChartConfiguration(
+      theme: config?.theme,
+      tooltipBehavior: config?.tooltipBehavior ?? const FusionTooltipBehavior(),
+      crosshairBehavior: config?.crosshairBehavior ?? const FusionCrosshairConfiguration(),
+      zoomBehavior: config?.zoomBehavior ?? const FusionZoomConfiguration(),
+      enableAnimation: config?.enableAnimation ?? true,
+      enableTooltip: config?.enableTooltip ?? true,
+      enableCrosshair: config?.enableCrosshair ?? true,
+      enableZoom: config?.enableZoom ?? false,
+      enablePanning: config?.enablePanning ?? false,
+      enableSelection: config?.enableSelection ?? true,
+      enableLegend: config?.enableLegend ?? true,
+      enableDataLabels: config?.enableDataLabels ?? false,
+      enableGrid: config?.enableGrid ?? true,
+      enableAxis: config?.enableAxis ?? true,
+      padding: config?.padding ?? const EdgeInsets.all(16.0),
+      animationDuration: config?.animationDuration,
+      animationCurve: config?.animationCurve,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -109,7 +154,7 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
   }
 
   void _initAnimation() {
-    final config = widget.config ?? const FusionChartConfiguration();
+    final config = _barConfig;
 
     _animationController = AnimationController(
       duration: config.enableAnimation ? config.effectiveAnimationDuration : Duration.zero,
@@ -130,7 +175,7 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
 
   void _initInteractiveState() {
     _coordSystem = _createPlaceholderCoordSystem();
-    final config = widget.config ?? const FusionChartConfiguration();
+    final config = _barConfig;
 
     _interactiveState = FusionBarInteractiveState(
       config: config,
@@ -202,7 +247,7 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    final config = widget.config ?? const FusionChartConfiguration();
+    final config = _barConfig;
     final title = widget.title;
     final subtitle = widget.subtitle;
 
@@ -271,7 +316,7 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
       return;
     }
 
-    final config = widget.config ?? const FusionChartConfiguration();
+    final config = _barConfig;
 
     final leftMargin = config.enableAxis ? 60.0 : 10.0;
     final rightMargin = 10.0;

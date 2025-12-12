@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 
 import '../../charts/fusion_stacked_bar_interactive_state.dart';
-import '../../configuration/fusion_stacked_tooltip_builder.dart';
 import '../../core/axis/base/fusion_axis_base.dart';
 import '../../core/axis/category/fusion_category_axis.dart';
 import '../../core/axis/numeric/fusion_numeric_axis.dart';

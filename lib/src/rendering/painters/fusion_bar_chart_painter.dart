@@ -151,6 +151,11 @@ class FusionBarChartPainter extends CustomPainter {
   /// Builds the complete render pipeline with all layers.
   FusionRenderPipeline _buildRenderPipeline(Size size) {
     final effectiveConfig = config ?? const FusionChartConfiguration();
+    
+    // Get bar-specific config, use defaults if base config provided
+    final enableSideBySide = config is FusionBarChartConfiguration
+        ? (config as FusionBarChartConfiguration).enableSideBySideSeriesPlacement
+        : true;
 
     return FusionRenderPipeline(
       layers: [
@@ -165,7 +170,7 @@ class FusionBarChartPainter extends CustomPainter {
           series: series.cast<SeriesWithDataPoints>(),
           enableAntiAliasing: true,
           clipToChartArea: true,
-          enableSideBySideSeriesPlacement: effectiveConfig.enableSideBySideSeriesPlacement,
+          enableSideBySideSeriesPlacement: enableSideBySide,
         ),
 
         // Layer 70: Data Labels (if enabled)

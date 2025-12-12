@@ -404,27 +404,22 @@ void main() {
       expect(config.hasAnyInteraction, false);
     });
 
-    test('handles invalid line width (should clamp or validate)', () {
-      const config = FusionChartConfiguration(
-        lineWidth: 0.0, // Edge case - zero width
+    test('handles minimum valid line width', () {
+      const config = FusionLineChartConfiguration(
+        lineWidth: 0.5, // Minimum valid width
       );
 
-      // Should either clamp to minimum or have valid default
-      expect(config.lineWidth, greaterThanOrEqualTo(0));
+      expect(config.lineWidth, 0.5);
     });
 
-    test('handles negative marker size', () {
-      final config = FusionChartConfiguration(
-        markerSize: -5.0, // Invalid!
-      );
-
-      // ⚠️ BUG FOUND: Config accepts negative marker size!
-      // This should be validated/clamped in the constructor
-      // For now, test documents the current behavior
+    test('handles negative marker size assertion', () {
+      // Configuration should throw assertion error for invalid marker size
       expect(
-        config.markerSize,
-        equals(-5.0),
-        reason: 'BUG: Configuration should validate/clamp marker size to positive values',
+        () => FusionLineChartConfiguration(
+          markerSize: -5.0, // Invalid!
+        ),
+        throwsAssertionError,
+        reason: 'Configuration should validate marker size to be positive',
       );
     });
   });

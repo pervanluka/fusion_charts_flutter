@@ -525,7 +525,7 @@ class BasicLineChartExample extends StatelessWidget {
           lineWidth: 2.5,
         ),
       ],
-      config: const FusionChartConfiguration(
+      config: const FusionLineChartConfiguration(
         enableAnimation: true,
         enableGrid: true,
         enableMarkers: false,
@@ -585,7 +585,10 @@ class MultiSeriesLineExample extends StatelessWidget {
         enableAnimation: true,
         enableLegend: true,
         enableCrosshair: false,
-        tooltipBehavior: FusionTooltipBehavior(shared: true),
+        tooltipBehavior: FusionTooltipBehavior(
+          trackballMode: FusionTooltipTrackballMode.magnetic,
+          shared: true,
+        ),
       ),
     );
   }
@@ -702,7 +705,7 @@ class LineWithMarkersExample extends StatelessWidget {
           markerShape: MarkerShape.circle,
         ),
       ],
-      config: const FusionChartConfiguration(enableMarkers: true),
+      config: const FusionLineChartConfiguration(enableMarkers: true),
     );
   }
 }
@@ -924,7 +927,7 @@ class MarkerShapesExample extends StatelessWidget {
           markerSize: 8.0,
         ),
       ],
-      config: const FusionChartConfiguration(enableMarkers: true, enableLegend: true),
+      config: const FusionLineChartConfiguration(enableMarkers: true, enableLegend: true),
     );
   }
 }
@@ -976,7 +979,7 @@ class CustomMarkersExample extends StatelessWidget {
           markerShape: MarkerShape.diamond,
         ),
       ],
-      config: const FusionChartConfiguration(enableMarkers: true),
+      config: const FusionLineChartConfiguration(enableMarkers: true),
     );
   }
 }

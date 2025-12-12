@@ -8,7 +8,7 @@
 /// ## Features
 ///
 /// * 🎨 Professional Themes: Light, Dark, and Enterprise themes
-/// * 📊 Chart Types: Line and Bar charts (more coming soon)
+/// * 📊 Chart Types: Line, Bar, and Stacked Bar charts
 /// * ⚡ High Performance: Optimized for 10K+ data points
 /// * 🎭 Smooth Animations: Configurable animations with cubic easing
 /// * 📱 Fully Responsive: Adapts to all screen sizes
@@ -39,6 +39,7 @@
 ///
 /// * [FusionLineChart] - Line chart for trends over time
 /// * [FusionBarChart] - Bar chart for comparing categories
+/// * [FusionStackedBarChart] - Stacked bar chart for cumulative data
 ///
 /// ## Themes
 ///
@@ -150,8 +151,17 @@ export 'src/themes/fusion_dark_theme.dart';
 // CONFIGURATION
 // ============================================================================
 
-/// Main chart configuration.
+/// Base chart configuration (shared settings).
 export 'src/configuration/fusion_chart_configuration.dart';
+
+/// Line chart specific configuration.
+export 'src/configuration/fusion_line_chart_configuration.dart';
+
+/// Bar chart specific configuration.
+export 'src/configuration/fusion_bar_chart_configuration.dart';
+
+/// Stacked bar chart specific configuration.
+export 'src/configuration/fusion_stacked_bar_chart_configuration.dart';
 
 /// Axis configuration.
 export 'src/configuration/fusion_axis_configuration.dart';
@@ -168,8 +178,40 @@ export 'src/configuration/fusion_crosshair_configuration.dart';
 /// Stacked tooltip builder types.
 export 'src/configuration/fusion_stacked_tooltip_builder.dart';
 
+/// Zoom configuration.
+export 'src/configuration/fusion_zoom_configuration.dart';
+
+/// Pan configuration.
+export 'src/configuration/fusion_pan_connfiguration.dart';
+
 // ============================================================================
-// ENUMS & CONSTANTS
+// ENUMS - Tooltip
+// ============================================================================
+
+/// Tooltip activation modes (tap, hover, longPress, etc.).
+export 'src/core/enums/fusion_tooltip_activation_mode.dart';
+
+/// Tooltip trackball modes (none, follow, snap, magnetic).
+export 'src/core/enums/fusion_tooltip_trackball_mode.dart';
+
+/// Tooltip dismiss strategies (onRelease, onTimer, etc.).
+export 'src/core/enums/fusion_dismiss_strategy.dart';
+
+// ============================================================================
+// ENUMS - Zoom & Pan
+// ============================================================================
+
+/// Zoom modes (horizontal, vertical, both).
+export 'src/core/enums/fusion_zoom_mode.dart';
+
+/// Pan modes (horizontal, vertical, both).
+export 'src/core/enums/fusion_pan_mode.dart';
+
+/// Pan edge behavior (stop, bounce, continuous).
+export 'src/core/enums/fusion_pan_edge_behavior.dart';
+
+// ============================================================================
+// ENUMS - Axis & Labels
 // ============================================================================
 
 /// Marker shapes for data points.
@@ -184,8 +226,23 @@ export 'src/core/enums/label_alignment.dart';
 /// Axis range padding types.
 export 'src/core/enums/axis_range_padding.dart';
 
+/// Axis types (numeric, category, datetime).
+export 'src/core/enums/axis_type.dart';
+
+/// Axis positions (left, right, top, bottom).
+export 'src/core/enums/axis_position.dart';
+
+/// Axis label intersect actions (hide, wrap, rotate, etc.).
+export 'src/core/enums/axis_label_intersect_action.dart';
+
+/// Text anchor positions for labels.
+export 'src/core/enums/text_anchor.dart';
+
+/// Label alignment strategies.
+export 'src/core/enums/fusion_label_alignment_strategy.dart';
+
 // ============================================================================
-// CORE MODELS
+// CORE MODELS - Axis
 // ============================================================================
 
 /// Axis bounds calculation.
@@ -193,6 +250,29 @@ export 'src/core/models/axis_bounds.dart';
 
 /// Axis label model.
 export 'src/core/models/axis_label.dart';
+
+/// Minor grid lines configuration.
+export 'src/core/models/minor_grid_lines.dart';
+
+/// Minor tick lines configuration.
+export 'src/core/models/minor_tick_lines.dart';
+
+// ============================================================================
+// CORE STYLING
+// ============================================================================
+
+/// Axis line styling.
+export 'src/core/styling/axis_line.dart';
+
+/// Major tick lines styling.
+export 'src/core/styling/major_tick_lines.dart';
+
+// ============================================================================
+// CORE FEATURES
+// ============================================================================
+
+/// Plot bands for highlighting regions.
+export 'src/core/features/plot_band/plot_band.dart';
 
 // ============================================================================
 // UTILITIES
@@ -216,12 +296,22 @@ export 'src/utils/fusion_mathematics.dart';
 /// LTTB Downsampler for large datasets.
 export 'src/utils/lttb_downsampler.dart';
 
+/// DateTime utilities for time-based charts.
+export 'src/utils/fusion_datetime_utils.dart';
+
 // ============================================================================
 // RENDERING (Advanced Usage)
 // ============================================================================
 
 /// Coordinate transformation system.
 export 'src/rendering/fusion_coordinate_system.dart';
+
+// ============================================================================
+// WIDGETS
+// ============================================================================
+
+/// Error boundary widget for graceful error handling.
+export 'src/widgets/error/fusion_chart_error_boundary.dart';
 
 // ============================================================================
 // VERSION & METADATA

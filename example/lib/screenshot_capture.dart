@@ -141,7 +141,7 @@ class LineChartScreenshot extends StatelessWidget {
                   markerShape: MarkerShape.diamond,
                 ),
               ],
-              config: const FusionChartConfiguration(
+              config: const FusionLineChartConfiguration(
                 enableAnimation: false,
                 enableGrid: true,
                 enableMarkers: true,
@@ -325,7 +325,7 @@ class BarChartShowcase extends StatelessWidget {
                       borderRadius: 4.0,
                     ),
                   ],
-                  config: const FusionChartConfiguration(
+                  config: const FusionBarChartConfiguration(
                     enableAnimation: true,
                     enableSideBySideSeriesPlacement: true,
                   ),
@@ -367,7 +367,7 @@ class BarChartShowcase extends StatelessWidget {
                       borderRadius: 6.0,
                     ),
                   ],
-                  config: const FusionChartConfiguration(
+                  config: const FusionBarChartConfiguration(
                     enableAnimation: true,
                     enableSideBySideSeriesPlacement: false, // Overlapped mode
                   ),
@@ -505,7 +505,6 @@ class BarChartShowcase extends StatelessWidget {
               child: SizedBox(
                 height: 280,
                 child: FusionStackedBarChart(
-                  isStacked100: true,
                   series: [
                     FusionStackedBarSeries(
                       name: 'Desktop',
@@ -541,7 +540,10 @@ class BarChartShowcase extends StatelessWidget {
                       barWidth: 0.6,
                     ),
                   ],
-                  config: const FusionChartConfiguration(enableAnimation: true),
+                  config: const FusionStackedBarChartConfiguration(
+                    isStacked100: true,
+                    enableAnimation: true,
+                  ),
                   yAxis: FusionAxisConfiguration(labelFormatter: (value) => '${value.toInt()}%'),
                 ),
               ),
