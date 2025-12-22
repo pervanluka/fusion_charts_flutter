@@ -1,5 +1,3 @@
-// lib/fusion_charts_flutter.dart
-
 /// Fusion Charts Flutter - Professional Flutter Charting Library
 ///
 /// A powerful, customizable charting library that combines stunning visuals
@@ -182,7 +180,7 @@ export 'src/configuration/fusion_stacked_tooltip_builder.dart';
 export 'src/configuration/fusion_zoom_configuration.dart';
 
 /// Pan configuration.
-export 'src/configuration/fusion_pan_connfiguration.dart';
+export 'src/configuration/fusion_pan_configuration.dart';
 
 // ============================================================================
 // ENUMS - Tooltip

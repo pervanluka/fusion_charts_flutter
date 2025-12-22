@@ -5,6 +5,7 @@ import '../themes/fusion_chart_theme.dart';
 import 'fusion_chart_configuration.dart';
 import 'fusion_tooltip_configuration.dart';
 import 'fusion_crosshair_configuration.dart';
+import 'fusion_pan_configuration.dart';
 import 'fusion_zoom_configuration.dart';
 import 'fusion_stacked_tooltip_builder.dart';
 
@@ -66,6 +67,7 @@ class FusionStackedBarChartConfiguration extends FusionChartConfiguration {
     super.tooltipBehavior,
     super.crosshairBehavior,
     super.zoomBehavior,
+    super.panBehavior,
     super.enableAnimation,
     super.enableTooltip,
     super.enableCrosshair,
@@ -164,6 +166,7 @@ class FusionStackedBarChartConfiguration extends FusionChartConfiguration {
     FusionTooltipBehavior? tooltipBehavior,
     FusionCrosshairConfiguration? crosshairBehavior,
     FusionZoomConfiguration? zoomBehavior,
+    FusionPanConfiguration? panBehavior,
     bool? enableAnimation,
     bool? enableTooltip,
     bool? enableCrosshair,
@@ -191,6 +194,7 @@ class FusionStackedBarChartConfiguration extends FusionChartConfiguration {
       tooltipBehavior: tooltipBehavior ?? this.tooltipBehavior,
       crosshairBehavior: crosshairBehavior ?? this.crosshairBehavior,
       zoomBehavior: zoomBehavior ?? this.zoomBehavior,
+      panBehavior: panBehavior ?? this.panBehavior,
       enableAnimation: enableAnimation ?? this.enableAnimation,
       enableTooltip: enableTooltip ?? this.enableTooltip,
       enableCrosshair: enableCrosshair ?? this.enableCrosshair,

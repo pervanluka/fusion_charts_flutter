@@ -351,7 +351,7 @@ class FusionTooltipBehavior {
 /// Alignment options for tooltip
 enum ChartAlignment { near, center, far }
 
-/// Tooltip render data (internal use)
+/// Single point tooltip render data (internal use)
 class TooltipRenderData {
   const TooltipRenderData({
     required this.point,
@@ -360,6 +360,7 @@ class TooltipRenderData {
     required this.screenPosition,
     this.wasLongPress = false,
     this.activationTime,
+    this.sharedPoints,
   });
 
   final FusionDataPoint point;
@@ -368,6 +369,9 @@ class TooltipRenderData {
   final Offset screenPosition;
   final bool wasLongPress;
   final DateTime? activationTime;
+  
+  /// Additional points at the same X position for shared tooltip
+  final List<SharedTooltipPoint>? sharedPoints;
 
   TooltipRenderData copyWith({
     FusionDataPoint? point,
@@ -376,6 +380,7 @@ class TooltipRenderData {
     Offset? screenPosition,
     bool? wasLongPress,
     DateTime? activationTime,
+    List<SharedTooltipPoint>? sharedPoints,
   }) {
     return TooltipRenderData(
       point: point ?? this.point,
@@ -384,6 +389,22 @@ class TooltipRenderData {
       screenPosition: screenPosition ?? this.screenPosition,
       wasLongPress: wasLongPress ?? this.wasLongPress,
       activationTime: activationTime ?? this.activationTime,
+      sharedPoints: sharedPoints ?? this.sharedPoints,
     );
   }
+}
+
+/// Point data for shared tooltip
+class SharedTooltipPoint {
+  const SharedTooltipPoint({
+    required this.point,
+    required this.seriesName,
+    required this.seriesColor,
+    required this.screenPosition,
+  });
+
+  final FusionDataPoint point;
+  final String seriesName;
+  final Color seriesColor;
+  final Offset screenPosition;
 }

@@ -269,7 +269,7 @@ class ExampleDetailPage extends StatelessWidget {
             const SizedBox(height: 16),
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(0),
                 child: SizedBox(height: 400, child: example.builder(context)),
               ),
             ),
@@ -527,7 +527,7 @@ class BasicLineChartExample extends StatelessWidget {
       ],
       config: const FusionLineChartConfiguration(
         enableAnimation: true,
-        enableGrid: true,
+        enableGrid: false,
         enableMarkers: false,
       ),
     );

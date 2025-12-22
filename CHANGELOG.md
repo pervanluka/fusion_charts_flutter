@@ -5,17 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2025-01-XX
+## [1.0.0] - 2025-01-23
 
 ### Added
 
 #### Chart Types
 - **FusionLineChart** — Line chart with straight or smooth curved lines (Bezier/Catmull-Rom splines)
 - **FusionBarChart** — Bar chart for categorical data comparison
+- **FusionStackedBarChart** — Stacked bar chart for cumulative data visualization
 
 #### Series Features
 - `FusionLineSeries` — Line series with configurable width, curves, dash patterns
-- `FusionBarSeries` — Bar series with customizable bar width and spacing
+- `FusionBarSeries` — Bar series with customizable bar width, spacing, and border radius
+- `FusionStackedBarSeries` — Stacked bar series for cumulative visualization
 - `FusionAreaSeries` — Area fill support with gradient backgrounds
 - Series visibility toggling
 - Gradient support (linear gradients)
@@ -87,7 +89,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Documentation
 - Comprehensive dartdoc comments
-- Example application
+- Example application with 20+ demos
 - README with quick start guide
 
 ### Notes
@@ -108,20 +110,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Radar/Spider charts
 - Gauge charts
 - Funnel charts
-- Stacked bar/area charts
 - Multiple Y-axes
 - Annotations and plot bands
-- Real-time streaming data support
+- Real-time streaming data API
 - Export to image (PNG, SVG)
 - Accessibility improvements (Semantics)
-- Golden tests
-- Widget tests
 
 ---
 
 ## Version History
 
-| Version | Date | Description |
-|---------|------|-------------|
-| 1.0.0 | 2025-01-XX | Initial release |
-
+| Version | Date       | Description     |
+|---------|------------|-----------------|
+| 1.0.0   | 2025-01-23 | Initial release |

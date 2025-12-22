@@ -47,11 +47,6 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
 
   FusionCoordinateSystem? _coordSystem;
 
-  Size? _cachedSize;
-  double? _cachedDpr;
-  int? _cachedSeriesHash;
-  FusionCoordinateSystem? _cachedCoordSystem;
-
   @override
   void initState() {
     super.initState();
@@ -80,14 +75,31 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
   }
 
   void _initInteractiveState() {
-    // Will be properly initialized in first build when we have size
-    // For now, create a placeholder
+    // Create initial coord system from data bounds
+    // This will be updated with proper chartArea in first build
+    final allPoints = widget.series.where((s) => s.visible).expand((s) => s.dataPoints).toList();
+
+    double minX = 0, maxX = 10, minY = 0, maxY = 100;
+
+    if (allPoints.isNotEmpty) {
+      final dataMinX = allPoints.map((p) => p.x).reduce((a, b) => a < b ? a : b);
+      final dataMaxX = allPoints.map((p) => p.x).reduce((a, b) => a > b ? a : b);
+      final dataMinY = allPoints.map((p) => p.y).reduce((a, b) => a < b ? a : b);
+      final dataMaxY = allPoints.map((p) => p.y).reduce((a, b) => a > b ? a : b);
+      
+      // Use "nice" bounds - start from 0 if data is positive
+      minX = dataMinX >= 0 ? 0.0 : dataMinX;
+      maxX = dataMaxX;
+      minY = dataMinY >= 0 ? 0.0 : dataMinY;
+      maxY = dataMaxY;
+    }
+
     _coordSystem = FusionCoordinateSystem(
-      chartArea: Rect.fromLTWH(60, 10, 300, 200),
-      dataXMin: 0,
-      dataXMax: 10,
-      dataYMin: 0,
-      dataYMax: 100,
+      chartArea: const Rect.fromLTWH(60, 10, 300, 200), // Placeholder area
+      dataXMin: minX,
+      dataXMax: maxX,
+      dataYMin: minY,
+      dataYMax: maxY,
     );
 
     final config = widget.config ?? const FusionChartConfiguration();
@@ -113,9 +125,6 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
 
     if (widget.series != oldWidget.series) {
       _cache.clear();
-      // Clear coordinate cache when data changes
-      _cachedCoordSystem = null;
-      _cachedSeriesHash = null;
 
       _animationController.reset();
       _animationController.forward();
@@ -176,6 +185,9 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
                       onPointerHover: (event) {
                         _interactiveState.handlePointerHover(event);
                       },
+                      onPointerSignal: (event) {
+                        _interactiveState.handlePointerSignal(event);
+                      },
                       child: RawGestureDetector(
                         gestures: _interactiveState.getGestureRecognizers(),
                         child: CustomPaint(
@@ -208,23 +220,15 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
   }
 
   void _updateCoordinateSystem(Size size, double dpr) {
-    // Calculate hash of current series data
-    final seriesHash = _calculateSeriesHash(widget.series);
-
-    // Check if we can reuse cached coordinate system
-    if (_cachedSize == size &&
-        _cachedDpr == dpr &&
-        _cachedSeriesHash == seriesHash &&
-        _cachedCoordSystem != null) {
-      _coordSystem = _cachedCoordSystem;
-      return; // Use cached system - no recalculation!
-    }
+    // Skip if size is invalid
+    if (size.width <= 0 || size.height <= 0) return;
 
     // Calculate chart area (excluding margins for axes)
-    final leftMargin = 60.0;
+    final config = widget.config ?? const FusionChartConfiguration();
+    final leftMargin = config.enableAxis ? 60.0 : 10.0;
     final rightMargin = 10.0;
     final topMargin = 10.0;
-    final bottomMargin = 40.0;
+    final bottomMargin = config.enableAxis ? 40.0 : 10.0;
 
     final chartArea = Rect.fromLTRB(
       leftMargin,
@@ -233,48 +237,39 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
       size.height - bottomMargin,
     );
 
+    // Skip if chart area is invalid
+    if (chartArea.width <= 0 || chartArea.height <= 0) return;
+
     // Calculate data bounds from all series
     final allPoints = widget.series.where((s) => s.visible).expand((s) => s.dataPoints).toList();
 
     if (allPoints.isEmpty) return;
 
-    final minX = allPoints.map((p) => p.x).reduce((a, b) => a < b ? a : b);
-    final maxX = allPoints.map((p) => p.x).reduce((a, b) => a > b ? a : b);
-    final minY = allPoints.map((p) => p.y).reduce((a, b) => a < b ? a : b);
-    final maxY = allPoints.map((p) => p.y).reduce((a, b) => a > b ? a : b);
+    final dataMinX = allPoints.map((p) => p.x).reduce((a, b) => a < b ? a : b);
+    final dataMaxX = allPoints.map((p) => p.x).reduce((a, b) => a > b ? a : b);
+    final dataMinY = allPoints.map((p) => p.y).reduce((a, b) => a < b ? a : b);
+    final dataMaxY = allPoints.map((p) => p.y).reduce((a, b) => a > b ? a : b);
 
-    // Add 5% padding
-    final xPadding = (maxX - minX) * 0.05;
-    final yPadding = (maxY - minY) * 0.05;
+    // Use "nice" bounds for axes:
+    // - X-axis: start from 0 if all data is positive, otherwise use data min
+    // - Y-axis: start from 0 if all data is positive, otherwise use data min
+    final minX = dataMinX >= 0 ? 0.0 : dataMinX;
+    final maxX = dataMaxX;
+    final minY = dataMinY >= 0 ? 0.0 : dataMinY;
+    final maxY = dataMaxY;
 
+    // Create coordinate system with nice bounds
     _coordSystem = FusionCoordinateSystem(
       chartArea: chartArea,
-      dataXMin: minX - xPadding,
-      dataXMax: maxX + xPadding,
-      dataYMin: minY - yPadding,
-      dataYMax: maxY + yPadding,
+      dataXMin: minX,
+      dataXMax: maxX,
+      dataYMin: minY,
+      dataYMax: maxY,
       devicePixelRatio: dpr,
     );
 
-    // Update cache
-    _cachedSize = size;
-    _cachedDpr = dpr;
-    _cachedSeriesHash = seriesHash;
-    _cachedCoordSystem = _coordSystem;
-  }
-
-  int _calculateSeriesHash(List<FusionLineSeries> series) {
-    int hash = 0;
-    for (final s in series) {
-      hash ^= s.visible.hashCode;
-      hash ^= s.dataPoints.length.hashCode;
-      // Hash first and last point for quick change detection
-      if (s.dataPoints.isNotEmpty) {
-        hash ^= s.dataPoints.first.hashCode;
-        hash ^= s.dataPoints.last.hashCode;
-      }
-    }
-    return hash;
+    // ALWAYS update interactive state - this is critical for responsiveness
+    _interactiveState.updateCoordinateSystem(_coordSystem!);
   }
 }
 

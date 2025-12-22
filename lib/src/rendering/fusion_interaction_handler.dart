@@ -1,7 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import '../configuration/fusion_pan_configuration.dart';
+import '../configuration/fusion_zoom_configuration.dart';
+import '../core/enums/fusion_pan_mode.dart';
+import '../core/enums/fusion_zoom_mode.dart';
 import '../data/fusion_data_point.dart';
-import 'fusion_coordinate_system.dart' as coord; // 👈 Use prefix to avoid conflict
+import 'fusion_coordinate_system.dart' as coord;
 import 'interaction/fusion_spatial_index.dart';
 
 /// Handles user interactions with the chart.
@@ -27,6 +31,8 @@ class FusionInteractionHandler {
   FusionInteractionHandler({
     required this.coordSystem,
     this.hitTestRadius = 20.0,
+    this.zoomConfig = const FusionZoomConfiguration(),
+    this.panConfig = const FusionPanConfiguration(),
     this.onTap,
     this.onLongPress,
     this.onPanStart,
@@ -39,12 +45,16 @@ class FusionInteractionHandler {
   });
 
   /// Coordinate system for data/screen transformations.
-  final coord.FusionCoordinateSystem coordSystem; // 👈 Use prefix
+  final coord.FusionCoordinateSystem coordSystem;
 
   /// Maximum distance (in pixels) for hit testing.
-  ///
-  /// When user taps, points within this radius are considered "hit".
   final double hitTestRadius;
+
+  /// Zoom configuration for constraints and behavior.
+  final FusionZoomConfiguration zoomConfig;
+
+  /// Pan configuration for constraints and behavior.
+  final FusionPanConfiguration panConfig;
 
   /// Callback when user taps on a data point.
   final void Function(FusionDataPoint point, Offset screenPosition)? onTap;
@@ -78,8 +88,6 @@ class FusionInteractionHandler {
   double _lastScale = 1.0;
 
   /// Updates the spatial index with new data points.
-  ///
-  /// Call this whenever data changes to rebuild the spatial index.
   void updateDataPoints(List<FusionDataPoint> allPoints) {
     _spatialIndex = FusionSpatialIndex(
       coordSystem: coordSystem,
@@ -91,31 +99,21 @@ class FusionInteractionHandler {
   }
 
   /// Finds the nearest data point to a screen position.
-  ///
-  /// Uses spatial indexing for O(log n) performance with large datasets.
-  ///
-  /// Returns `null` if no point is within [hitTestRadius].
   FusionDataPoint? findNearestPoint(List<FusionDataPoint> points, Offset screenPosition) {
     if (points.isEmpty) return null;
 
-    // Use spatial index if available
     if (_spatialIndex != null) {
       return _findNearestPointOptimized(screenPosition);
     }
 
-    // Fallback to linear search
     return _findNearestPointLinear(points, screenPosition);
   }
 
-  /// Fast point lookup using spatial index.
   FusionDataPoint? _findNearestPointOptimized(Offset screenPosition) {
     if (_spatialIndex == null) return null;
-
-    // Use the public findNearest API
     return _spatialIndex!.findNearest(screenPosition, maxDistance: hitTestRadius);
   }
 
-  /// Linear search fallback (O(n) but simple).
   FusionDataPoint? _findNearestPointLinear(List<FusionDataPoint> points, Offset screenPosition) {
     double minDistance = hitTestRadius;
     FusionDataPoint? nearestPoint;
@@ -133,7 +131,6 @@ class FusionInteractionHandler {
     return nearestPoint;
   }
 
-  /// Handles tap down event.
   void handleTapDown(Offset position, List<FusionDataPoint> allPoints) {
     final nearest = findNearestPoint(allPoints, position);
     if (nearest != null && onTap != null) {
@@ -141,7 +138,6 @@ class FusionInteractionHandler {
     }
   }
 
-  /// Handles long press event.
   void handleLongPress(Offset position, List<FusionDataPoint> allPoints) {
     final nearest = findNearestPoint(allPoints, position);
     if (nearest != null && onLongPress != null) {
@@ -149,37 +145,31 @@ class FusionInteractionHandler {
     }
   }
 
-  /// Handles scale gesture start.
   void handleScaleStart(Offset focalPoint) {
     _lastScale = 1.0;
     onScaleStart?.call(focalPoint);
   }
 
-  /// Handles scale gesture update.
   void handleScaleUpdate(double scale, Offset focalPoint) {
     final scaleDelta = scale / _lastScale;
     _lastScale = scale;
     onScaleUpdate?.call(scaleDelta, focalPoint);
   }
 
-  /// Handles scale gesture end.
   void handleScaleEnd() {
     _lastScale = 1.0;
     onScaleEnd?.call();
   }
 
-  /// Handles pan gesture start.
   void handlePanStart(Offset position) {
     _lastPanPosition = position;
     onPanStart?.call(position);
   }
 
-  /// Handles pan gesture update.
   void handlePanUpdate(Offset delta) {
     onPanUpdate?.call(delta);
   }
 
-  /// Handles pan gesture end.
   void handlePanEnd() {
     _lastPanPosition = null;
     onPanEnd?.call();
@@ -189,9 +179,7 @@ class FusionInteractionHandler {
     onHover?.call(position);
   }
 
-  /// Calculates new bounds after panning.
-  ///
-  /// Returns adjusted data bounds based on pan delta.
+  /// Calculates new bounds after panning with pan mode support.
   ({double xMin, double xMax, double yMin, double yMax}) calculatePannedBounds(
     Offset delta,
     double currentXMin,
@@ -199,16 +187,23 @@ class FusionInteractionHandler {
     double currentYMin,
     double currentYMax,
   ) {
-    // Convert screen delta to data delta
     final xRange = currentXMax - currentXMin;
     final yRange = currentYMax - currentYMin;
 
     final chartWidth = coordSystem.chartArea.width;
     final chartHeight = coordSystem.chartArea.height;
 
-    // Calculate data shift
-    final xShift = -(delta.dx / chartWidth) * xRange;
-    final yShift = (delta.dy / chartHeight) * yRange; // Y is inverted
+    // Apply pan mode constraints
+    double xShift = 0.0;
+    double yShift = 0.0;
+
+    if (panConfig.panMode == FusionPanMode.x || panConfig.panMode == FusionPanMode.both) {
+      xShift = -(delta.dx / chartWidth) * xRange;
+    }
+
+    if (panConfig.panMode == FusionPanMode.y || panConfig.panMode == FusionPanMode.both) {
+      yShift = (delta.dy / chartHeight) * yRange; // Y is inverted
+    }
 
     return (
       xMin: currentXMin + xShift,
@@ -218,9 +213,7 @@ class FusionInteractionHandler {
     );
   }
 
-  /// Calculates new bounds after zooming.
-  ///
-  /// Returns adjusted data bounds based on scale factor and focal point.
+  /// Calculates new bounds after zooming with zoom mode support.
   ({double xMin, double xMax, double yMin, double yMax}) calculateZoomedBounds(
     double scaleFactor,
     Offset focalPoint,
@@ -233,25 +226,36 @@ class FusionInteractionHandler {
     final focalDataX = _screenXToDataX(focalPoint.dx, currentXMin, currentXMax);
     final focalDataY = _screenYToDataY(focalPoint.dy, currentYMin, currentYMax);
 
-    // Calculate new ranges
-    final xRange = (currentXMax - currentXMin) / scaleFactor;
-    final yRange = (currentYMax - currentYMin) / scaleFactor;
+    // Calculate new ranges based on zoom mode
+    double newXMin = currentXMin;
+    double newXMax = currentXMax;
+    double newYMin = currentYMin;
+    double newYMax = currentYMax;
 
-    // Center zoom around focal point
-    final xRatio = (focalDataX - currentXMin) / (currentXMax - currentXMin);
-    final yRatio = (focalDataY - currentYMin) / (currentYMax - currentYMin);
+    // Apply zoom based on mode
+    if (zoomConfig.zoomMode == FusionZoomMode.x || zoomConfig.zoomMode == FusionZoomMode.both) {
+      final xRange = (currentXMax - currentXMin) / scaleFactor;
+      final xRatio = (focalDataX - currentXMin) / (currentXMax - currentXMin);
+      newXMin = focalDataX - (xRange * xRatio);
+      newXMax = focalDataX + (xRange * (1 - xRatio));
+    }
+
+    if (zoomConfig.zoomMode == FusionZoomMode.y || zoomConfig.zoomMode == FusionZoomMode.both) {
+      final yRange = (currentYMax - currentYMin) / scaleFactor;
+      final yRatio = (focalDataY - currentYMin) / (currentYMax - currentYMin);
+      newYMin = focalDataY - (yRange * yRatio);
+      newYMax = focalDataY + (yRange * (1 - yRatio));
+    }
 
     return (
-      xMin: focalDataX - (xRange * xRatio),
-      xMax: focalDataX + (xRange * (1 - xRatio)),
-      yMin: focalDataY - (yRange * yRatio),
-      yMax: focalDataY + (yRange * (1 - yRatio)),
+      xMin: newXMin,
+      xMax: newXMax,
+      yMin: newYMin,
+      yMax: newYMax,
     );
   }
 
-  /// Constrains bounds to valid range.
-  ///
-  /// Prevents zooming out too far or panning beyond data limits.
+  /// Constrains bounds using zoom configuration limits.
   ({double xMin, double xMax, double yMin, double yMax}) constrainBounds(
     double xMin,
     double xMax,
@@ -260,50 +264,67 @@ class FusionInteractionHandler {
     double dataXMin,
     double dataXMax,
     double dataYMin,
-    double dataYMax, {
-    double maxZoomOut = 1.5, // Allow 150% of original range
-    double minZoomIn = 0.1, // Minimum 10% of original range
-  }) {
+    double dataYMax,
+  ) {
+    // Use configuration values for zoom limits
+    // minZoomLevel = 0.5 means you can zoom out to see 200% of original range (1/0.5 = 2x)
+    // maxZoomLevel = 5.0 means you can zoom in to see 20% of original range (1/5 = 0.2x)
+    final maxZoomOut = 1.0 / zoomConfig.minZoomLevel; // e.g., 1/0.5 = 2.0 (200% of range)
+    final minZoomIn = 1.0 / zoomConfig.maxZoomLevel;  // e.g., 1/5.0 = 0.2 (20% of range)
+
     final originalXRange = dataXMax - dataXMin;
     final originalYRange = dataYMax - dataYMin;
 
-    final newXRange = xMax - xMin;
-    final newYRange = yMax - yMin;
+    var newXMin = xMin;
+    var newXMax = xMax;
+    var newYMin = yMin;
+    var newYMax = yMax;
+
+    final newXRange = newXMax - newXMin;
+    final newYRange = newYMax - newYMin;
 
     // Prevent zooming out too far
     if (newXRange > originalXRange * maxZoomOut) {
-      final center = (xMin + xMax) / 2;
+      final center = (newXMin + newXMax) / 2;
       final halfRange = (originalXRange * maxZoomOut) / 2;
-      xMin = center - halfRange;
-      xMax = center + halfRange;
+      newXMin = center - halfRange;
+      newXMax = center + halfRange;
     }
 
     if (newYRange > originalYRange * maxZoomOut) {
-      final center = (yMin + yMax) / 2;
+      final center = (newYMin + newYMax) / 2;
       final halfRange = (originalYRange * maxZoomOut) / 2;
-      yMin = center - halfRange;
-      yMax = center + halfRange;
+      newYMin = center - halfRange;
+      newYMax = center + halfRange;
     }
 
     // Prevent zooming in too far
     if (newXRange < originalXRange * minZoomIn) {
-      final center = (xMin + xMax) / 2;
+      final center = (newXMin + newXMax) / 2;
       final halfRange = (originalXRange * minZoomIn) / 2;
-      xMin = center - halfRange;
-      xMax = center + halfRange;
+      newXMin = center - halfRange;
+      newXMax = center + halfRange;
     }
 
     if (newYRange < originalYRange * minZoomIn) {
-      final center = (yMin + yMax) / 2;
+      final center = (newYMin + newYMax) / 2;
       final halfRange = (originalYRange * minZoomIn) / 2;
-      yMin = center - halfRange;
-      yMax = center + halfRange;
+      newYMin = center - halfRange;
+      newYMax = center + halfRange;
     }
 
-    return (xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax);
+    return (xMin: newXMin, xMax: newXMax, yMin: newYMin, yMax: newYMax);
   }
 
-  /// Converts screen X to data X.
+  /// Calculates zoom from mouse wheel delta.
+  double calculateMouseWheelZoom(double scrollDelta) {
+    // Negative delta = scroll up = zoom in
+    // Positive delta = scroll down = zoom out
+    const baseZoomFactor = 0.1;
+    final zoomDelta = -scrollDelta * baseZoomFactor * zoomConfig.zoomSpeed / 100;
+    return 1.0 + zoomDelta.clamp(-0.3, 0.3); // Clamp for smooth zooming
+  }
+
   double _screenXToDataX(double screenX, double dataXMin, double dataXMax) {
     final chartLeft = coordSystem.chartArea.left;
     final chartWidth = coordSystem.chartArea.width;
@@ -311,15 +332,13 @@ class FusionInteractionHandler {
     return dataXMin + (normalized * (dataXMax - dataXMin));
   }
 
-  /// Converts screen Y to data Y.
   double _screenYToDataY(double screenY, double dataYMin, double dataYMax) {
     final chartTop = coordSystem.chartArea.top;
     final chartHeight = coordSystem.chartArea.height;
-    final normalized = 1.0 - ((screenY - chartTop) / chartHeight); // Y inverted
+    final normalized = 1.0 - ((screenY - chartTop) / chartHeight);
     return dataYMin + (normalized * (dataYMax - dataYMin));
   }
 
-  /// Creates gesture recognizers for all enabled interactions.
   Map<Type, GestureRecognizerFactory> buildGestureRecognizers(List<FusionDataPoint> allPoints) {
     return <Type, GestureRecognizerFactory>{
       if (onTap != null)

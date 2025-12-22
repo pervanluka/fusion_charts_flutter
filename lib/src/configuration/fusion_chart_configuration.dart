@@ -5,6 +5,7 @@ import 'package:fusion_charts_flutter/src/configuration/fusion_tooltip_configura
 import '../themes/fusion_chart_theme.dart';
 import '../themes/fusion_light_theme.dart';
 import 'fusion_crosshair_configuration.dart';
+import 'fusion_pan_configuration.dart';
 import 'fusion_zoom_configuration.dart';
 
 /// Base configuration class for all Fusion Charts.
@@ -30,17 +31,15 @@ import 'fusion_zoom_configuration.dart';
 ///   config: FusionLineChartConfiguration(
 ///     theme: FusionDarkTheme(),
 ///     enableAnimation: true,
-///     lineWidth: 2.5,        // Line-specific
-///     enableMarkers: true,   // Line-specific
-///   ),
-///   series: [...],
-/// )
-///
-/// // For bar charts
-/// FusionBarChart(
-///   config: FusionBarChartConfiguration(
-///     theme: FusionDarkTheme(),
-///     enableSideBySideSeriesPlacement: false,  // Bar-specific
+///     enableZoom: true,
+///     enablePanning: true,
+///     zoomBehavior: FusionZoomConfiguration(
+///       zoomMode: FusionZoomMode.x,  // X-axis only zoom
+///       maxZoomLevel: 10.0,
+///     ),
+///     panBehavior: FusionPanConfiguration(
+///       panMode: FusionPanMode.x,  // X-axis only pan
+///     ),
 ///   ),
 ///   series: [...],
 /// )
@@ -53,6 +52,7 @@ class FusionChartConfiguration {
     this.tooltipBehavior = const FusionTooltipBehavior(),
     this.crosshairBehavior = const FusionCrosshairConfiguration(),
     this.zoomBehavior = const FusionZoomConfiguration(),
+    this.panBehavior = const FusionPanConfiguration(),
     this.enableAnimation = true,
     this.enableTooltip = true,
     this.enableCrosshair = true,
@@ -88,7 +88,33 @@ class FusionChartConfiguration {
   final FusionCrosshairConfiguration crosshairBehavior;
 
   /// Zoom behavior configuration.
+  ///
+  /// Controls zoom limits, modes, and gestures.
+  /// Only applies when [enableZoom] is `true`.
+  ///
+  /// ```dart
+  /// zoomBehavior: FusionZoomConfiguration(
+  ///   zoomMode: FusionZoomMode.x,      // X-axis only
+  ///   minZoomLevel: 0.5,               // Max zoom out (200% of data)
+  ///   maxZoomLevel: 10.0,              // Max zoom in (10% of data)
+  ///   enablePinchZoom: true,           // Pinch gesture
+  ///   enableMouseWheelZoom: true,      // Desktop scroll wheel
+  /// )
+  /// ```
   final FusionZoomConfiguration zoomBehavior;
+
+  /// Pan behavior configuration.
+  ///
+  /// Controls pan direction and edge behavior.
+  /// Only applies when [enablePanning] is `true`.
+  ///
+  /// ```dart
+  /// panBehavior: FusionPanConfiguration(
+  ///   panMode: FusionPanMode.x,        // X-axis only
+  ///   edgeBehavior: FusionPanEdgeBehavior.bounce,
+  /// )
+  /// ```
+  final FusionPanConfiguration panBehavior;
 
   // ==========================================================================
   // FEATURE FLAGS (Common to all charts)
@@ -109,12 +135,21 @@ class FusionChartConfiguration {
   /// Default: `true`
   final bool enableCrosshair;
 
-  /// Whether to enable pinch-to-zoom functionality.
+  /// Whether to enable zoom functionality.
+  ///
+  /// When enabled, users can:
+  /// - Pinch to zoom (mobile)
+  /// - Scroll wheel to zoom (desktop)
+  ///
+  /// Configure zoom behavior with [zoomBehavior].
   ///
   /// Default: `false`
   final bool enableZoom;
 
   /// Whether to enable drag-to-pan functionality.
+  ///
+  /// When enabled, users can drag to pan the chart.
+  /// Configure pan behavior with [panBehavior].
   ///
   /// Default: `false`
   final bool enablePanning;
@@ -196,6 +231,7 @@ class FusionChartConfiguration {
     FusionTooltipBehavior? tooltipBehavior,
     FusionCrosshairConfiguration? crosshairBehavior,
     FusionZoomConfiguration? zoomBehavior,
+    FusionPanConfiguration? panBehavior,
     bool? enableAnimation,
     bool? enableTooltip,
     bool? enableCrosshair,
@@ -215,6 +251,7 @@ class FusionChartConfiguration {
       tooltipBehavior: tooltipBehavior ?? this.tooltipBehavior,
       crosshairBehavior: crosshairBehavior ?? this.crosshairBehavior,
       zoomBehavior: zoomBehavior ?? this.zoomBehavior,
+      panBehavior: panBehavior ?? this.panBehavior,
       enableAnimation: enableAnimation ?? this.enableAnimation,
       enableTooltip: enableTooltip ?? this.enableTooltip,
       enableCrosshair: enableCrosshair ?? this.enableCrosshair,
@@ -239,6 +276,7 @@ class FusionChartConfiguration {
         other.tooltipBehavior == tooltipBehavior &&
         other.crosshairBehavior == crosshairBehavior &&
         other.zoomBehavior == zoomBehavior &&
+        other.panBehavior == panBehavior &&
         other.enableAnimation == enableAnimation &&
         other.enableTooltip == enableTooltip &&
         other.enableCrosshair == enableCrosshair &&
@@ -256,11 +294,12 @@ class FusionChartConfiguration {
 
   @override
   int get hashCode {
-    return Object.hash(
+    return Object.hashAll([
       theme,
       tooltipBehavior,
       crosshairBehavior,
       zoomBehavior,
+      panBehavior,
       enableAnimation,
       enableTooltip,
       enableCrosshair,
@@ -274,7 +313,7 @@ class FusionChartConfiguration {
       padding,
       animationDuration,
       animationCurve,
-    );
+    ]);
   }
 
   @override
@@ -282,7 +321,8 @@ class FusionChartConfiguration {
     return 'FusionChartConfiguration('
         'theme: ${theme.runtimeType}, '
         'enableAnimation: $enableAnimation, '
-        'enableTooltip: $enableTooltip'
+        'enableZoom: $enableZoom, '
+        'enablePanning: $enablePanning'
         ')';
   }
 }

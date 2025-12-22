@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -197,6 +198,10 @@ class FusionGridLayer extends FusionRenderLayer {
 
     final chartArea = context.chartArea;
     final dataBounds = context.effectiveViewport;
+    final coordSystem = context.coordSystem;
+    
+    // Y-axis position (where x=dataXMin is rendered)
+    final yAxisX = coordSystem.dataXToScreenX(coordSystem.dataXMin);
 
     // Vertical grid lines
     if (showVertical) {
@@ -226,7 +231,8 @@ class FusionGridLayer extends FusionRenderLayer {
       while (currentY <= dataBounds.bottom) {
         final screenY = context.dataYToScreenY(currentY).roundToDouble();
 
-        canvas.drawLine(Offset(chartArea.left, screenY), Offset(chartArea.right, screenY), paint);
+        // Grid lines start from Y-axis position
+        canvas.drawLine(Offset(yAxisX, screenY), Offset(chartArea.right, screenY), paint);
 
         currentY += yInterval;
       }
@@ -265,15 +271,21 @@ class FusionAxisLayer extends FusionRenderLayer {
     );
 
     final chartArea = context.chartArea;
+    final coordSystem = context.coordSystem;
 
     // ===============================
     // X-AXIS RENDERING
     // ===============================
     if (showXAxis && context.xAxisDefinition != null) {
-      // Draw X-axis line
+      // Y-axis position for proper intersection
+      final yAxisX = coordSystem.dataXToScreenX(coordSystem.dataXMin);
+      
+      // Draw X-axis line starting from Y-axis
+      final xAxisY = chartArea.bottom;
+      
       canvas.drawLine(
-        Offset(chartArea.left, chartArea.bottom),
-        Offset(chartArea.right, chartArea.bottom),
+        Offset(yAxisX, xAxisY),
+        Offset(chartArea.right, xAxisY),
         paint,
       );
 
@@ -292,10 +304,13 @@ class FusionAxisLayer extends FusionRenderLayer {
     // Y-AXIS RENDERING
     // ===============================
     if (showYAxis && context.yAxisDefinition != null) {
-      // Draw Y-axis line
+      // CRITICAL FIX: Draw Y-axis at x=dataXMin position
+      // This ensures the axis passes through the first data point
+      final yAxisX = coordSystem.dataXToScreenX(coordSystem.dataXMin);
+      
       canvas.drawLine(
-        Offset(chartArea.left, chartArea.top),
-        Offset(chartArea.left, chartArea.bottom),
+        Offset(yAxisX, chartArea.top),
+        Offset(yAxisX, chartArea.bottom),
         paint,
       );
 
@@ -321,18 +336,40 @@ class FusionAxisLayer extends FusionRenderLayer {
     FusionAxisRenderer renderer, {
     required bool isVertical,
   }) {
-    final dataBounds = context.effectiveViewport;
-
-    // Calculate axis bounds
-    final dataValues = isVertical
-        ? [dataBounds.top, dataBounds.bottom]
-        : [dataBounds.left, dataBounds.right];
-
-    final axisBounds = renderer.calculateBounds(dataValues);
-
-    // Generate labels
-    final labels = renderer.generateLabels(axisBounds);
-
+    // CRITICAL: Use coordinate system's bounds directly
+    // This ensures labels align EXACTLY with data points
+    final coordBounds = context.coordSystem.dataBounds;
+    
+    // Get the exact min/max from coordinate system
+    final dataMin = isVertical ? coordBounds.top : coordBounds.left;
+    final dataMax = isVertical ? coordBounds.bottom : coordBounds.right;
+    
+    // Check if this is a category axis (for bar charts)
+    final axisDef = isVertical ? context.yAxisDefinition : context.xAxisDefinition;
+    final isCategoryAxis = axisDef?.runtimeType.toString().contains('Category') ?? false;
+    
+    List<AxisLabel> labels;
+    double interval;
+    
+    if (isCategoryAxis) {
+      // Use the renderer for category labels (Q1, Q2, etc.)
+      final axisBounds = renderer.calculateBounds([dataMin, dataMax]);
+      labels = renderer.generateLabels(axisBounds);
+      interval = axisBounds.interval;
+    } else {
+      // Generate nice numeric labels aligned to coordinate system
+      final range = dataMax - dataMin;
+      interval = _calculateNiceInterval(range, 5);
+      labels = _generateAlignedLabels(dataMin, dataMax, interval);
+    }
+    
+    final axisBounds = AxisBounds(
+      min: dataMin, 
+      max: dataMax, 
+      interval: interval, 
+      decimalPlaces: _getDecimalPlaces(interval),
+    );
+    
     // Render each label
     for (final label in labels) {
       if (isVertical) {
@@ -341,6 +378,81 @@ class FusionAxisLayer extends FusionRenderLayer {
         _renderXAxisLabel(canvas, context, label, axisBounds);
       }
     }
+  }
+  
+  /// Calculates a nice interval for the given range.
+  double _calculateNiceInterval(double range, int desiredIntervals) {
+    if (range <= 0) return 1.0;
+    
+    final roughInterval = range / desiredIntervals;
+    
+    // Calculate magnitude using log10
+    final exp = (roughInterval > 0) 
+        ? (log(roughInterval) / ln10).floor() 
+        : 0;
+    final magnitude = pow(10.0, exp).toDouble();
+    
+    final normalized = roughInterval / magnitude;
+    
+    double niceFraction;
+    if (normalized < 1.5) {
+      niceFraction = 1.0;
+    } else if (normalized < 3.0) {
+      niceFraction = 2.0;
+    } else if (normalized < 7.0) {
+      niceFraction = 5.0;
+    } else {
+      niceFraction = 10.0;
+    }
+    
+    return niceFraction * magnitude;
+  }
+  
+  int _getDecimalPlaces(double interval) {
+    if (interval >= 1) return 0;
+    if (interval >= 0.1) return 1;
+    if (interval >= 0.01) return 2;
+    return 3;
+  }
+  
+  /// Generates labels aligned to the coordinate system bounds.
+  List<AxisLabel> _generateAlignedLabels(double min, double max, double interval) {
+    final labels = <AxisLabel>[];
+    
+    // Start from a nice number at or before min
+    double start = (min / interval).floor() * interval;
+    if (start < min - interval * 0.01) start += interval;
+    
+    double current = start;
+    while (current <= max + interval * 0.01) {
+      // Clean floating point
+      final cleanValue = (current * 1000000).round() / 1000000;
+      
+      // Only include if within bounds (with small tolerance)
+      if (cleanValue >= min - interval * 0.01 && cleanValue <= max + interval * 0.01) {
+        final position = (cleanValue - min) / (max - min);
+        labels.add(AxisLabel(
+          value: cleanValue,
+          text: _formatValue(cleanValue, interval),
+          position: position.clamp(0.0, 1.0),
+        ));
+      }
+      
+      current += interval;
+      
+      // Safety limit
+      if (labels.length > 20) break;
+    }
+    
+    return labels;
+  }
+  
+  String _formatValue(double value, double interval) {
+    final decimals = _getDecimalPlaces(interval);
+    if (decimals == 0) {
+      return value.round().toString();
+    }
+    return value.toStringAsFixed(decimals);
   }
 
   /// Renders an X-axis label.
@@ -353,12 +465,12 @@ class FusionAxisLayer extends FusionRenderLayer {
     final chartArea = context.chartArea;
     final position = context.xAxis?.getEffectivePosition(isVertical: false) ?? AxisPosition.bottom;
 
-    // Convert data value to screen position
-    final screenX =
-        chartArea.left + ((label.value - bounds.min) / (bounds.max - bounds.min)) * chartArea.width;
+    // CRITICAL FIX: Use coordinate system for proper alignment with data points
+    // The label.value is in data space, so use coordSystem to convert to screen space
+    final screenX = context.coordSystem.dataXToScreenX(label.value);
 
-    // Skip if outside chart area
-    if (screenX < chartArea.left || screenX > chartArea.right) {
+    // Skip if outside chart area (with small tolerance)
+    if (screenX < chartArea.left - 1 || screenX > chartArea.right + 1) {
       return;
     }
 
@@ -418,13 +530,15 @@ class FusionAxisLayer extends FusionRenderLayer {
     final chartArea = context.chartArea;
     final position = context.yAxis?.getEffectivePosition(isVertical: true) ?? AxisPosition.left;
 
-    // Convert data value to screen position
-    final screenY =
-        chartArea.bottom -
-        ((label.value - bounds.min) / (bounds.max - bounds.min)) * chartArea.height;
+    // CRITICAL FIX: Use coordinate system for proper alignment with data points
+    // The label.value is in data space, so use coordSystem to convert to screen space
+    final screenY = context.coordSystem.dataYToScreenY(label.value);
+    
+    // Y-axis is drawn at x=dataXMin, so ticks and labels should align with it
+    final yAxisX = context.coordSystem.dataXToScreenX(context.coordSystem.dataXMin);
 
-    // Skip if outside chart area
-    if (screenY < chartArea.top || screenY > chartArea.bottom) {
+    // Skip if outside chart area (with small tolerance)
+    if (screenY < chartArea.top - 1 || screenY > chartArea.bottom + 1) {
       return;
     }
 
@@ -435,20 +549,19 @@ class FusionAxisLayer extends FusionRenderLayer {
       textDirection: TextDirection.ltr,
     )..layout();
 
-    // 🆕 POSITION-AWARE RENDERING
     final Offset labelOffset;
     final Offset tickStart;
     final Offset tickEnd;
 
     switch (position) {
       case AxisPosition.left:
-        // Default: Labels to the left of axis
+        // Default: Labels to the left of axis (use yAxisX for alignment)
         labelOffset = Offset(
-          chartArea.left - textPainter.width - 8,
+          yAxisX - textPainter.width - 8,
           screenY - (textPainter.height / 2),
         );
-        tickStart = Offset(chartArea.left - 5, screenY);
-        tickEnd = Offset(chartArea.left, screenY);
+        tickStart = Offset(yAxisX - 5, screenY);
+        tickEnd = Offset(yAxisX, screenY);
         break;
 
       case AxisPosition.right:
@@ -461,11 +574,11 @@ class FusionAxisLayer extends FusionRenderLayer {
       default:
         // Should not happen for Y-axis
         labelOffset = Offset(
-          chartArea.left - textPainter.width - 8,
+          yAxisX - textPainter.width - 8,
           screenY - (textPainter.height / 2),
         );
-        tickStart = Offset(chartArea.left - 5, screenY);
-        tickEnd = Offset(chartArea.left, screenY);
+        tickStart = Offset(yAxisX - 5, screenY);
+        tickEnd = Offset(yAxisX, screenY);
     }
 
     // Draw label

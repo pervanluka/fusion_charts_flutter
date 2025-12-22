@@ -134,8 +134,8 @@ class FusionBarChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Build render pipeline if not cached
-    _pipeline ??= _buildRenderPipeline(size);
+    // Always rebuild pipeline to ensure config changes are reflected
+    _pipeline = _buildRenderPipeline(size);
 
     // Create render context
     final context = _createRenderContext(size);
@@ -192,7 +192,7 @@ class FusionBarChartPainter extends CustomPainter {
           FusionCrosshairLayer(
             position: crosshairPosition!,
             snappedPoint: crosshairPoint,
-            crosshairConfig: FusionCrosshairConfiguration(),
+            crosshairConfig: effectiveConfig.crosshairBehavior,
           ),
       ],
       enableProfiling: false,
@@ -235,21 +235,25 @@ class FusionBarChartPainter extends CustomPainter {
 
   // Determine X-axis type for bars
   FusionAxisBase _determineXAxisType(List<FusionBarSeries> series) {
-    // For vertical bars, X-axis can be category
-    // Check if all series have labels
+    if (series.isEmpty) return const FusionNumericAxis();
+    
+    // For bar charts, X-axis should always be category-like
+    // Check if all series have string labels
     final hasLabels = series.every(
       (s) => s.dataPoints.every((p) => p.label != null && p.label!.isNotEmpty),
     );
 
     if (hasLabels) {
-      // Extract categories from first series
+      // Use provided string labels
       final categories = series.first.dataPoints.map((p) => p.label!).toList();
-
       return FusionCategoryAxis(categories: categories);
     }
 
-    // Default to numeric
-    return const FusionNumericAxis();
+    // No labels provided - create category axis with index labels (0, 1, 2, ...)
+    // This ensures bars align with axis labels and grid lines
+    final pointCount = series.first.dataPoints.length;
+    final categories = List.generate(pointCount, (i) => i.toString());
+    return FusionCategoryAxis(categories: categories);
   }
 
   // Determine Y-axis type for bars
@@ -290,8 +294,11 @@ class FusionBarChartPainter extends CustomPainter {
       return Rect.fromLTRB(0, 0, 10, 100);
     }
 
-    final minX = allPoints.map((p) => p.x).reduce((a, b) => a < b ? a : b);
-    final maxX = allPoints.map((p) => p.x).reduce((a, b) => a > b ? a : b);
+    // For bar charts, X bounds should include half-bar padding
+    // This centers bars within their grid cells
+    final pointCount = series.first.dataPoints.length;
+    final minX = -0.5; // Half bar width before first bar
+    final maxX = pointCount - 0.5; // Half bar width after last bar
 
     // For bars, we want to start at 0 (baseline)
     final minY = 0.0;

@@ -292,11 +292,9 @@ class FusionStackedBarSeriesRenderer {
     required _StackedValue stackValue,
     required double animationProgress,
   }) {
-    // Category center X - bar is centered within each category slot
-    // categoryWidth includes spacing on both sides, so center is at:
-    // chartArea.left + (pointIndex * categoryWidth) + (categoryWidth / 2)
-    double barCenterX =
-        chartArea.left + (pointIndex * layout.categoryWidth) + (layout.categoryWidth / 2);
+    // CRITICAL FIX: Use coordinate system for positioning
+    // This ensures bars align perfectly with axis labels
+    double barCenterX = context.dataXToScreenX(pointIndex.toDouble());
 
     // Offset for multiple groups
     if (totalGroups > 1) {
@@ -332,12 +330,9 @@ class FusionStackedBarSeriesRenderer {
     required _StackedValue stackValue,
     required double animationProgress,
   }) {
-    // Category center Y (for horizontal bars, Y is the category axis)
-    double barCenterY =
-        chartArea.top +
-        layout.categorySpacing +
-        (pointIndex * layout.categoryWidth) +
-        (layout.categoryWidth / 2);
+    // CRITICAL FIX: Use coordinate system for positioning
+    // This ensures bars align perfectly with axis labels
+    double barCenterY = context.dataYToScreenY(pointIndex.toDouble());
 
     // Offset for multiple groups
     if (totalGroups > 1) {

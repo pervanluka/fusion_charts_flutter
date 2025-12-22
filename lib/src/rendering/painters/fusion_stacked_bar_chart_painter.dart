@@ -57,7 +57,8 @@ class FusionStackedBarChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    _pipeline ??= _buildRenderPipeline(size);
+    // Always rebuild pipeline to ensure config changes are reflected
+    _pipeline = _buildRenderPipeline(size);
 
     final context = _createRenderContext(size);
 
@@ -99,7 +100,7 @@ class FusionStackedBarChartPainter extends CustomPainter {
           FusionCrosshairLayer(
             position: crosshairPosition!,
             snappedPoint: crosshairPoint,
-            crosshairConfig: FusionCrosshairConfiguration(),
+            crosshairConfig: effectiveConfig.crosshairBehavior,
           ),
       ],
       enableProfiling: false,

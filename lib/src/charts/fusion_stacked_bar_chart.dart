@@ -6,6 +6,7 @@ import '../configuration/fusion_axis_configuration.dart';
 import '../configuration/fusion_stacked_tooltip_builder.dart';
 import '../configuration/fusion_tooltip_configuration.dart';
 import '../configuration/fusion_crosshair_configuration.dart';
+import '../configuration/fusion_pan_configuration.dart';
 import '../configuration/fusion_zoom_configuration.dart';
 import '../data/fusion_data_point.dart';
 import '../rendering/fusion_coordinate_system.dart';
@@ -144,6 +145,7 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
       tooltipBehavior: config?.tooltipBehavior ?? const FusionTooltipBehavior(),
       crosshairBehavior: config?.crosshairBehavior ?? const FusionCrosshairConfiguration(),
       zoomBehavior: config?.zoomBehavior ?? const FusionZoomConfiguration(),
+      panBehavior: config?.panBehavior ?? const FusionPanConfiguration(),
       enableAnimation: config?.enableAnimation ?? true,
       enableTooltip: config?.enableTooltip ?? true,
       enableCrosshair: config?.enableCrosshair ?? true,
@@ -302,13 +304,14 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
                       onPointerUp: _interactiveState.handlePointerUp,
                       onPointerCancel: _interactiveState.handlePointerCancel,
                       onPointerHover: _interactiveState.handlePointerHover,
+                      onPointerSignal: _interactiveState.handlePointerSignal,
                       child: RawGestureDetector(
                         gestures: _interactiveState.getGestureRecognizers(),
                         child: CustomPaint(
                           size: size,
                           painter: FusionStackedBarChartPainter(
                             series: widget.series,
-                            coordSystem: _coordSystem!,
+                            coordSystem: _interactiveState.coordSystem,
                             theme: config.theme,
                             xAxis: widget.xAxis,
                             yAxis: widget.yAxis,

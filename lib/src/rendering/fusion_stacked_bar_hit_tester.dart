@@ -82,23 +82,29 @@ class FusionStackedBarHitTester {
     final categorySpacing = categoryWidth * 0.1;
     final barWidth = (categoryWidth - categorySpacing * 2) * (visibleSeries.first.barWidth);
 
-    // Find which category (X index) was hit
-    final relativeX = screenPosition.dx - chartArea.left;
-    final categoryIndex = (relativeX / categoryWidth).floor();
+    // Find which category (X index) was hit by checking each bar
+    int? categoryIndex;
+    double? barCenterX;
+    
+    for (int i = 0; i < pointCount; i++) {
+      // CRITICAL FIX: Use coordinate system for positioning
+      // This ensures hit testing aligns perfectly with rendered bars
+      final centerX = coordSystem.dataXToScreenX(i.toDouble());
+      final left = centerX - barWidth / 2;
+      final right = centerX + barWidth / 2;
+      
+      // Check if X is within bar bounds (with small tolerance)
+      if (screenPosition.dx >= left - 4 && screenPosition.dx <= right + 4) {
+        categoryIndex = i;
+        barCenterX = centerX;
+        break;
+      }
+    }
 
-    if (categoryIndex < 0 || categoryIndex >= pointCount) return null;
+    if (categoryIndex == null || barCenterX == null) return null;
 
-    // Calculate the X bounds of this category's bar
-    // Must match renderer logic: bar is centered within each category slot
-    // chartArea.left + (pointIndex * categoryWidth) + (categoryWidth / 2)
-    final barCenterX = chartArea.left + (categoryIndex * categoryWidth) + (categoryWidth / 2);
     final barLeft = barCenterX - barWidth / 2;
     final barRight = barCenterX + barWidth / 2;
-
-    // Check if X is within bar bounds (with small tolerance)
-    if (screenPosition.dx < barLeft - 4 || screenPosition.dx > barRight + 4) {
-      return null;
-    }
 
     // Calculate stacked data for this category
     final segments = <StackedSegmentInfo>[];

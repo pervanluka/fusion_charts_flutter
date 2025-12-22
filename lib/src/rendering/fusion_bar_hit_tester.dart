@@ -291,15 +291,15 @@ class FusionBarHitTester {
     double barCenterX;
 
     if (layout.useCategoryPositioning) {
-      barCenterX =
-          chartArea.left +
-          layout.categorySpacing +
-          (pointIndex * layout.categoryWidth) +
-          (layout.categoryWidth / 2);
+      // CRITICAL FIX: Use coordinate system for positioning
+      // This ensures hit testing aligns perfectly with rendered bars
+      barCenterX = coordSystem.dataXToScreenX(pointIndex.toDouble());
 
       if (totalSeriesCount > 1 && enableSideBySideSeriesPlacement) {
-        final groupStartX = barCenterX - (layout.groupWidth / 2);
-        final barOffset = (seriesIndex * (layout.barWidth + layout.barSpacing));
+        final totalGroupWidth =
+            totalSeriesCount * layout.barWidth + (totalSeriesCount - 1) * layout.barSpacing;
+        final groupStartX = barCenterX - (totalGroupWidth / 2);
+        final barOffset = seriesIndex * (layout.barWidth + layout.barSpacing);
         barCenterX = groupStartX + barOffset + (layout.barWidth / 2);
       }
     } else {
@@ -341,14 +341,14 @@ class FusionBarHitTester {
     double barCenterY;
 
     if (layout.useCategoryPositioning) {
-      barCenterY =
-          chartArea.top +
-          layout.categorySpacing +
-          (pointIndex * layout.categoryWidth) +
-          (layout.categoryWidth / 2);
+      // CRITICAL FIX: Use coordinate system for positioning
+      // This ensures hit testing aligns perfectly with rendered bars
+      barCenterY = coordSystem.dataYToScreenY(pointIndex.toDouble());
 
       if (totalSeriesCount > 1 && enableSideBySideSeriesPlacement) {
-        final groupStartY = barCenterY - (layout.groupWidth / 2);
+        final totalGroupWidth =
+            totalSeriesCount * layout.barWidth + (totalSeriesCount - 1) * layout.barSpacing;
+        final groupStartY = barCenterY - (totalGroupWidth / 2);
         final barOffset = seriesIndex * (layout.barWidth + layout.barSpacing);
         barCenterY = groupStartY + barOffset + (layout.barWidth / 2);
       }
