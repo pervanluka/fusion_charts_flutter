@@ -169,6 +169,20 @@ class FusionRenderPipeline {
   }
 
   // ==========================================================================
+  // LIFECYCLE
+  // ==========================================================================
+
+  /// Disposes all layers and releases resources.
+  ///
+  /// **IMPORTANT**: Call this before creating a new pipeline to prevent
+  /// memory leaks from cached Picture objects in layers.
+  void dispose() {
+    for (final layer in layers) {
+      layer.dispose();
+    }
+  }
+
+  // ==========================================================================
   // PROFILING
   // ==========================================================================
   /// Gets performance report.

@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 
 import '../../charts/fusion_stacked_bar_interactive_state.dart';
-import '../../core/axis/base/fusion_axis_base.dart';
-import '../../core/axis/category/fusion_category_axis.dart';
-import '../../core/axis/numeric/fusion_numeric_axis.dart';
 import '../engine/fusion_render_pipeline.dart';
 import '../engine/fusion_render_context.dart';
 import '../engine/fusion_paint_pool.dart';
@@ -57,6 +54,9 @@ class FusionStackedBarChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Dispose previous pipeline to prevent memory leaks from cached Picture objects
+    _pipeline?.dispose();
+
     // Always rebuild pipeline to ensure config changes are reflected
     _pipeline = _buildRenderPipeline(size);
 
@@ -158,7 +158,7 @@ class FusionStackedBarChartPainter extends CustomPainter {
     if (yAxis?.axisType != null) {
       return yAxis!.axisType!;
     }
-    
+
     // Default: numeric for stacked values
     return const FusionNumericAxis();
   }

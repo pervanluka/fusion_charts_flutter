@@ -10,7 +10,6 @@ import '../configuration/fusion_pan_configuration.dart';
 import '../configuration/fusion_zoom_configuration.dart';
 import '../data/fusion_data_point.dart';
 import '../rendering/fusion_coordinate_system.dart';
-import '../rendering/fusion_render_cache.dart';
 import '../rendering/engine/fusion_paint_pool.dart';
 import '../rendering/engine/fusion_shader_cache.dart';
 import 'fusion_bar_interactive_state.dart';
@@ -109,7 +108,6 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
   late AnimationController _animationController;
   late Animation<double> _animation;
   late FusionBarInteractiveState _interactiveState;
-  final FusionRenderCache _cache = FusionRenderCache();
   final FusionPaintPool _paintPool = FusionPaintPool();
   final FusionShaderCache _shaderCache = FusionShaderCache();
 
@@ -228,7 +226,6 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
     super.didUpdateWidget(oldWidget);
 
     if (widget.series != oldWidget.series || widget.config != oldWidget.config) {
-      _cache.clear();
       _cachedCoordSystem = null;
       _cachedSeriesHash = null;
 

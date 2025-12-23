@@ -115,6 +115,9 @@ class FusionLineChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Dispose previous pipeline to prevent memory leaks from cached Picture objects
+    _pipeline?.dispose();
+    
     // Build render pipeline
     _pipeline = _buildRenderPipeline(size);
 

@@ -9,7 +9,6 @@ import '../configuration/fusion_chart_configuration.dart';
 import '../configuration/fusion_axis_configuration.dart';
 import '../data/fusion_data_point.dart';
 import '../rendering/fusion_coordinate_system.dart';
-import '../rendering/fusion_render_cache.dart';
 import 'fusion_interactive_chart.dart';
 import '../rendering/engine/fusion_paint_pool.dart';
 import '../rendering/engine/fusion_shader_cache.dart';
@@ -44,7 +43,6 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
   late AnimationController _animationController;
   late Animation<double> _animation;
   late FusionInteractiveChartState _interactiveState;
-  final FusionRenderCache _cache = FusionRenderCache();
   final FusionPaintPool _paintPool = FusionPaintPool();
   final FusionShaderCache _shaderCache = FusionShaderCache();
 
@@ -127,8 +125,6 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
     super.didUpdateWidget(oldWidget);
 
     if (widget.series != oldWidget.series) {
-      _cache.clear();
-
       _animationController.reset();
       _animationController.forward();
 

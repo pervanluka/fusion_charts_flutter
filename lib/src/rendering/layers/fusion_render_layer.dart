@@ -188,6 +188,9 @@ class FusionGridLayer extends FusionRenderLayer {
   final double? horizontalInterval;
   final double? verticalInterval;
 
+  /// Maximum iterations to prevent infinite loops from floating-point errors.
+  static const int _maxIterations = 100;
+
   @override
   void paint(Canvas canvas, Size size, FusionRenderContext context) {
     final paint = context.getPaint(
@@ -210,13 +213,17 @@ class FusionGridLayer extends FusionRenderLayer {
           context.xAxis?.getEffectiveInterval(dataBounds.left, dataBounds.right) ??
           1.0;
 
-      double currentX = dataBounds.left;
-      while (currentX <= dataBounds.right) {
-        final screenX = context.dataXToScreenX(currentX).roundToDouble();
-
-        canvas.drawLine(Offset(screenX, chartArea.top), Offset(screenX, chartArea.bottom), paint);
-
-        currentX += xInterval;
+      // Safety: ensure positive interval
+      if (xInterval > 0) {
+        double currentX = dataBounds.left;
+        int iterations = 0;
+        
+        while (currentX <= dataBounds.right && iterations < _maxIterations) {
+          final screenX = context.dataXToScreenX(currentX).roundToDouble();
+          canvas.drawLine(Offset(screenX, chartArea.top), Offset(screenX, chartArea.bottom), paint);
+          currentX += xInterval;
+          iterations++;
+        }
       }
     }
 
@@ -227,14 +234,18 @@ class FusionGridLayer extends FusionRenderLayer {
           context.yAxis?.getEffectiveInterval(dataBounds.top, dataBounds.bottom) ??
           10.0;
 
-      double currentY = dataBounds.top;
-      while (currentY <= dataBounds.bottom) {
-        final screenY = context.dataYToScreenY(currentY).roundToDouble();
-
-        // Grid lines start from Y-axis position
-        canvas.drawLine(Offset(yAxisX, screenY), Offset(chartArea.right, screenY), paint);
-
-        currentY += yInterval;
+      // Safety: ensure positive interval
+      if (yInterval > 0) {
+        double currentY = dataBounds.top;
+        int iterations = 0;
+        
+        while (currentY <= dataBounds.bottom && iterations < _maxIterations) {
+          final screenY = context.dataYToScreenY(currentY).roundToDouble();
+          // Grid lines start from Y-axis position
+          canvas.drawLine(Offset(yAxisX, screenY), Offset(chartArea.right, screenY), paint);
+          currentY += yInterval;
+          iterations++;
+        }
       }
     }
 
