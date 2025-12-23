@@ -118,7 +118,7 @@ class FusionLineChartPainter extends CustomPainter {
     // Build render pipeline
     _pipeline = _buildRenderPipeline(size);
 
-    // Create render context using coordSystem.chartArea (already correctly calculated by widget)
+    // Create render context using coordSystem.chartArea
     final context = _createRenderContext(size);
 
     // Execute render pipeline

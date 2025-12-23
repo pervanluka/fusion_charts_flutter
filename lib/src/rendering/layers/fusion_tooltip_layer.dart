@@ -302,26 +302,36 @@ class FusionTooltipLayer extends FusionRenderLayer {
       tooltipY = dataPointScreen.dy + markerRadius + verticalGap;
     } else {
       // Not enough space above or below - center vertically
-      tooltipY = (dataPointScreen.dy - tooltipSize.height / 2).clamp(
-        chartArea.top + boundaryPadding,
-        chartArea.bottom - tooltipSize.height - boundaryPadding,
-      );
+      final minY = chartArea.top + boundaryPadding;
+      final maxY = chartArea.bottom - tooltipSize.height - boundaryPadding;
+      // Handle case where tooltip is taller than chart area
+      if (maxY < minY) {
+        tooltipY = chartArea.top; // Just align to top
+      } else {
+        tooltipY = (dataPointScreen.dy - tooltipSize.height / 2).clamp(minY, maxY);
+      }
     }
 
     // Determine horizontal position (centered on data point)
     double tooltipX = dataPointScreen.dx - tooltipSize.width / 2;
 
-    // Apply boundary collision detection
-    tooltipX = tooltipX.clamp(
-      chartArea.left + horizontalPadding,
-      chartArea.right - tooltipSize.width - horizontalPadding,
-    );
+    // Apply boundary collision detection with safe clamp
+    final minX = chartArea.left + horizontalPadding;
+    final maxX = chartArea.right - tooltipSize.width - horizontalPadding;
+    // Handle case where tooltip is wider than chart area
+    if (maxX < minX) {
+      // Center the tooltip as best we can
+      tooltipX = chartArea.left + (chartArea.width - tooltipSize.width) / 2;
+    } else {
+      tooltipX = tooltipX.clamp(minX, maxX);
+    }
 
-    // Ensure tooltip stays within chart bounds vertically
-    tooltipY = tooltipY.clamp(
-      chartArea.top + boundaryPadding,
-      chartArea.bottom - tooltipSize.height - boundaryPadding,
-    );
+    // Ensure tooltip stays within chart bounds vertically with safe clamp
+    final minYFinal = chartArea.top + boundaryPadding;
+    final maxYFinal = chartArea.bottom - tooltipSize.height - boundaryPadding;
+    if (maxYFinal >= minYFinal) {
+      tooltipY = tooltipY.clamp(minYFinal, maxYFinal);
+    }
 
     return Offset(tooltipX, tooltipY);
   }
