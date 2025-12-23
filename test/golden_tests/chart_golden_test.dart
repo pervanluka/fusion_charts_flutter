@@ -5,11 +5,14 @@ import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 void main() {
   group('Chart Golden Tests', () {
     testWidgets('line chart matches golden', (tester) async {
+      final chartKey = GlobalKey();
+      
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             backgroundColor: Colors.white,
             body: RepaintBoundary(
+              key: chartKey,
               child: SizedBox(
                 width: 400,
                 height: 300,
@@ -42,17 +45,20 @@ void main() {
       await tester.pumpAndSettle();
 
       await expectLater(
-        find.byType(RepaintBoundary),
+        find.byKey(chartKey),
         matchesGoldenFile('goldens/line_chart.png'),
       );
     });
 
     testWidgets('bar chart matches golden', (tester) async {
+      final chartKey = GlobalKey();
+      
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             backgroundColor: Colors.white,
             body: RepaintBoundary(
+              key: chartKey,
               child: SizedBox(
                 width: 400,
                 height: 300,
@@ -84,17 +90,20 @@ void main() {
       await tester.pumpAndSettle();
 
       await expectLater(
-        find.byType(RepaintBoundary),
+        find.byKey(chartKey),
         matchesGoldenFile('goldens/bar_chart.png'),
       );
     });
 
     testWidgets('dark theme line chart matches golden', (tester) async {
+      final chartKey = GlobalKey();
+      
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             backgroundColor: const Color(0xFF1F2937),
             body: RepaintBoundary(
+              key: chartKey,
               child: Container(
                 color: const Color(0xFF1F2937),
                 width: 400,
@@ -128,17 +137,20 @@ void main() {
       await tester.pumpAndSettle();
 
       await expectLater(
-        find.byType(RepaintBoundary),
+        find.byKey(chartKey),
         matchesGoldenFile('goldens/dark_theme_line_chart.png'),
       );
     });
 
     testWidgets('stacked bar chart matches golden', (tester) async {
+      final chartKey = GlobalKey();
+      
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             backgroundColor: Colors.white,
             body: RepaintBoundary(
+              key: chartKey,
               child: SizedBox(
                 width: 400,
                 height: 300,
@@ -178,7 +190,7 @@ void main() {
       await tester.pumpAndSettle();
 
       await expectLater(
-        find.byType(RepaintBoundary),
+        find.byKey(chartKey),
         matchesGoldenFile('goldens/stacked_bar_chart.png'),
       );
     });
