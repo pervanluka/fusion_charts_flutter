@@ -219,14 +219,14 @@ class FusionLineChartPainter extends CustomPainter {
     );
   }
 
-  /// Determine X-axis type.
+  /// Determine X-axis type from configuration or default to numeric.
   FusionAxisBase _determineXAxisType(List<FusionLineSeries> series) {
-    return const FusionNumericAxis();
+    return xAxis?.axisType ?? const FusionNumericAxis();
   }
 
-  /// Determine Y-axis type.
+  /// Determine Y-axis type from configuration or default to numeric.
   FusionAxisBase _determineYAxisType(List<FusionLineSeries> series) {
-    return const FusionNumericAxis();
+    return yAxis?.axisType ?? const FusionNumericAxis();
   }
 
   /// Calculates data bounds from all visible series.

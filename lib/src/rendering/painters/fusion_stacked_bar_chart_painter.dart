@@ -112,7 +112,7 @@ class FusionStackedBarChartPainter extends CustomPainter {
     final dataBounds = _calculateDataBounds();
 
     final xAxisDefinition = _determineXAxisType();
-    final yAxisDefinition = const FusionNumericAxis();
+    final yAxisDefinition = _determineYAxisType();
 
     return FusionRenderContext(
       chartArea: chartArea,
@@ -132,7 +132,14 @@ class FusionStackedBarChartPainter extends CustomPainter {
     );
   }
 
+  /// Determine X-axis type from configuration or auto-detect.
   FusionAxisBase _determineXAxisType() {
+    // 1. User-provided axis type takes priority
+    if (xAxis?.axisType != null) {
+      return xAxis!.axisType!;
+    }
+
+    // 2. Auto-detect from data labels
     final hasLabels = series.every(
       (s) => s.dataPoints.every((p) => p.label != null && p.label!.isNotEmpty),
     );
@@ -142,6 +149,17 @@ class FusionStackedBarChartPainter extends CustomPainter {
       return FusionCategoryAxis(categories: categories);
     }
 
+    return const FusionNumericAxis();
+  }
+
+  /// Determine Y-axis type from configuration or default to numeric.
+  FusionAxisBase _determineYAxisType() {
+    // User-provided axis type takes priority
+    if (yAxis?.axisType != null) {
+      return yAxis!.axisType!;
+    }
+    
+    // Default: numeric for stacked values
     return const FusionNumericAxis();
   }
 

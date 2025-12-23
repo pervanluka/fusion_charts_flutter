@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/axis/base/fusion_axis_base.dart';
 import '../core/enums/axis_position.dart';
 import '../core/enums/label_alignment.dart';
 
@@ -27,6 +28,7 @@ import '../core/enums/label_alignment.dart';
 /// ```
 class FusionAxisConfiguration {
   const FusionAxisConfiguration({
+    this.axisType,
     this.min,
     this.max,
     this.interval,
@@ -64,6 +66,40 @@ class FusionAxisConfiguration {
     this.axisLineWidth,
     this.rangePadding,
   });
+
+  // ==========================================================================
+  // AXIS TYPE
+  // ==========================================================================
+
+  /// The axis type definition.
+  ///
+  /// Determines how data is interpreted and displayed on this axis:
+  /// - [FusionNumericAxis] - Continuous numeric values (default)
+  /// - [FusionCategoryAxis] - Discrete string categories
+  /// - [FusionDateTimeAxis] - Time-series data with smart date formatting
+  ///
+  /// If null, defaults to [FusionNumericAxis].
+  ///
+  /// ## Example
+  ///
+  /// ```dart
+  /// // DateTime axis for time series
+  /// FusionAxisConfiguration(
+  ///   axisType: FusionDateTimeAxis(
+  ///     min: DateTime(2024, 1, 1),
+  ///     max: DateTime(2024, 12, 31),
+  ///     dateFormat: DateFormat('MMM yyyy'),
+  ///   ),
+  /// )
+  ///
+  /// // Category axis for bar charts
+  /// FusionAxisConfiguration(
+  ///   axisType: FusionCategoryAxis(
+  ///     categories: ['Q1', 'Q2', 'Q3', 'Q4'],
+  ///   ),
+  /// )
+  /// ```
+  final FusionAxisBase? axisType;
 
   // ==========================================================================
   // RANGE PROPERTIES
@@ -403,6 +439,7 @@ class FusionAxisConfiguration {
 
   /// Creates a copy of this configuration with modified values.
   FusionAxisConfiguration copyWith({
+    FusionAxisBase? axisType,
     double? min,
     double? max,
     double? interval,
@@ -441,6 +478,7 @@ class FusionAxisConfiguration {
     double? rangePadding,
   }) {
     return FusionAxisConfiguration(
+      axisType: axisType ?? this.axisType,
       min: min ?? this.min,
       max: max ?? this.max,
       interval: interval ?? this.interval,
@@ -487,6 +525,7 @@ class FusionAxisConfiguration {
   @override
   String toString() {
     return 'FusionAxisConfiguration('
+        'axisType: ${axisType?.runtimeType ?? "auto"}, '
         'min: $min, '
         'max: $max, '
         'interval: $interval, '
@@ -501,6 +540,7 @@ class FusionAxisConfiguration {
     if (identical(this, other)) return true;
 
     return other is FusionAxisConfiguration &&
+        other.axisType == axisType &&
         other.min == min &&
         other.max == max &&
         other.interval == interval &&
@@ -515,6 +555,7 @@ class FusionAxisConfiguration {
   @override
   int get hashCode {
     return Object.hash(
+      axisType,
       min,
       max,
       interval,

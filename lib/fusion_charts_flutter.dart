@@ -240,6 +240,22 @@ export 'src/core/enums/text_anchor.dart';
 export 'src/core/enums/fusion_label_alignment_strategy.dart';
 
 // ============================================================================
+// AXIS TYPES
+// ============================================================================
+
+/// Base axis class (for type checking and extension).
+export 'src/core/axis/base/fusion_axis_base.dart';
+
+/// Numeric axis for continuous numerical data.
+export 'src/core/axis/numeric/fusion_numeric_axis.dart';
+
+/// Category axis for discrete labeled data (bar charts, etc.).
+export 'src/core/axis/category/fusion_category_axis.dart';
+
+/// DateTime axis for time-series data with smart formatting.
+export 'src/core/axis/datetime/fusion_datetime_axis.dart';
+
+// ============================================================================
 // CORE MODELS - Axis
 // ============================================================================
 

@@ -233,8 +233,14 @@ class FusionBarChartPainter extends CustomPainter {
     );
   }
 
-  // Determine X-axis type for bars
+  /// Determine X-axis type from configuration or auto-detect for bars.
   FusionAxisBase _determineXAxisType(List<FusionBarSeries> series) {
+    // 1. User-provided axis type takes priority
+    if (xAxis?.axisType != null) {
+      return xAxis!.axisType!;
+    }
+
+    // 2. Auto-detect for bar charts
     if (series.isEmpty) return const FusionNumericAxis();
     
     // For bar charts, X-axis should always be category-like
@@ -256,9 +262,14 @@ class FusionBarChartPainter extends CustomPainter {
     return FusionCategoryAxis(categories: categories);
   }
 
-  // Determine Y-axis type for bars
+  /// Determine Y-axis type from configuration or default to numeric.
   FusionAxisBase _determineYAxisType(List<FusionBarSeries> series) {
-    // Always numeric for bar values
+    // User-provided axis type takes priority
+    if (yAxis?.axisType != null) {
+      return yAxis!.axisType!;
+    }
+    
+    // Default: numeric for bar values
     return const FusionNumericAxis();
   }
 
