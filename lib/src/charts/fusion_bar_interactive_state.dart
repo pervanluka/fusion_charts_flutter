@@ -390,11 +390,27 @@ class FusionBarInteractiveState extends ChangeNotifier {
   // CROSSHAIR MANAGEMENT
   // ========================================================================
 
-  void _showCrosshair(Offset position, FusionDataPoint? snappedPoint) {
+  void _showCrosshair(Offset position, BarHitTestResult? hitResult) {
     _crosshairHideTimer?.cancel();
     _crosshairPosition = position;
-    _crosshairPoint = snappedPoint;
+    
+    // For bar charts, create a synthetic point with index as X for correct crosshair positioning
+    // The crosshair layer uses point.x for screen position calculation
+    if (hitResult != null) {
+      _crosshairPoint = FusionDataPoint(
+        hitResult.pointIndex.toDouble(),  // Use index, not original x value
+        hitResult.point.y,
+        label: hitResult.point.label ?? _formatXLabel(hitResult.point.x),
+      );
+    } else {
+      _crosshairPoint = null;
+    }
     notifyListeners();
+  }
+  
+  /// Formats X value as label string
+  String _formatXLabel(double x) {
+    return x == x.roundToDouble() ? x.round().toString() : x.toString();
   }
   
   /// Updates crosshair position during drag, with coordinate system clamping.
@@ -429,11 +445,24 @@ class FusionBarInteractiveState extends ChangeNotifier {
         hitResult.barRect.top,
       );
       _crosshairPosition = snappedPosition;
-      _crosshairPoint = hitResult.point;
+      // Use index-based point for correct crosshair rendering
+      _crosshairPoint = FusionDataPoint(
+        hitResult.pointIndex.toDouble(),
+        hitResult.point.y,
+        label: hitResult.point.label ?? _formatXLabel(hitResult.point.x),
+      );
     } else {
       // Follow finger (clamped to coordinate system bounds)
       _crosshairPosition = clampedPosition;
-      _crosshairPoint = hitResult?.point;
+      if (hitResult != null) {
+        _crosshairPoint = FusionDataPoint(
+          hitResult.pointIndex.toDouble(),
+          hitResult.point.y,
+          label: hitResult.point.label ?? _formatXLabel(hitResult.point.x),
+        );
+      } else {
+        _crosshairPoint = null;
+      }
     }
     
     notifyListeners();
@@ -496,12 +525,8 @@ class FusionBarInteractiveState extends ChangeNotifier {
                     enableSideBySideSeriesPlacement: enableSideBySideSeriesPlacement,
                   );
 
-                  if (hitResult != null) {
-                    _showCrosshair(details.localPosition, hitResult.point);
-                  } else {
-                    // Show crosshair even without hitting a bar (for exploration)
-                    _showCrosshair(details.localPosition, null);
-                  }
+                  // Pass full hit result for proper index-based positioning
+                  _showCrosshair(details.localPosition, hitResult);
                 }
                 ..onLongPressMoveUpdate = (details) {
                   // CRITICAL FIX: Enable crosshair drag on bar charts

@@ -12,6 +12,7 @@ import '../data/fusion_data_point.dart';
 import '../rendering/fusion_coordinate_system.dart';
 import '../rendering/engine/fusion_paint_pool.dart';
 import '../rendering/engine/fusion_shader_cache.dart';
+import '../utils/fusion_margin_calculator.dart';
 import 'fusion_bar_interactive_state.dart';
 
 /// A professional bar chart widget with Syncfusion-style features.
@@ -318,23 +319,11 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
 
     final config = _barConfig;
 
-    final leftMargin = config.enableAxis ? 60.0 : 10.0;
-    final rightMargin = 10.0;
-    final topMargin = 10.0;
-    final bottomMargin = config.enableAxis ? 40.0 : 10.0;
-
-    final chartArea = Rect.fromLTRB(
-      leftMargin,
-      topMargin,
-      size.width - rightMargin,
-      size.height - bottomMargin,
-    );
-
     final allPoints = widget.series.where((s) => s.visible).expand((s) => s.dataPoints).toList();
 
     if (allPoints.isEmpty) {
       _coordSystem = FusionCoordinateSystem(
-        chartArea: chartArea,
+        chartArea: Rect.fromLTRB(40, 10, size.width - 10, size.height - 30),
         dataXMin: -0.5,
         dataXMax: 0.5,
         dataYMin: 0,
@@ -343,27 +332,45 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
       return;
     }
 
-    final useCategoryPositioning = _isCategoryData(allPoints);
+    // For bar charts, ALWAYS use index-based positioning (category axis)
+    // X values are used for labels, not for positioning
+    final pointCount = widget.series.first.dataPoints.length;
+    
+    // Coordinate system: bars centered at 0, 1, 2, 3...
+    final minX = -0.5;
+    final maxX = pointCount - 0.5;
+    
+    // For margin calculation, use the actual label values (first and last x values)
+    // This ensures proper overflow calculation for first/last labels
+    final firstPoint = widget.series.first.dataPoints.first;
+    final lastPoint = widget.series.first.dataPoints.last;
+    final marginMinX = firstPoint.label != null ? 0.0 : firstPoint.x;
+    final marginMaxX = lastPoint.label != null ? (pointCount - 1).toDouble() : lastPoint.x;
 
-    double minX, maxX, minY, maxY;
-
-    if (useCategoryPositioning) {
-      final pointCount = widget.series.first.dataPoints.length;
-      minX = -0.5;
-      maxX = pointCount - 0.5;
-    } else {
-      minX = allPoints.map((p) => p.x).reduce((a, b) => a < b ? a : b);
-      maxX = allPoints.map((p) => p.x).reduce((a, b) => a > b ? a : b);
-      final xPadding = (maxX - minX) * 0.1;
-      minX -= xPadding;
-      maxX += xPadding;
-    }
-
-    minY = 0.0;
-    maxY = allPoints.map((p) => p.y).reduce((a, b) => a > b ? a : b);
+    double minY = 0.0;
+    double maxY = allPoints.map((p) => p.y).reduce((a, b) => a > b ? a : b);
     final yPadding = maxY * 0.1;
     maxY += yPadding;
 
+    // Calculate dynamic margins based on axis labels
+    final margins = FusionMarginCalculator.calculate(
+      enableAxis: config.enableAxis,
+      xAxis: widget.xAxis,
+      yAxis: widget.yAxis,
+      minX: marginMinX,
+      maxX: marginMaxX,
+      minY: minY,
+      maxY: maxY,
+    );
+
+    final chartArea = Rect.fromLTRB(
+      margins.left,
+      margins.top,
+      size.width - margins.right,
+      size.height - margins.bottom,
+    );
+
+    // Coordinate system uses index-based positioning
     _coordSystem = FusionCoordinateSystem(
       chartArea: chartArea,
       dataXMin: minX,
@@ -377,15 +384,7 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
     _cachedCoordSystem = _coordSystem;
   }
 
-  bool _isCategoryData(List<FusionDataPoint> points) {
-    final firstSeries = widget.series.first;
-    for (int i = 0; i < firstSeries.dataPoints.length; i++) {
-      if (firstSeries.dataPoints[i].x != i.toDouble()) {
-        return false;
-      }
-    }
-    return true;
-  }
+  // Removed _isCategoryData - bar charts always use category positioning
 
   int _calculateSeriesHash(List<FusionBarSeries> series) {
     int hash = 0;

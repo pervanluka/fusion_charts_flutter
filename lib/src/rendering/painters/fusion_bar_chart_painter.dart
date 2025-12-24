@@ -246,22 +246,18 @@ class FusionBarChartPainter extends CustomPainter {
     // 2. Auto-detect for bar charts
     if (series.isEmpty) return const FusionNumericAxis();
     
-    // For bar charts, X-axis should always be category-like
-    // Check if all series have string labels
-    final hasLabels = series.every(
-      (s) => s.dataPoints.every((p) => p.label != null && p.label!.isNotEmpty),
-    );
-
-    if (hasLabels) {
-      // Use provided string labels
-      final categories = series.first.dataPoints.map((p) => p.label!).toList();
-      return FusionCategoryAxis(categories: categories);
-    }
-
-    // No labels provided - create category axis with index labels (0, 1, 2, ...)
-    // This ensures bars align with axis labels and grid lines
-    final pointCount = series.first.dataPoints.length;
-    final categories = List.generate(pointCount, (i) => i.toString());
+    // For bar charts, X-axis is always category-based
+    // Labels come from: point.label > point.x.toString()
+    final categories = series.first.dataPoints.map((p) {
+      if (p.label != null && p.label!.isNotEmpty) {
+        return p.label!;
+      }
+      // Use x value as label (format nicely)
+      return p.x == p.x.roundToDouble() 
+          ? p.x.round().toString() 
+          : p.x.toString();
+    }).toList();
+    
     return FusionCategoryAxis(categories: categories);
   }
 
@@ -276,28 +272,11 @@ class FusionBarChartPainter extends CustomPainter {
     return const FusionNumericAxis();
   }
 
-  /// Calculates chart area (plot area excluding margins for axes).
+  /// Calculates chart area from the coordinate system.
+  /// This ensures consistency between coordinate transformations and rendering.
   Rect _calculateChartArea(Size size) {
-    final effectiveConfig = config ?? const FusionChartConfiguration();
-
-    // Margins depend on whether we're vertical or horizontal
-    final isVertical = series.isEmpty || series.first.isVertical;
-
-    final leftMargin = effectiveConfig.enableAxis
-        ? (isVertical ? 60.0 : 80.0) // More space for value labels
-        : 10.0;
-    final rightMargin = 10.0;
-    final topMargin = 10.0;
-    final bottomMargin = effectiveConfig.enableAxis
-        ? (isVertical ? 40.0 : 60.0) // More space for category labels
-        : 10.0;
-
-    return Rect.fromLTRB(
-      leftMargin,
-      topMargin,
-      size.width - rightMargin,
-      size.height - bottomMargin,
-    );
+    // Use the chart area from the coordinate system for consistency
+    return coordSystem.chartArea;
   }
 
   /// Calculates data bounds from all visible series.

@@ -13,6 +13,7 @@ import '../rendering/fusion_coordinate_system.dart';
 import '../rendering/painters/fusion_stacked_bar_chart_painter.dart';
 import '../rendering/engine/fusion_paint_pool.dart';
 import '../rendering/engine/fusion_shader_cache.dart';
+import '../utils/fusion_margin_calculator.dart';
 import 'fusion_stacked_bar_interactive_state.dart';
 
 /// A professional stacked bar chart widget.
@@ -403,24 +404,36 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
 
     final config = _stackedConfig;
 
-    final leftMargin = config.enableAxis ? 60.0 : 10.0;
-    final rightMargin = 10.0;
-    final topMargin = 10.0;
-    final bottomMargin = config.enableAxis ? 40.0 : 10.0;
-
-    final chartArea = Rect.fromLTRB(
-      leftMargin,
-      topMargin,
-      size.width - rightMargin,
-      size.height - bottomMargin,
-    );
-
     final pointCount = widget.series.isNotEmpty ? widget.series.first.dataPoints.length : 1;
 
+    // Coordinate system uses -0.5 to pointCount-0.5 for bar centering
     final minX = -0.5;
     final maxX = pointCount - 0.5;
     final minY = 0.0;
     final maxY = config.isStacked100 ? 100.0 : _getStackedMaxY() * 1.1;
+
+    // For margin calculation, use actual label positions (0 to pointCount-1)
+    // This ensures correct label width calculations
+    final marginMinX = 0.0;
+    final marginMaxX = (pointCount - 1).toDouble();
+
+    // Calculate dynamic margins based on axis labels
+    final margins = FusionMarginCalculator.calculate(
+      enableAxis: config.enableAxis,
+      xAxis: widget.xAxis,
+      yAxis: widget.yAxis,
+      minX: marginMinX,
+      maxX: marginMaxX,
+      minY: minY,
+      maxY: maxY,
+    );
+
+    final chartArea = Rect.fromLTRB(
+      margins.left,
+      margins.top,
+      size.width - margins.right,
+      size.height - margins.bottom,
+    );
 
     _coordSystem = FusionCoordinateSystem(
       chartArea: chartArea,

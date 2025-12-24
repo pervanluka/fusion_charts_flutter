@@ -7,6 +7,7 @@ import 'fusion_coordinate_system.dart';
 class BarHitTestResult {
   const BarHitTestResult({
     required this.point,
+    required this.pointIndex,
     required this.seriesIndex,
     required this.seriesName,
     required this.seriesColor,
@@ -14,6 +15,7 @@ class BarHitTestResult {
   });
 
   final FusionDataPoint point;
+  final int pointIndex;  // Index in the series (for category positioning)
   final int seriesIndex;
   final String seriesName;
   final Color seriesColor;
@@ -79,6 +81,7 @@ class FusionBarHitTester {
         if (expandedRect.contains(screenPosition)) {
           return BarHitTestResult(
             point: point,
+            pointIndex: pointIndex,
             seriesIndex: seriesIndex,
             seriesName: series.name,
             seriesColor: series.color,
@@ -133,6 +136,7 @@ class FusionBarHitTester {
           results.add(
             BarHitTestResult(
               point: point,
+              pointIndex: pointIndex,
               seriesIndex: seriesIndex,
               seriesName: series.name,
               seriesColor: series.color,
@@ -189,15 +193,14 @@ class FusionBarHitTester {
     }
   }
 
+  /// Determines if category-based positioning should be used.
+  ///
+  /// For bar charts, this ALWAYS returns true because bar charts
+  /// are inherently categorical - bars are positioned by index,
+  /// not by their x value.
   bool _shouldUseCategoryPositioning(FusionBarSeries series) {
-    final points = series.dataPoints;
-    if (points.isEmpty) return false;
-
-    for (int i = 0; i < points.length; i++) {
-      if (points[i].x != i.toDouble()) {
-        return false;
-      }
-    }
+    // Bar charts ALWAYS use category positioning
+    // X values are used for labels only, not for positioning
     return true;
   }
 

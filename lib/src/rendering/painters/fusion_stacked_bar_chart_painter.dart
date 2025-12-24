@@ -139,17 +139,21 @@ class FusionStackedBarChartPainter extends CustomPainter {
       return xAxis!.axisType!;
     }
 
-    // 2. Auto-detect from data labels
-    final hasLabels = series.every(
-      (s) => s.dataPoints.every((p) => p.label != null && p.label!.isNotEmpty),
-    );
-
-    if (hasLabels && series.isNotEmpty) {
-      final categories = series.first.dataPoints.map((p) => p.label!).toList();
-      return FusionCategoryAxis(categories: categories);
-    }
-
-    return const FusionNumericAxis();
+    // 2. For stacked bar charts, X-axis is always category-based
+    if (series.isEmpty) return const FusionNumericAxis();
+    
+    // Labels come from: point.label > point.x.toString()
+    final categories = series.first.dataPoints.map((p) {
+      if (p.label != null && p.label!.isNotEmpty) {
+        return p.label!;
+      }
+      // Use x value as label (format nicely)
+      return p.x == p.x.roundToDouble() 
+          ? p.x.round().toString() 
+          : p.x.toString();
+    }).toList();
+    
+    return FusionCategoryAxis(categories: categories);
   }
 
   /// Determine Y-axis type from configuration or default to numeric.
@@ -163,20 +167,11 @@ class FusionStackedBarChartPainter extends CustomPainter {
     return const FusionNumericAxis();
   }
 
+  /// Calculates chart area from the coordinate system.
+  /// This ensures consistency between coordinate transformations and rendering.
   Rect _calculateChartArea(Size size) {
-    final effectiveConfig = config ?? const FusionChartConfiguration();
-
-    final leftMargin = effectiveConfig.enableAxis ? 60.0 : 10.0;
-    final rightMargin = 10.0;
-    final topMargin = 10.0;
-    final bottomMargin = effectiveConfig.enableAxis ? 40.0 : 10.0;
-
-    return Rect.fromLTRB(
-      leftMargin,
-      topMargin,
-      size.width - rightMargin,
-      size.height - bottomMargin,
-    );
+    // Use the chart area from the coordinate system for consistency
+    return coordSystem.chartArea;
   }
 
   Rect _calculateDataBounds() {

@@ -805,10 +805,10 @@ class BorderedBarsExample extends StatelessWidget {
         FusionBarSeries(
           name: 'Bordered',
           dataPoints: [
-            FusionDataPoint(0, 55),
-            FusionDataPoint(1, 70),
-            FusionDataPoint(2, 60),
-            FusionDataPoint(3, 85),
+            FusionDataPoint(1, 55),
+            FusionDataPoint(2, 70),
+            FusionDataPoint(3, 60),
+            FusionDataPoint(4, 85),
           ],
           color: const Color(0xFFF59E0B),
           barWidth: 0.6,

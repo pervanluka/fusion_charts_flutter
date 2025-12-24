@@ -102,20 +102,13 @@ class FusionBarSeriesRenderer {
 
   /// Determines if category-based positioning should be used.
   ///
-  /// Category positioning is used when:
-  /// - All X values are sequential integers (0, 1, 2, ...)
-  /// - Data points have labels
-  /// - X values represent discrete categories
+  /// For bar charts, this ALWAYS returns true because bar charts
+  /// are inherently categorical - bars are positioned by index,
+  /// not by their x value. The x value (or label) is only used
+  /// for display purposes.
   bool _shouldUseCategoryPositioning(FusionBarSeries series) {
-    final points = series.dataPoints;
-    if (points.isEmpty) return false;
-
-    // Check if all X values are sequential integers
-    for (int i = 0; i < points.length; i++) {
-      if (points[i].x != i.toDouble()) {
-        return false;
-      }
-    }
+    // Bar charts ALWAYS use category positioning
+    // X values are used for labels only, not for positioning
     return true;
   }
 
