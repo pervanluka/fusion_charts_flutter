@@ -2,8 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 import 'dart:math' as math;
 
-import 'package:fusion_charts_flutter/src/core/axis/datetime/fusion_datetime_axis.dart';
-
 void main() {
   group('🔥 CRITICAL EDGE CASES - Axis Calculations', () {
     group('Zero and Near-Zero Ranges', () {

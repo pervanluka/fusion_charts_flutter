@@ -527,8 +527,8 @@ class BasicLineChartExample extends StatelessWidget {
       ],
       config: const FusionLineChartConfiguration(
         enableAnimation: true,
-        enableGrid: false,
         enableMarkers: false,
+        tooltipBehavior: FusionTooltipBehavior(trackballMode: FusionTooltipTrackballMode.snap),
       ),
     );
   }

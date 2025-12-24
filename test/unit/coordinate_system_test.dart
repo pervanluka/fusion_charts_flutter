@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 
@@ -61,10 +60,16 @@ void main() {
           final roundTrip = coordSystem.screenToData(screen);
 
           // Tolerance of 1.0 accounts for pixel snapping
-          expect(roundTrip.x, closeTo(original.x, 1.0),
-              reason: 'X round-trip failed for $original');
-          expect(roundTrip.y, closeTo(original.y, 1.0),
-              reason: 'Y round-trip failed for $original');
+          expect(
+            roundTrip.x,
+            closeTo(original.x, 1.0),
+            reason: 'X round-trip failed for $original',
+          );
+          expect(
+            roundTrip.y,
+            closeTo(original.y, 1.0),
+            reason: 'Y round-trip failed for $original',
+          );
         }
       });
 

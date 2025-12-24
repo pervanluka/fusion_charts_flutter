@@ -114,6 +114,59 @@ class FusionInteractionHandler {
     return _spatialIndex!.findNearest(screenPosition, maxDistance: hitTestRadius);
   }
 
+  /// Finds the nearest data point by X-coordinate only.
+  ///
+  /// Ideal for line charts - snaps to the point at the closest X position
+  /// regardless of Y distance.
+  FusionDataPoint? findNearestPointByX(List<FusionDataPoint> points, Offset screenPosition) {
+    if (points.isEmpty) return null;
+
+    if (_spatialIndex != null) {
+      return _spatialIndex!.findNearestByX(screenPosition);
+    }
+
+    // Fallback: linear search by X
+    FusionDataPoint? nearest;
+    double minXDist = double.infinity;
+
+    for (final point in points) {
+      final screenPoint = coordSystem.dataToScreen(point);
+      final xDist = (screenPoint.dx - screenPosition.dx).abs();
+
+      if (xDist < minXDist) {
+        minXDist = xDist;
+        nearest = point;
+      }
+    }
+
+    return nearest;
+  }
+
+  /// Finds the nearest data point by Y-coordinate only.
+  FusionDataPoint? findNearestPointByY(List<FusionDataPoint> points, Offset screenPosition) {
+    if (points.isEmpty) return null;
+
+    if (_spatialIndex != null) {
+      return _spatialIndex!.findNearestByY(screenPosition);
+    }
+
+    // Fallback: linear search by Y
+    FusionDataPoint? nearest;
+    double minYDist = double.infinity;
+
+    for (final point in points) {
+      final screenPoint = coordSystem.dataToScreen(point);
+      final yDist = (screenPoint.dy - screenPosition.dy).abs();
+
+      if (yDist < minYDist) {
+        minYDist = yDist;
+        nearest = point;
+      }
+    }
+
+    return nearest;
+  }
+
   FusionDataPoint? _findNearestPointLinear(List<FusionDataPoint> points, Offset screenPosition) {
     double minDistance = hitTestRadius;
     FusionDataPoint? nearestPoint;

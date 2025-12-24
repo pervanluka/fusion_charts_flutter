@@ -157,11 +157,12 @@ class FusionInteractiveChartState extends ChangeNotifier {
   void handlePointerMove(PointerMoveEvent event) {
     if (!_isPointerDown) return;
 
-    _lastPointerPosition = event.localPosition;
+    final currentPosition = event.localPosition;
+    _lastPointerPosition = currentPosition;
 
     // Update crosshair if active (during long press drag)
     if (config.enableCrosshair && _crosshairPosition != null) {
-      _updateCrosshairPosition(event.localPosition);
+      _updateCrosshairPosition(currentPosition);
     }
 
     // Update tooltip trackball if enabled
@@ -169,17 +170,20 @@ class FusionInteractiveChartState extends ChangeNotifier {
       final trackballMode = config.tooltipBehavior.trackballMode;
       if (trackballMode == FusionTooltipTrackballMode.none) return;
 
-      if (_tooltipData != null) {
-        final distance = (event.localPosition - _tooltipData!.screenPosition).distance;
+      // Check if pointer moved enough from LAST trackball update position
+      // (not from tooltip position - that was the bug!)
+      if (_lastTrackballPosition != null) {
+        final distance = (currentPosition - _lastTrackballPosition!).distance;
         if (distance < config.tooltipBehavior.trackballUpdateThreshold) {
-          return;
+          return; // Pointer hasn't moved enough, skip update
         }
       }
 
+      // Debounce for smooth performance (60fps = 16ms)
       _debounceTimer?.cancel();
       _debounceTimer = Timer(
         const Duration(milliseconds: 16),
-        () => _updateTrackball(event.localPosition, trackballMode),
+        () => _updateTrackball(currentPosition, trackballMode),
       );
     }
   }
@@ -219,6 +223,7 @@ class FusionInteractiveChartState extends ChangeNotifier {
 
   void handlePointerUp(PointerUpEvent event) {
     _isPointerDown = false;
+    _lastTrackballPosition = null; // Reset trackball position tracking
 
     final pressDuration = _pointerDownTime != null
         ? DateTime.now().difference(_pointerDownTime!)
@@ -264,6 +269,7 @@ class FusionInteractiveChartState extends ChangeNotifier {
     _isPointerDown = false;
     _pointerDownTime = null;
     _lastPointerPosition = null;
+    _lastTrackballPosition = null;
 
     _hideTooltipAnimated();
     _hideCrosshair();
@@ -351,67 +357,120 @@ class FusionInteractiveChartState extends ChangeNotifier {
   // TRACKBALL IMPLEMENTATION
   // ==========================================================================
 
+  /// Last position used for trackball update threshold check.
+  Offset? _lastTrackballPosition;
+
   void _updateTrackball(Offset position, FusionTooltipTrackballMode mode) {
     FusionDataPoint? targetPoint;
+    Offset? magneticOffset; // For smooth magnetic effect
 
     switch (mode) {
       case FusionTooltipTrackballMode.none:
         return;
 
       case FusionTooltipTrackballMode.follow:
+        // Follow mode: always show nearest point by Euclidean distance
         targetPoint = _interactionHandler?.findNearestPoint(_allDataPoints, position);
         break;
 
+      case FusionTooltipTrackballMode.snapToX:
+        // Snap to X: find point with closest X coordinate (ideal for line charts)
+        targetPoint = _interactionHandler?.findNearestPointByX(_allDataPoints, position);
+        break;
+
+      case FusionTooltipTrackballMode.snapToY:
+        // Snap to Y: find point with closest Y coordinate
+        targetPoint = _interactionHandler?.findNearestPointByY(_allDataPoints, position);
+        break;
+
       case FusionTooltipTrackballMode.snap:
+        // Snap mode: only update if within snap radius, otherwise keep last point
         final nearest = _interactionHandler?.findNearestPoint(_allDataPoints, position);
         if (nearest != null) {
           final screenPos = _currentCoordSystem.dataToScreen(nearest);
           final distance = (screenPos - position).distance;
           if (distance < config.tooltipBehavior.trackballSnapRadius) {
             targetPoint = nearest;
+          } else {
+            // Keep current tooltip point if we have one
+            if (_tooltipData != null) {
+              return; // Don't update - keep showing current point
+            }
+            // If no current tooltip, show nearest anyway
+            targetPoint = nearest;
           }
         }
         break;
 
       case FusionTooltipTrackballMode.magnetic:
-        targetPoint = _findMagneticTarget(position);
+        // Magnetic mode: smooth interpolation toward nearest point
+        final result = _findMagneticTarget(position);
+        targetPoint = result.point;
+        magneticOffset = result.magneticOffset;
         break;
     }
 
     if (targetPoint != null) {
-      _updateTooltipPosition(targetPoint, position);
+      _lastTrackballPosition = position;
+      _updateTooltipPosition(targetPoint, position, magneticOffset: magneticOffset);
     }
   }
 
-  FusionDataPoint? _findMagneticTarget(Offset position) {
+  /// Finds magnetic target with smooth interpolation.
+  ///
+  /// Returns both the target point and an optional magnetic offset
+  /// for smooth visual interpolation.
+  ({FusionDataPoint? point, Offset? magneticOffset}) _findMagneticTarget(Offset position) {
     final nearest = _interactionHandler?.findNearestPoint(_allDataPoints, position);
 
-    if (nearest == null) return null;
+    if (nearest == null) return (point: null, magneticOffset: null);
 
     final screenPos = _currentCoordSystem.dataToScreen(nearest);
     final distance = (screenPos - position).distance;
     final snapRadius = config.tooltipBehavior.trackballSnapRadius;
 
     if (distance < snapRadius) {
+      // Calculate magnetic pull strength (0.0 at edge, 1.0 at center)
       final magnetStrength = 1.0 - (distance / snapRadius);
-      if (magnetStrength > 0.7) {
-        return nearest;
-      }
+
+      // Apply easing for smoother feel
+      final easedStrength = magnetStrength * magnetStrength; // Quadratic easing
+
+      // Interpolate position toward the point
+      final magneticOffset = Offset(
+        position.dx + (screenPos.dx - position.dx) * easedStrength,
+        position.dy + (screenPos.dy - position.dy) * easedStrength,
+      );
+
+      return (point: nearest, magneticOffset: magneticOffset);
     }
 
-    return nearest;
+    // Outside snap radius - no magnetic effect
+    return (point: nearest, magneticOffset: null);
   }
 
-  void _updateTooltipPosition(FusionDataPoint point, Offset position) {
+  void _updateTooltipPosition(
+    FusionDataPoint point,
+    Offset position, {
+    Offset? magneticOffset,
+  }) {
     final seriesInfo = _findSeriesForPoint(point);
+
+    // Use magnetic offset for marker position if provided,
+    // otherwise snap to exact data point position
+    final effectiveScreenPosition = magneticOffset ?? _currentCoordSystem.dataToScreen(point);
+
+    // Find shared points if shared tooltip is enabled
+    final sharedPoints = config.tooltipBehavior.shared ? _findPointsAtSameX(point) : null;
 
     _tooltipData = TooltipRenderData(
       point: point,
       seriesName: seriesInfo.name,
       seriesColor: seriesInfo.color,
-      screenPosition: _currentCoordSystem.dataToScreen(point),
+      screenPosition: effectiveScreenPosition,
       wasLongPress: _tooltipData?.wasLongPress ?? false,
       activationTime: _tooltipData?.activationTime,
+      sharedPoints: sharedPoints,
     );
 
     notifyListeners();

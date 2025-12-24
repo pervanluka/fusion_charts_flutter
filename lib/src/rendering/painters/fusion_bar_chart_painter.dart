@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 
-import '../../core/axis/base/fusion_axis_base.dart';
-import '../../core/axis/category/fusion_category_axis.dart';
-import '../../core/axis/numeric/fusion_numeric_axis.dart';
 import '../engine/fusion_render_pipeline.dart';
 import '../engine/fusion_render_context.dart';
 import '../engine/fusion_paint_pool.dart';
@@ -136,7 +133,7 @@ class FusionBarChartPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Dispose previous pipeline to prevent memory leaks from cached Picture objects
     _pipeline?.dispose();
-    
+
     // Always rebuild pipeline to ensure config changes are reflected
     _pipeline = _buildRenderPipeline(size);
 
@@ -154,7 +151,7 @@ class FusionBarChartPainter extends CustomPainter {
   /// Builds the complete render pipeline with all layers.
   FusionRenderPipeline _buildRenderPipeline(Size size) {
     final effectiveConfig = config ?? const FusionChartConfiguration();
-    
+
     // Get bar-specific config, use defaults if base config provided
     final enableSideBySide = config is FusionBarChartConfiguration
         ? (config as FusionBarChartConfiguration).enableSideBySideSeriesPlacement
@@ -245,7 +242,7 @@ class FusionBarChartPainter extends CustomPainter {
 
     // 2. Auto-detect for bar charts
     if (series.isEmpty) return const FusionNumericAxis();
-    
+
     // For bar charts, X-axis is always category-based
     // Labels come from: point.label > point.x.toString()
     final categories = series.first.dataPoints.map((p) {
@@ -253,11 +250,9 @@ class FusionBarChartPainter extends CustomPainter {
         return p.label!;
       }
       // Use x value as label (format nicely)
-      return p.x == p.x.roundToDouble() 
-          ? p.x.round().toString() 
-          : p.x.toString();
+      return p.x == p.x.roundToDouble() ? p.x.round().toString() : p.x.toString();
     }).toList();
-    
+
     return FusionCategoryAxis(categories: categories);
   }
 
@@ -267,7 +262,7 @@ class FusionBarChartPainter extends CustomPainter {
     if (yAxis?.axisType != null) {
       return yAxis!.axisType!;
     }
-    
+
     // Default: numeric for bar values
     return const FusionNumericAxis();
   }
