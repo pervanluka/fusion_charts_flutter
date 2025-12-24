@@ -63,7 +63,7 @@ class FusionMarginCalculator {
 
     // X-axis margin goes on the side where X-axis is positioned
     if (xAxisPosition == AxisPosition.bottom) {
-      bottom = xAxisMargin; // Extra bottom padding for visual balance
+      bottom = xAxisMargin;
     } else if (xAxisPosition == AxisPosition.top) {
       top = xAxisMargin;
     }
