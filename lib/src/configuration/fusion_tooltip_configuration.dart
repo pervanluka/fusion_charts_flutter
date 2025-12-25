@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/enums/fusion_dismiss_strategy.dart';
 import '../core/enums/fusion_tooltip_activation_mode.dart';
+import '../core/enums/fusion_tooltip_position.dart';
 import '../core/enums/fusion_tooltip_trackball_mode.dart';
 import '../data/fusion_data_point.dart';
 
@@ -14,6 +15,13 @@ class FusionTooltipBehavior {
   const FusionTooltipBehavior({
     // Basic configuration
     this.enable = true,
+
+    // 🚀 POSITION CONTROL - NEW!
+    this.position = FusionTooltipPosition.floating,
+    this.showTrackballLine = true,
+    this.trackballLineColor,
+    this.trackballLineWidth = 1.0,
+    this.trackballLineDashPattern,
 
     // 🚀 ACTIVATION CONTROL - Superior
     this.activationMode = FusionTooltipActivationMode.auto,
@@ -67,6 +75,60 @@ class FusionTooltipBehavior {
 
   /// Enables or disables tooltip
   final bool enable;
+
+  // ========================================================================
+  // 🚀 POSITION CONTROL (NEW!)
+  // ========================================================================
+
+  /// Tooltip position relative to the chart area.
+  ///
+  /// - [FusionTooltipPosition.floating] (default) - Tooltip floats near data point
+  /// - [FusionTooltipPosition.top] - Tooltip anchored at top with trackball line
+  /// - [FusionTooltipPosition.bottom] - Tooltip anchored at bottom with trackball line
+  ///
+  /// Example:
+  /// ```dart
+  /// FusionTooltipBehavior(
+  ///   position: FusionTooltipPosition.top,
+  ///   trackballLineDashPattern: [4, 4], // Dashed line
+  /// )
+  /// ```
+  final FusionTooltipPosition position;
+
+  /// Whether to show the trackball line connecting tooltip to data point(s).
+  ///
+  /// Only applicable when [position] is [FusionTooltipPosition.top] or
+  /// [FusionTooltipPosition.bottom]. The line will not be drawn if the
+  /// data point is too close to the tooltip (to avoid visual clutter).
+  ///
+  /// Default: true
+  final bool showTrackballLine;
+
+  /// Color of the trackball line.
+  ///
+  /// If null, uses a semi-transparent version of the series color.
+  final Color? trackballLineColor;
+
+  /// Width of the trackball line in pixels.
+  ///
+  /// Default: 1.0
+  final double trackballLineWidth;
+
+  /// Dash pattern for the trackball line.
+  ///
+  /// - `null` - Solid line (default)
+  /// - `[4, 4]` - Dashed line (4px dash, 4px gap)
+  /// - `[2, 2]` - Dotted line
+  /// - `[8, 4, 2, 4]` - Dash-dot pattern
+  ///
+  /// Example:
+  /// ```dart
+  /// FusionTooltipBehavior(
+  ///   position: FusionTooltipPosition.top,
+  ///   trackballLineDashPattern: [4, 4], // Dashed
+  /// )
+  /// ```
+  final List<double>? trackballLineDashPattern;
 
   // ========================================================================
   // 🚀 ACTIVATION CONTROL
@@ -286,6 +348,11 @@ class FusionTooltipBehavior {
 
   FusionTooltipBehavior copyWith({
     bool? enable,
+    FusionTooltipPosition? position,
+    bool? showTrackballLine,
+    Color? trackballLineColor,
+    double? trackballLineWidth,
+    List<double>? trackballLineDashPattern,
     FusionTooltipActivationMode? activationMode,
     Duration? activationDelay,
     FusionDismissStrategy? dismissStrategy,
@@ -316,6 +383,11 @@ class FusionTooltipBehavior {
   }) {
     return FusionTooltipBehavior(
       enable: enable ?? this.enable,
+      position: position ?? this.position,
+      showTrackballLine: showTrackballLine ?? this.showTrackballLine,
+      trackballLineColor: trackballLineColor ?? this.trackballLineColor,
+      trackballLineWidth: trackballLineWidth ?? this.trackballLineWidth,
+      trackballLineDashPattern: trackballLineDashPattern ?? this.trackballLineDashPattern,
       activationMode: activationMode ?? this.activationMode,
       activationDelay: activationDelay ?? this.activationDelay,
       dismissStrategy: dismissStrategy ?? this.dismissStrategy,

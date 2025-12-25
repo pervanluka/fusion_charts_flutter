@@ -528,7 +528,10 @@ class BasicLineChartExample extends StatelessWidget {
       config: const FusionLineChartConfiguration(
         enableAnimation: true,
         enableMarkers: false,
-        tooltipBehavior: FusionTooltipBehavior(trackballMode: FusionTooltipTrackballMode.snap),
+        tooltipBehavior: FusionTooltipBehavior(
+          trackballMode: FusionTooltipTrackballMode.snapToX,
+          position: FusionTooltipPosition.floating,
+        ),
       ),
     );
   }
@@ -949,6 +952,7 @@ class DataLabelsExample extends StatelessWidget {
           ],
           color: const Color(0xFF6366F1),
           showDataLabels: true,
+          dataLabelDisplay: FusionDataLabelDisplay.maxAndMin,
           dataLabelFormatter: (value) => '\$${value.toStringAsFixed(0)}',
         ),
       ],

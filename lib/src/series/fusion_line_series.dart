@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:fusion_charts_flutter/src/core/enums/fusion_data_label_display.dart';
 import 'package:fusion_charts_flutter/src/series/series_with_data_points.dart';
 import '../core/enums/marker_shape.dart';
 import '../data/fusion_data_point.dart';
@@ -63,6 +64,7 @@ class FusionLineSeries extends FusionSeries
     this.showArea = false,
     this.areaOpacity = 0.3,
     this.showDataLabels = false,
+    this.dataLabelDisplay = FusionDataLabelDisplay.all,
     this.dataLabelStyle,
     this.dataLabelFormatter,
     this.animationDuration,
@@ -191,6 +193,9 @@ class FusionLineSeries extends FusionSeries
   final bool showDataLabels;
 
   @override
+  final FusionDataLabelDisplay dataLabelDisplay;
+
+  @override
   final TextStyle? dataLabelStyle;
 
   @override
@@ -261,6 +266,7 @@ class FusionLineSeries extends FusionSeries
     bool? showArea,
     double? areaOpacity,
     bool? showDataLabels,
+    FusionDataLabelDisplay? dataLabelDisplay,
     TextStyle? dataLabelStyle,
     String Function(double)? dataLabelFormatter,
     Duration? animationDuration,
@@ -285,6 +291,7 @@ class FusionLineSeries extends FusionSeries
       showArea: showArea ?? this.showArea,
       areaOpacity: areaOpacity ?? this.areaOpacity,
       showDataLabels: showDataLabels ?? this.showDataLabels,
+      dataLabelDisplay: dataLabelDisplay ?? this.dataLabelDisplay,
       dataLabelStyle: dataLabelStyle ?? this.dataLabelStyle,
       dataLabelFormatter: dataLabelFormatter ?? this.dataLabelFormatter,
       animationDuration: animationDuration ?? this.animationDuration,
@@ -325,6 +332,7 @@ class FusionLineSeries extends FusionSeries
         other.showShadow == showShadow &&
         other.shadow == shadow &&
         other.showDataLabels == showDataLabels &&
+        other.dataLabelDisplay == dataLabelDisplay &&
         other.dataLabelStyle == dataLabelStyle &&
         other.dataLabelFormatter == dataLabelFormatter &&
         other.animationCurve == animationCurve &&
@@ -354,6 +362,7 @@ class FusionLineSeries extends FusionSeries
     shadow,
     showShadow,
     showDataLabels,
+    dataLabelDisplay,
     dataLabelStyle,
     dataLabelFormatter,
     animationDuration,

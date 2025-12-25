@@ -195,6 +195,12 @@ export 'src/core/enums/fusion_tooltip_trackball_mode.dart';
 /// Tooltip dismiss strategies (onRelease, onTimer, etc.).
 export 'src/core/enums/fusion_dismiss_strategy.dart';
 
+/// Tooltip position modes (floating, top, bottom).
+export 'src/core/enums/fusion_tooltip_position.dart';
+
+/// Data label display modes (all, maxOnly, minOnly, maxAndMin, etc.).
+export 'src/core/enums/fusion_data_label_display.dart';
+
 // ============================================================================
 // ENUMS - Zoom & Pan
 // ============================================================================

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/enums/fusion_data_label_display.dart';
 import '../core/enums/marker_shape.dart';
 
 /// Base abstract class for all chart series.
@@ -163,6 +164,16 @@ mixin FusionShadowSupport {
 mixin FusionDataLabelSupport {
   /// Whether to show data labels.
   bool get showDataLabels;
+
+  /// Which data points should display labels.
+  ///
+  /// - [FusionDataLabelDisplay.all] - All points (default)
+  /// - [FusionDataLabelDisplay.maxOnly] - Only maximum value
+  /// - [FusionDataLabelDisplay.minOnly] - Only minimum value
+  /// - [FusionDataLabelDisplay.maxAndMin] - Both extremes
+  /// - [FusionDataLabelDisplay.firstAndLast] - First and last points
+  /// - [FusionDataLabelDisplay.none] - No labels
+  FusionDataLabelDisplay get dataLabelDisplay => FusionDataLabelDisplay.all;
 
   /// Text style for data labels.
   TextStyle? get dataLabelStyle;

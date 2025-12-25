@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/enums/fusion_data_label_display.dart';
 import '../../series/fusion_series.dart';
 import '../engine/fusion_render_context.dart';
 import '../../series/series_with_data_points.dart';
@@ -131,12 +132,35 @@ class FusionDataLabelLayer extends FusionRenderLayer {
     FusionDataLabelSupport labelSeries,
   ) {
     final labels = <_LabelInfo>[];
+    final dataPoints = series.dataPoints;
+    
+    if (dataPoints.isEmpty) return labels;
 
-    for (final point in series.dataPoints) {
+    // Get display mode
+    final displayMode = labelSeries.dataLabelDisplay;
+    
+    // Early return for none mode
+    if (displayMode == FusionDataLabelDisplay.none) {
+      return labels;
+    }
+
+    // Get indices of points that should show labels
+    final indicesToShow = _getIndicesToShow(dataPoints, displayMode);
+
+    for (int i = 0; i < dataPoints.length; i++) {
+      // Skip if this point index shouldn't show a label
+      if (!indicesToShow.contains(i)) continue;
+
+      final point = dataPoints[i];
       final screenPos = context.coordSystem.dataToScreen(point);
 
-      // Cull off-screen labels
-      if (!context.chartArea.contains(screenPos)) continue;
+      // Cull off-screen points (but we'll still try to show label if point is near edge)
+      if (screenPos.dx < context.chartArea.left - 50 ||
+          screenPos.dx > context.chartArea.right + 50 ||
+          screenPos.dy < context.chartArea.top - 50 ||
+          screenPos.dy > context.chartArea.bottom + 50) {
+        continue;
+      }
 
       // Format label text
       final labelText = labelSeries.dataLabelFormatter?.call(point.y) ?? point.y.toStringAsFixed(1);
@@ -147,11 +171,11 @@ class FusionDataLabelLayer extends FusionRenderLayer {
         labelSeries.dataLabelStyle ?? context.theme.dataLabelStyle,
       );
 
-      // Calculate label position
-      final labelPosition = _calculateLabelPosition(
-        screenPos,
-        textPainter.size,
-        LabelPosition.above,
+      // Calculate label position with smart boundary handling
+      final labelPosition = _calculateSmartLabelPosition(
+        screenPos: screenPos,
+        labelSize: textPainter.size,
+        chartArea: context.chartArea,
       );
 
       labels.add(
@@ -167,6 +191,104 @@ class FusionDataLabelLayer extends FusionRenderLayer {
     }
 
     return labels;
+  }
+
+  /// Returns the indices of points that should display labels based on display mode.
+  /// 
+  /// Uses indices instead of points to handle multiple points with same Y value.
+  Set<int> _getIndicesToShow(
+    List<FusionDataPoint> dataPoints,
+    FusionDataLabelDisplay displayMode,
+  ) {
+    if (dataPoints.isEmpty) return {};
+
+    switch (displayMode) {
+      case FusionDataLabelDisplay.all:
+        return Set.from(List.generate(dataPoints.length, (i) => i));
+
+      case FusionDataLabelDisplay.none:
+        return {};
+
+      case FusionDataLabelDisplay.maxOnly:
+        // Find max Y value
+        final maxY = dataPoints.map((p) => p.y).reduce((a, b) => a > b ? a : b);
+        // Return ALL indices with this max value
+        return {
+          for (int i = 0; i < dataPoints.length; i++)
+            if (dataPoints[i].y == maxY) i
+        };
+
+      case FusionDataLabelDisplay.minOnly:
+        // Find min Y value
+        final minY = dataPoints.map((p) => p.y).reduce((a, b) => a < b ? a : b);
+        // Return ALL indices with this min value
+        return {
+          for (int i = 0; i < dataPoints.length; i++)
+            if (dataPoints[i].y == minY) i
+        };
+
+      case FusionDataLabelDisplay.maxAndMin:
+        // Find max and min Y values
+        final maxY = dataPoints.map((p) => p.y).reduce((a, b) => a > b ? a : b);
+        final minY = dataPoints.map((p) => p.y).reduce((a, b) => a < b ? a : b);
+        // Return ALL indices with max or min value
+        return {
+          for (int i = 0; i < dataPoints.length; i++)
+            if (dataPoints[i].y == maxY || dataPoints[i].y == minY) i
+        };
+
+      case FusionDataLabelDisplay.firstAndLast:
+        if (dataPoints.length == 1) {
+          return {0};
+        }
+        return {0, dataPoints.length - 1};
+    }
+  }
+
+  /// Calculates label position with smart boundary handling.
+  /// 
+  /// - Tries to position above the point first
+  /// - If that overflows top, positions below
+  /// - Clamps horizontal position to stay within chart area
+  Offset _calculateSmartLabelPosition({
+    required Offset screenPos,
+    required Size labelSize,
+    required Rect chartArea,
+  }) {
+    const padding = 6.0;
+    
+    // Calculate label dimensions with padding for background
+    final labelWidth = labelSize.width + 8; // Account for background padding
+    final labelHeight = labelSize.height + 4;
+    
+    // Try above first
+    double labelY = screenPos.dy - labelHeight - padding;
+    
+    // If above overflows top, position below
+    if (labelY < chartArea.top) {
+      labelY = screenPos.dy + padding + 4; // +4 for marker clearance
+    }
+    
+    // If below also overflows, clamp to top
+    if (labelY + labelHeight > chartArea.bottom) {
+      labelY = chartArea.top;
+    }
+    
+    // Calculate horizontal position (centered on point)
+    double labelX = screenPos.dx - labelSize.width / 2;
+    
+    // Clamp horizontal to stay within chart area (no extra padding)
+    final minX = chartArea.left;
+    final maxX = chartArea.right - labelWidth;
+    
+    if (maxX > minX) {
+      labelX = labelX.clamp(minX, maxX);
+    } else {
+      // Label wider than chart area - center it
+      labelX = chartArea.left + (chartArea.width - labelSize.width) / 2;
+    }
+    
+    return Offset(labelX, labelY);
   }
 
   // ==========================================================================
@@ -188,41 +310,6 @@ class FusionDataLabelLayer extends FusionRenderLayer {
 
     _textPainterCache[cacheKey] = textPainter;
     return textPainter;
-  }
-
-  // ==========================================================================
-  // LABEL POSITIONING
-  // ==========================================================================
-
-  /// Calculates optimal label position relative to data point.
-  Offset _calculateLabelPosition(Offset pointPosition, Size labelSize, LabelPosition position) {
-    const padding = 4.0;
-
-    switch (position) {
-      case LabelPosition.above:
-        return Offset(
-          pointPosition.dx - labelSize.width / 2,
-          pointPosition.dy - labelSize.height - padding,
-        );
-
-      case LabelPosition.below:
-        return Offset(pointPosition.dx - labelSize.width / 2, pointPosition.dy + padding);
-
-      case LabelPosition.left:
-        return Offset(
-          pointPosition.dx - labelSize.width - padding,
-          pointPosition.dy - labelSize.height / 2,
-        );
-
-      case LabelPosition.right:
-        return Offset(pointPosition.dx + padding, pointPosition.dy - labelSize.height / 2);
-
-      case LabelPosition.center:
-        return Offset(
-          pointPosition.dx - labelSize.width / 2,
-          pointPosition.dy - labelSize.height / 2,
-        );
-    }
   }
 
   // ==========================================================================
@@ -554,6 +641,3 @@ class _LabelPriority {
   final _LabelInfo label;
   final double priority;
 }
-
-/// Label positioning options.
-enum LabelPosition { above, below, left, right, center }
