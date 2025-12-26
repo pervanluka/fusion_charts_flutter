@@ -15,6 +15,7 @@ import '../rendering/engine/fusion_paint_pool.dart';
 import '../rendering/engine/fusion_shader_cache.dart';
 import '../utils/fusion_margin_calculator.dart';
 import 'fusion_stacked_bar_interactive_state.dart';
+import 'base/fusion_chart_header.dart';
 
 /// A professional stacked bar chart widget.
 ///
@@ -274,6 +275,7 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
   @override
   Widget build(BuildContext context) {
     final config = _stackedConfig;
+    final theme = config.theme;
     final title = widget.title;
     final subtitle = widget.subtitle;
     final hasCustomBuilder = config.tooltipBuilder != null;
@@ -283,8 +285,8 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (title != null) _buildTitle(title),
-          if (subtitle != null) _buildSubtitle(subtitle),
+          if (title != null) FusionChartTitle(title: title, theme: theme),
+          if (subtitle != null) FusionChartSubtitle(subtitle: subtitle, theme: theme),
           Expanded(
             child: AnimatedBuilder(
               animation: _animation,
@@ -313,7 +315,7 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
                           painter: FusionStackedBarChartPainter(
                             series: widget.series,
                             coordSystem: _interactiveState.coordSystem,
-                            theme: config.theme,
+                            theme: theme,
                             xAxis: widget.xAxis,
                             yAxis: widget.yAxis,
                             animationProgress: _animation.value,
@@ -459,27 +461,5 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
       }
     }
     return hash;
-  }
-
-  Widget _buildTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
-
-  Widget _buildSubtitle(String subtitle) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Text(
-        subtitle,
-        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-        textAlign: TextAlign.center,
-      ),
-    );
   }
 }

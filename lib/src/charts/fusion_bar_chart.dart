@@ -14,6 +14,7 @@ import '../rendering/engine/fusion_paint_pool.dart';
 import '../rendering/engine/fusion_shader_cache.dart';
 import '../utils/fusion_margin_calculator.dart';
 import 'fusion_bar_interactive_state.dart';
+import 'base/fusion_chart_header.dart';
 
 /// A professional bar chart widget with Syncfusion-style features.
 ///
@@ -248,6 +249,7 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     final config = _barConfig;
+    final theme = config.theme;
     final title = widget.title;
     final subtitle = widget.subtitle;
 
@@ -256,8 +258,8 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (title != null) _BuildTitle(title: title),
-          if (subtitle != null) _BuildSubtitle(subtitle: subtitle),
+          if (title != null) FusionChartTitle(title: title, theme: theme),
+          if (subtitle != null) FusionChartSubtitle(subtitle: subtitle, theme: theme),
           Expanded(
             child: AnimatedBuilder(
               animation: _animation,
@@ -285,7 +287,7 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
                           painter: FusionBarChartPainter(
                             series: widget.series,
                             coordSystem: _interactiveState.coordSystem,
-                            theme: config.theme,
+                            theme: theme,
                             xAxis: widget.xAxis,
                             yAxis: widget.yAxis,
                             animationProgress: _animation.value,
@@ -384,8 +386,6 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
     _cachedCoordSystem = _coordSystem;
   }
 
-  // Removed _isCategoryData - bar charts always use category positioning
-
   int _calculateSeriesHash(List<FusionBarSeries> series) {
     int hash = 0;
     for (final s in series) {
@@ -397,41 +397,5 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
       }
     }
     return hash;
-  }
-}
-
-class _BuildSubtitle extends StatelessWidget {
-  const _BuildSubtitle({required this.subtitle});
-
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Text(
-        subtitle,
-        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
-}
-
-class _BuildTitle extends StatelessWidget {
-  const _BuildTitle({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        textAlign: TextAlign.center,
-      ),
-    );
   }
 }

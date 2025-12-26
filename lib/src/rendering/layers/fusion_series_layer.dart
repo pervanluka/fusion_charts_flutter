@@ -119,13 +119,18 @@ class FusionSeriesLayer extends FusionRenderLayer {
   // LINE SERIES RENDERING
   // ==========================================================================
 
-  /// Renders a line series.
+  /// Renders a line series with optional area fill.
+  ///
+  /// Rendering order:
+  /// 1. Area fill (if enabled) - rendered first so line appears on top
+  /// 2. Shadow (if enabled)
+  /// 3. Line stroke
   void _renderLineSeries(Canvas canvas, FusionRenderContext context, FusionLineSeries series) {
     final points = _getAnimatedPoints(series.dataPoints, context.animationProgress);
     if (points.isEmpty) return;
 
-    // Build the path
-    var path = series.isCurved
+    // Build the line path
+    final linePath = series.isCurved
         ? FusionPathBuilder.createSmoothPath(
             points,
             context.coordSystem,
@@ -133,31 +138,110 @@ class FusionSeriesLayer extends FusionRenderLayer {
           )
         : FusionPathBuilder.createLinePath(points, context.coordSystem);
 
-    if (series.lineDashArray != null && series.lineDashArray!.isNotEmpty) {
-      path = FusionPathBuilder.createDashedPath(path, series.lineDashArray!);
+    // 1. Render area fill FIRST (below line)
+    if (series.showArea) {
+      _renderAreaFill(canvas, context, series, points, linePath);
     }
 
+    // 2. Apply shadow if enabled (before line)
+    if (series.showShadow && series.shadow != null) {
+      _applyShadow(canvas, linePath, series.shadow!);
+    }
+
+    // 3. Apply dash pattern if specified
+    var strokePath = linePath;
+    if (series.lineDashArray != null && series.lineDashArray!.isNotEmpty) {
+      strokePath = FusionPathBuilder.createDashedPath(linePath, series.lineDashArray!);
+    }
+
+    // 4. Draw the line stroke
     final paint = context.getPaint(
       color: series.color,
       strokeWidth: series.lineWidth,
       style: PaintingStyle.stroke,
     );
 
-    // Apply gradient if specified
+    // Apply gradient to line if specified
     if (series.gradient != null) {
       paint.shader = context.shaderCache.getLinearGradient(series.gradient!, context.chartArea);
     }
 
-    // Apply shadow if enabled
-    if (series.showShadow && series.shadow != null) {
-      _applyShadow(canvas, path, series.shadow!);
+    canvas.drawPath(strokePath, paint);
+    context.returnPaint(paint);
+  }
+
+  // ==========================================================================
+  // AREA FILL RENDERING
+  // ==========================================================================
+
+  /// Renders the gradient/color fill below a line series.
+  ///
+  /// Creates a closed path from the line to the bottom of the chart area,
+  /// then fills it with either:
+  /// - Solid color with [series.areaOpacity]
+  /// - Gradient with opacity applied to each color stop
+  ///
+  /// ## Visual Result
+  ///
+  /// ```
+  ///        ╭──╮
+  ///   ╭───╯  ╰───╮      ← Line
+  ///  ░░░░░░░░░░░░░░░    ← Area fill (gradient fades down)
+  /// ░░░░░░░░░░░░░░░░░
+  /// ━━━━━━━━━━━━━━━━━    ← Chart bottom
+  /// ```
+  void _renderAreaFill(
+    Canvas canvas,
+    FusionRenderContext context,
+    FusionLineSeries series,
+    List<FusionDataPoint> points,
+    Path linePath,
+  ) {
+    if (points.length < 2) return;
+
+    // Create area path by copying line path and closing to chart bottom
+    final areaPath = Path.from(linePath);
+
+    // Get screen coordinates for closing the path
+    final firstPoint = points.first;
+    final lastPoint = points.last;
+    final chartBottom = context.chartArea.bottom;
+
+    final firstScreenX = context.coordSystem.dataXToScreenX(firstPoint.x);
+    final lastScreenX = context.coordSystem.dataXToScreenX(lastPoint.x);
+
+    // Close the path: line end → bottom right → bottom left → line start
+    areaPath.lineTo(lastScreenX, chartBottom);
+    areaPath.lineTo(firstScreenX, chartBottom);
+    areaPath.close();
+
+    // Create fill paint
+    final areaPaint = context.getPaint(
+      color: series.color.withOpacity(series.areaOpacity),
+      style: PaintingStyle.fill,
+    );
+
+    // Apply gradient if specified
+    if (series.gradient != null) {
+      // Create gradient with opacity applied to each color stop
+      final gradientWithOpacity = LinearGradient(
+        colors: series.gradient!.colors
+            .map((c) => c.withOpacity(series.areaOpacity))
+            .toList(),
+        stops: series.gradient!.stops,
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        tileMode: series.gradient!.tileMode,
+      );
+
+      areaPaint.shader = context.shaderCache.getLinearGradient(
+        gradientWithOpacity,
+        context.chartArea,
+      );
     }
 
-    // Draw the line
-    canvas.drawPath(path, paint);
-
-    // Return paint to pool
-    context.returnPaint(paint);
+    canvas.drawPath(areaPath, areaPaint);
+    context.returnPaint(areaPaint);
   }
 
   // ==========================================================================

@@ -11,12 +11,17 @@ import '../data/fusion_data_point.dart';
 import '../rendering/fusion_coordinate_system.dart';
 import '../rendering/fusion_interaction_handler.dart';
 import '../series/series_with_data_points.dart';
+import 'base/fusion_interactive_state_base.dart';
 
 /// State manager for interactive chart features.
 ///
 /// Works with ANY series type that implements SeriesWithDataPoints.
 /// Scales to infinite chart types without modification.
-class FusionInteractiveChartState extends ChangeNotifier {
+///
+/// Implements [FusionInteractiveStateBase] for compatibility with
+/// [FusionChartBaseState].
+class FusionInteractiveChartState extends ChangeNotifier
+    implements FusionInteractiveStateBase {
   FusionInteractiveChartState({
     required this.config,
     required FusionCoordinateSystem initialCoordSystem,
@@ -55,18 +60,26 @@ class FusionInteractiveChartState extends ChangeNotifier {
   bool _isZooming = false;
 
   // Getters
+  @override
   FusionCoordinateSystem get coordSystem => _currentCoordSystem;
+  @override
   TooltipRenderData? get tooltipData => _tooltipData;
+  @override
   Offset? get crosshairPosition => _crosshairPosition;
+  @override
   FusionDataPoint? get crosshairPoint => _crosshairPoint;
+  @override
   bool get isInteracting => _isPanning || _isZooming;
+  @override
   double get tooltipOpacity => _tooltipOpacity;
+  @override
   bool get isPointerDown => _isPointerDown;
 
   /// Updates the coordinate system when chart dimensions change.
   /// 
   /// IMPORTANT: Always updates without comparison to ensure
   /// the painter always has the correct bounds.
+  @override
   void updateCoordinateSystem(FusionCoordinateSystem newCoordSystem) {
     // Always update - the comparison was causing issues where
     // placeholder values persisted
@@ -78,6 +91,7 @@ class FusionInteractiveChartState extends ChangeNotifier {
     return series.where((s) => s.visible).expand((s) => s.dataPoints).toList();
   }
 
+  @override
   void initialize() {
     _rebuildInteractionHandler();
   }
@@ -137,6 +151,7 @@ class FusionInteractiveChartState extends ChangeNotifier {
   // POINTER EVENT HANDLERS
   // ==========================================================================
 
+  @override
   void handlePointerDown(PointerDownEvent event) {
     _isPointerDown = true;
     _pointerDownTime = DateTime.now();
@@ -154,6 +169,7 @@ class FusionInteractiveChartState extends ChangeNotifier {
     }
   }
 
+  @override
   void handlePointerMove(PointerMoveEvent event) {
     if (!_isPointerDown) return;
 
@@ -221,6 +237,7 @@ class FusionInteractiveChartState extends ChangeNotifier {
     notifyListeners();
   }
 
+  @override
   void handlePointerUp(PointerUpEvent event) {
     _isPointerDown = false;
     _lastTrackballPosition = null; // Reset trackball position tracking
@@ -265,6 +282,7 @@ class FusionInteractiveChartState extends ChangeNotifier {
     _pointerDownTime = null;
   }
 
+  @override
   void handlePointerCancel(PointerCancelEvent event) {
     _isPointerDown = false;
     _pointerDownTime = null;
@@ -275,6 +293,7 @@ class FusionInteractiveChartState extends ChangeNotifier {
     _hideCrosshair();
   }
 
+  @override
   void handlePointerHover(PointerHoverEvent event) {
     if (!config.enableTooltip) return;
 
@@ -292,6 +311,7 @@ class FusionInteractiveChartState extends ChangeNotifier {
   // ==========================================================================
 
   /// Handles mouse wheel scroll for zoom on desktop.
+  @override
   void handlePointerSignal(PointerSignalEvent event) {
     if (!config.enableZoom) return;
     if (!config.zoomBehavior.enableMouseWheelZoom) return;
@@ -774,6 +794,7 @@ class FusionInteractiveChartState extends ChangeNotifier {
   // GESTURE RECOGNIZERS
   // ==========================================================================
 
+  @override
   Map<Type, GestureRecognizerFactory> getGestureRecognizers() {
     final recognizers = <Type, GestureRecognizerFactory>{};
 

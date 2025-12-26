@@ -3,16 +3,21 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
 import '../configuration/fusion_chart_configuration.dart';
+import '../configuration/fusion_tooltip_configuration.dart';
 import '../core/enums/fusion_zoom_mode.dart';
+import '../data/fusion_data_point.dart';
 import '../rendering/fusion_coordinate_system.dart';
 import '../rendering/fusion_interaction_handler.dart';
 import '../rendering/fusion_stacked_bar_hit_tester.dart';
 import '../series/fusion_stacked_bar_series.dart';
+import 'base/fusion_interactive_state_base.dart';
 
 /// Tooltip data specifically for stacked bars.
 ///
 /// Contains all segment information for rich multi-line tooltips.
-class StackedTooltipData {
+/// Extends [FusionTooltipDataBase] for compatibility with
+/// [FusionInteractiveStateBase].
+class StackedTooltipData extends FusionTooltipDataBase {
   const StackedTooltipData({
     required this.categoryLabel,
     required this.segments,
@@ -20,11 +25,12 @@ class StackedTooltipData {
     required this.screenPosition,
     required this.isStacked100,
     this.hitSegmentIndex = -1,
-  });
+  }) : super();
 
   final String? categoryLabel;
   final List<StackedSegmentInfo> segments;
   final double totalValue;
+  @override
   final Offset screenPosition;
   final bool isStacked100;
   final int hitSegmentIndex;
@@ -34,7 +40,11 @@ class StackedTooltipData {
 ///
 /// Shows a multi-line tooltip with all segments in the stack.
 /// Supports zoom and pan with configuration-aware constraints.
-class FusionStackedBarInteractiveState extends ChangeNotifier {
+///
+/// Implements [FusionInteractiveStateBase] for compatibility with
+/// the base chart widget architecture.
+class FusionStackedBarInteractiveState extends ChangeNotifier
+    implements FusionInteractiveStateBase {
   FusionStackedBarInteractiveState({
     required this.config,
     required FusionCoordinateSystem initialCoordSystem,
@@ -73,12 +83,22 @@ class FusionStackedBarInteractiveState extends ChangeNotifier {
   Timer? _crosshairHideTimer;
 
   // Getters
+  @override
   FusionCoordinateSystem get coordSystem => _currentCoordSystem;
+  @override
   StackedTooltipData? get tooltipData => _tooltipData;
+  @override
   double get tooltipOpacity => _tooltipOpacity;
+  @override
   Offset? get crosshairPosition => _crosshairPosition;
+  @override
+  FusionDataPoint? get crosshairPoint => null; // Stacked bars don't use crosshair points
+  @override
   bool get isInteracting => _isPanning || _isZooming;
+  @override
+  bool get isPointerDown => _isPointerDown;
 
+  @override
   void initialize() {
     _rebuildInteractionHandler();
   }
@@ -93,6 +113,7 @@ class FusionStackedBarInteractiveState extends ChangeNotifier {
 
   /// Updates the coordinate system when chart dimensions change.
   /// Always updates without comparison to ensure proper responsiveness.
+  @override
   void updateCoordinateSystem(FusionCoordinateSystem newCoordSystem) {
     _currentCoordSystem = newCoordSystem;
     _rebuildInteractionHandler();
@@ -102,6 +123,7 @@ class FusionStackedBarInteractiveState extends ChangeNotifier {
   // POINTER EVENT HANDLERS
   // ========================================================================
 
+  @override
   void handlePointerDown(PointerDownEvent event) {
     _isPointerDown = true;
     _pointerDownTime = DateTime.now();
@@ -124,6 +146,7 @@ class FusionStackedBarInteractiveState extends ChangeNotifier {
     }
   }
 
+  @override
   void handlePointerMove(PointerMoveEvent event) {
     if (!_isPointerDown) return;
 
@@ -145,6 +168,7 @@ class FusionStackedBarInteractiveState extends ChangeNotifier {
     }
   }
 
+  @override
   void handlePointerUp(PointerUpEvent event) {
     _isPointerDown = false;
 
@@ -170,6 +194,7 @@ class FusionStackedBarInteractiveState extends ChangeNotifier {
     _lastPointerPosition = null;
   }
 
+  @override
   void handlePointerCancel(PointerCancelEvent event) {
     _isPointerDown = false;
     _pointerDownTime = null;
@@ -178,6 +203,7 @@ class FusionStackedBarInteractiveState extends ChangeNotifier {
     _hideCrosshair();
   }
 
+  @override
   void handlePointerHover(PointerHoverEvent event) {
     if (!config.enableTooltip) return;
 
@@ -199,6 +225,7 @@ class FusionStackedBarInteractiveState extends ChangeNotifier {
   // MOUSE WHEEL ZOOM (Desktop Support)
   // ========================================================================
 
+  @override
   void handlePointerSignal(PointerSignalEvent event) {
     if (!config.enableZoom) return;
     if (!config.zoomBehavior.enableMouseWheelZoom) return;
@@ -461,6 +488,7 @@ class FusionStackedBarInteractiveState extends ChangeNotifier {
   // GESTURE RECOGNIZERS
   // ========================================================================
 
+  @override
   Map<Type, GestureRecognizerFactory> getGestureRecognizers() {
     final recognizers = <Type, GestureRecognizerFactory>{};
 

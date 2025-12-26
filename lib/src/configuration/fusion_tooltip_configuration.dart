@@ -423,8 +423,43 @@ class FusionTooltipBehavior {
 /// Alignment options for tooltip
 enum ChartAlignment { near, center, far }
 
+// ============================================================================
+// BASE TOOLTIP DATA
+// ============================================================================
+
+/// Base class for all tooltip render data types.
+///
+/// This abstract class defines the common interface that all tooltip data
+/// must implement, enabling polymorphic handling in the interactive state base.
+///
+/// ## Implementations
+///
+/// - [TooltipRenderData] - Single point tooltip (line/bar charts)
+/// - [StackedTooltipData] - Multi-segment tooltip (stacked bar charts)
+///
+/// ## Usage
+///
+/// ```dart
+/// // In interactive state base interface:
+/// FusionTooltipDataBase? get tooltipData;
+///
+/// // Concrete implementations return their specific type:
+/// TooltipRenderData? get tooltipData => _tooltipData;
+/// StackedTooltipData? get tooltipData => _stackedTooltipData;
+/// ```
+abstract class FusionTooltipDataBase {
+  /// Const constructor for subclasses.
+  const FusionTooltipDataBase();
+
+  /// Screen position where the tooltip should be rendered.
+  ///
+  /// This is typically the position of the data point or the center
+  /// of the hovered element.
+  Offset get screenPosition;
+}
+
 /// Single point tooltip render data (internal use)
-class TooltipRenderData {
+class TooltipRenderData extends FusionTooltipDataBase {
   const TooltipRenderData({
     required this.point,
     required this.seriesName,
@@ -433,11 +468,12 @@ class TooltipRenderData {
     this.wasLongPress = false,
     this.activationTime,
     this.sharedPoints,
-  });
+  }) : super();
 
   final FusionDataPoint point;
   final String seriesName;
   final Color seriesColor;
+  @override
   final Offset screenPosition;
   final bool wasLongPress;
   final DateTime? activationTime;

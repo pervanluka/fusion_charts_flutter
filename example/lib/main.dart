@@ -523,6 +523,13 @@ class BasicLineChartExample extends StatelessWidget {
           ],
           color: const Color(0xFF6366F1),
           lineWidth: 2.5,
+          showArea: true,
+          areaOpacity: 0.4,
+          gradient: LinearGradient(
+            colors: [const Color(0xFF6366F1), const Color(0xFF6366F1).withValues(alpha: 0.3)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
         ),
       ],
       config: const FusionLineChartConfiguration(

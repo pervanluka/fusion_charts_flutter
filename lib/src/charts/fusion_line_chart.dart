@@ -10,6 +10,7 @@ import '../utils/fusion_margin_calculator.dart';
 import 'fusion_interactive_chart.dart';
 import '../rendering/engine/fusion_paint_pool.dart';
 import '../rendering/engine/fusion_shader_cache.dart';
+import 'base/fusion_chart_header.dart';
 
 class FusionLineChart extends StatefulWidget {
   const FusionLineChart({
@@ -146,6 +147,7 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     final config = widget.config ?? const FusionChartConfiguration();
+    final theme = config.theme;
     final title = widget.title;
     final subtitle = widget.subtitle;
 
@@ -154,8 +156,8 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (title != null) _BuildTitle(title: title),
-          if (subtitle != null) _BuildSubtitle(subtitle: subtitle),
+          if (title != null) FusionChartTitle(title: title, theme: theme),
+          if (subtitle != null) FusionChartSubtitle(subtitle: subtitle, theme: theme),
           Expanded(
             child: AnimatedBuilder(
               animation: _animation,
@@ -192,7 +194,7 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
                           painter: FusionLineChartPainter(
                             series: widget.series,
                             coordSystem: _interactiveState.coordSystem,
-                            theme: config.theme,
+                            theme: theme,
                             xAxis: widget.xAxis,
                             yAxis: widget.yAxis,
                             animationProgress: _animation.value,
@@ -270,41 +272,5 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
 
     // ALWAYS update interactive state - this is critical for responsiveness
     _interactiveState.updateCoordinateSystem(_coordSystem!);
-  }
-}
-
-class _BuildSubtitle extends StatelessWidget {
-  const _BuildSubtitle({required this.subtitle});
-
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Text(
-        subtitle,
-        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
-}
-
-class _BuildTitle extends StatelessWidget {
-  const _BuildTitle({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        textAlign: TextAlign.center,
-      ),
-    );
   }
 }

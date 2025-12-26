@@ -5,13 +5,15 @@ import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 import '../rendering/fusion_bar_hit_tester.dart';
 import '../rendering/fusion_interaction_handler.dart';
+import 'base/fusion_interactive_state_base.dart';
 
 /// Specialized interactive state for bar charts.
 ///
 /// Unlike the generic interactive state that finds nearest points by distance,
 /// this uses rectangle-based hit testing for accurate bar selection.
 /// Also supports zoom and pan with configuration-aware constraints.
-class FusionBarInteractiveState extends ChangeNotifier {
+class FusionBarInteractiveState extends ChangeNotifier
+    implements FusionInteractiveStateBase {
   FusionBarInteractiveState({
     required this.config,
     required FusionCoordinateSystem initialCoordSystem,
@@ -51,13 +53,22 @@ class FusionBarInteractiveState extends ChangeNotifier {
   Timer? _crosshairHideTimer;
 
   // Getters
+  @override
   FusionCoordinateSystem get coordSystem => _currentCoordSystem;
+  @override
   TooltipRenderData? get tooltipData => _tooltipData;
+  @override
   double get tooltipOpacity => _tooltipOpacity;
+  @override
   Offset? get crosshairPosition => _crosshairPosition;
+  @override
   FusionDataPoint? get crosshairPoint => _crosshairPoint;
+  @override
   bool get isInteracting => _isPanning || _isZooming;
+  @override
+  bool get isPointerDown => _isPointerDown;
 
+  @override
   void initialize() {
     _rebuildInteractionHandler();
   }
@@ -72,6 +83,7 @@ class FusionBarInteractiveState extends ChangeNotifier {
 
   /// Updates the coordinate system when chart dimensions change.
   /// Always updates without comparison to ensure proper responsiveness.
+  @override
   void updateCoordinateSystem(FusionCoordinateSystem newCoordSystem) {
     _currentCoordSystem = newCoordSystem;
     _rebuildInteractionHandler();
@@ -81,6 +93,7 @@ class FusionBarInteractiveState extends ChangeNotifier {
   // POINTER EVENT HANDLERS
   // ========================================================================
 
+  @override
   void handlePointerDown(PointerDownEvent event) {
     _isPointerDown = true;
     _pointerDownTime = DateTime.now();
@@ -103,6 +116,7 @@ class FusionBarInteractiveState extends ChangeNotifier {
     }
   }
 
+  @override
   void handlePointerMove(PointerMoveEvent event) {
     if (!_isPointerDown) return;
 
@@ -124,6 +138,7 @@ class FusionBarInteractiveState extends ChangeNotifier {
     }
   }
 
+  @override
   void handlePointerUp(PointerUpEvent event) {
     _isPointerDown = false;
 
@@ -149,6 +164,7 @@ class FusionBarInteractiveState extends ChangeNotifier {
     _lastPointerPosition = null;
   }
 
+  @override
   void handlePointerCancel(PointerCancelEvent event) {
     _isPointerDown = false;
     _pointerDownTime = null;
@@ -157,6 +173,7 @@ class FusionBarInteractiveState extends ChangeNotifier {
     _hideCrosshair();
   }
 
+  @override
   void handlePointerHover(PointerHoverEvent event) {
     if (!config.enableTooltip) return;
 
@@ -178,6 +195,7 @@ class FusionBarInteractiveState extends ChangeNotifier {
   // MOUSE WHEEL ZOOM (Desktop Support)
   // ========================================================================
 
+  @override
   void handlePointerSignal(PointerSignalEvent event) {
     if (!config.enableZoom) return;
     if (!config.zoomBehavior.enableMouseWheelZoom) return;
@@ -488,6 +506,7 @@ class FusionBarInteractiveState extends ChangeNotifier {
   // GESTURE RECOGNIZERS
   // ========================================================================
 
+  @override
   Map<Type, GestureRecognizerFactory> getGestureRecognizers() {
     final recognizers = <Type, GestureRecognizerFactory>{};
 
