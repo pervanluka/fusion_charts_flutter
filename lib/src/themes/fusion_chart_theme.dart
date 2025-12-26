@@ -137,11 +137,32 @@ abstract class FusionChartTheme {
   /// Recommended: 12-13px, weight 600
   TextStyle get tooltipStyle;
 
+  /// Border radius for tooltips.
+  double get tooltipBorderRadius => 8.0;
+
+  /// Padding inside tooltips.
+  EdgeInsets get tooltipPadding => const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+
+  /// Default tooltip background color.
+  Color get tooltipBackgroundColor => const Color(0xDD000000); // Colors.black87 equivalent
+
+  /// Marker border color (usually white for contrast).
+  Color get markerBorderColor => const Color(0xFFFFFFFF);
+
   /// Text style for data labels on the chart.
   ///
   /// Should be small enough not to clutter but readable.
   /// Recommended: 10-11px, weight 500
   TextStyle get dataLabelStyle => axisLabelStyle.copyWith(fontWeight: FontWeight.w600);
+
+  /// Padding inside data label backgrounds.
+  EdgeInsets get dataLabelPadding => const EdgeInsets.symmetric(horizontal: 4, vertical: 2);
+
+  /// Background opacity for data labels.
+  double get dataLabelBackgroundOpacity => 0.9;
+
+  /// Border radius for data labels (uses borderRadius by default).
+  double get dataLabelBorderRadius => 3.0;
 
   /// Text style for subtitle or secondary text.
   TextStyle get subtitleStyle => titleStyle.copyWith(fontSize: 14, fontWeight: FontWeight.w500);

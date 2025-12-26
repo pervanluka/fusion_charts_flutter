@@ -110,12 +110,33 @@ class FusionDarkTheme with FusionThemeUtils implements FusionChartTheme {
   );
 
   @override
+  double get tooltipBorderRadius => 8.0;
+
+  @override
+  EdgeInsets get tooltipPadding => const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+
+  @override
+  Color get tooltipBackgroundColor => const Color(0xEE2A2A2A); // Slightly lighter for dark theme
+
+  @override
+  Color get markerBorderColor => const Color(0xFF1E1E1E); // Match background for dark theme
+
+  @override
   TextStyle get dataLabelStyle => const TextStyle(
     fontSize: 10,
     fontWeight: FontWeight.w600,
     color: Color(0xFFB0B0B0),
     letterSpacing: 0.3,
   );
+
+  @override
+  EdgeInsets get dataLabelPadding => const EdgeInsets.symmetric(horizontal: 4, vertical: 2);
+
+  @override
+  double get dataLabelBackgroundOpacity => 0.85; // Slightly lower for dark theme
+
+  @override
+  double get dataLabelBorderRadius => 3.0;
 
   @override
   TextStyle get subtitleStyle => TextStyle(

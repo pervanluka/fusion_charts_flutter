@@ -111,12 +111,33 @@ class FusionLightTheme with FusionThemeUtils implements FusionChartTheme {
   );
 
   @override
+  double get tooltipBorderRadius => 8.0;
+
+  @override
+  EdgeInsets get tooltipPadding => const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+
+  @override
+  Color get tooltipBackgroundColor => const Color(0xDD000000);
+
+  @override
+  Color get markerBorderColor => Colors.white;
+
+  @override
   TextStyle get dataLabelStyle => const TextStyle(
     fontSize: 10,
     fontWeight: FontWeight.w600,
     color: Color(0xFF666666),
     letterSpacing: 0.3,
   );
+
+  @override
+  EdgeInsets get dataLabelPadding => const EdgeInsets.symmetric(horizontal: 4, vertical: 2);
+
+  @override
+  double get dataLabelBackgroundOpacity => 0.9;
+
+  @override
+  double get dataLabelBorderRadius => 3.0;
 
   @override
   TextStyle get subtitleStyle => TextStyle(

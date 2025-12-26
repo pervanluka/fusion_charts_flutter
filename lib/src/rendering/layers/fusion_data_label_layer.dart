@@ -176,6 +176,7 @@ class FusionDataLabelLayer extends FusionRenderLayer {
         screenPos: screenPos,
         labelSize: textPainter.size,
         chartArea: context.chartArea,
+        labelPadding: context.theme.dataLabelPadding,
       );
 
       labels.add(
@@ -185,6 +186,7 @@ class FusionDataLabelLayer extends FusionRenderLayer {
           textPainter: textPainter,
           dataPoint: point,
           seriesColor: series.color,
+          labelPadding: context.theme.dataLabelPadding,
           visible: true,
         ),
       );
@@ -254,19 +256,20 @@ class FusionDataLabelLayer extends FusionRenderLayer {
     required Offset screenPos,
     required Size labelSize,
     required Rect chartArea,
+    required EdgeInsets labelPadding,
   }) {
-    const padding = 6.0;
+    const pointPadding = 6.0; // Gap between point and label
     
     // Calculate label dimensions with padding for background
-    final labelWidth = labelSize.width + 8; // Account for background padding
-    final labelHeight = labelSize.height + 4;
+    final labelWidth = labelSize.width + labelPadding.horizontal;
+    final labelHeight = labelSize.height + labelPadding.vertical;
     
     // Try above first
-    double labelY = screenPos.dy - labelHeight - padding;
+    double labelY = screenPos.dy - labelHeight - pointPadding;
     
     // If above overflows top, position below
     if (labelY < chartArea.top) {
-      labelY = screenPos.dy + padding + 4; // +4 for marker clearance
+      labelY = screenPos.dy + pointPadding + 4; // +4 for marker clearance
     }
     
     // If below also overflows, clamp to top
@@ -445,6 +448,7 @@ class FusionDataLabelLayer extends FusionRenderLayer {
           textPainter: label.textPainter,
           dataPoint: label.dataPoint,
           seriesColor: label.seriesColor,
+          labelPadding: label.labelPadding,
         );
 
         // Check if this position is valid
@@ -508,21 +512,31 @@ class FusionDataLabelLayer extends FusionRenderLayer {
 
   /// Renders a single data label.
   void _renderLabel(Canvas canvas, FusionRenderContext context, _LabelInfo label) {
-    final bounds = label.bounds;
+    final theme = context.theme;
+    final padding = theme.dataLabelPadding;
+    final borderRadius = theme.dataLabelBorderRadius;
+    
+    // Calculate bounds with theme padding
+    final bounds = Rect.fromLTWH(
+      label.position.dx - padding.left,
+      label.position.dy - padding.top,
+      label.textPainter.width + padding.horizontal,
+      label.textPainter.height + padding.vertical,
+    );
 
     // Render shadow if enabled
     if (enableShadow) {
-      _renderLabelShadow(canvas, bounds);
+      _renderLabelShadow(canvas, bounds, borderRadius);
     }
 
     // Render background if enabled
     if (enableBackground) {
-      _renderLabelBackground(canvas, context, bounds, label.seriesColor);
+      _renderLabelBackground(canvas, context, bounds, borderRadius);
     }
 
     // Render border if enabled
     if (enableBorder) {
-      _renderLabelBorder(canvas, context, bounds);
+      _renderLabelBorder(canvas, context, bounds, borderRadius);
     }
 
     // Render text
@@ -534,42 +548,49 @@ class FusionDataLabelLayer extends FusionRenderLayer {
     Canvas canvas,
     FusionRenderContext context,
     Rect bounds,
-    Color seriesColor,
+    double borderRadius,
   ) {
     final backgroundPaint = context.getPaint(
-      color: context.theme.backgroundColor.withValues(alpha: 0.9),
+      color: context.theme.backgroundColor.withValues(
+        alpha: context.theme.dataLabelBackgroundOpacity,
+      ),
       style: PaintingStyle.fill,
     );
 
-    final rRect = RRect.fromRectAndRadius(bounds, const Radius.circular(3));
+    final rRect = RRect.fromRectAndRadius(bounds, Radius.circular(borderRadius));
     canvas.drawRRect(rRect, backgroundPaint);
 
     context.returnPaint(backgroundPaint);
   }
 
   /// Renders label border.
-  void _renderLabelBorder(Canvas canvas, FusionRenderContext context, Rect bounds) {
+  void _renderLabelBorder(
+    Canvas canvas,
+    FusionRenderContext context,
+    Rect bounds,
+    double borderRadius,
+  ) {
     final borderPaint = context.getPaint(
-      color: context.theme.gridColor,
-      strokeWidth: 1.0,
+      color: context.theme.borderColor,
+      strokeWidth: context.theme.gridLineWidth,
       style: PaintingStyle.stroke,
     );
 
-    final rRect = RRect.fromRectAndRadius(bounds, const Radius.circular(3));
+    final rRect = RRect.fromRectAndRadius(bounds, Radius.circular(borderRadius));
     canvas.drawRRect(rRect, borderPaint);
 
     context.returnPaint(borderPaint);
   }
 
   /// Renders label shadow.
-  void _renderLabelShadow(Canvas canvas, Rect bounds) {
+  void _renderLabelShadow(Canvas canvas, Rect bounds, double borderRadius) {
     final shadowPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.2)
+      ..color = Colors.black.withValues(alpha: 0.15)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.0);
 
     final rRect = RRect.fromRectAndRadius(
       bounds.shift(const Offset(1, 1)),
-      const Radius.circular(3),
+      Radius.circular(borderRadius),
     );
 
     canvas.drawRRect(rRect, shadowPaint);
@@ -609,6 +630,7 @@ class _LabelInfo {
     required this.textPainter,
     required this.dataPoint,
     required this.seriesColor,
+    required this.labelPadding,
     this.visible = true,
   });
 
@@ -617,15 +639,16 @@ class _LabelInfo {
   final TextPainter textPainter;
   final FusionDataPoint dataPoint;
   final Color seriesColor;
+  final EdgeInsets labelPadding;
   bool visible;
 
   /// Gets the bounding rectangle of the label.
   Rect get bounds {
     return Rect.fromLTWH(
-      position.dx - 4, // Padding
-      position.dy - 2,
-      textPainter.width + 8,
-      textPainter.height + 4,
+      position.dx - labelPadding.left,
+      position.dy - labelPadding.top,
+      textPainter.width + labelPadding.horizontal,
+      textPainter.height + labelPadding.vertical,
     );
   }
 }

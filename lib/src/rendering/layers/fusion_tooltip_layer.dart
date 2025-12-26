@@ -79,6 +79,7 @@ class FusionTooltipLayer extends FusionRenderLayer {
     String seriesName,
     Color seriesColor,
   ) {
+    final theme = context.theme;
     final valueText = tooltipBehavior.format != null
         ? tooltipBehavior.format!(point, seriesName)
         : FusionDataFormatter.formatPrecise(point.y, maxDecimals: tooltipBehavior.decimalPlaces);
@@ -86,12 +87,12 @@ class FusionTooltipLayer extends FusionRenderLayer {
     final labelText = point.label != null ? '${point.label}\n' : '';
     final fullText = '$labelText$seriesName: $valueText';
 
-    // Determine appropriate text color based on background
-    final bgColor = tooltipBehavior.color ?? Colors.black87;
+    // Use theme background color as fallback
+    final bgColor = tooltipBehavior.color ?? theme.tooltipBackgroundColor;
     final effectiveTextColor = _getContrastingTextColor(bgColor);
 
     // Use config style with proper text color, or create from theme
-    final baseStyle = tooltipBehavior.textStyle ?? context.theme.tooltipStyle;
+    final baseStyle = tooltipBehavior.textStyle ?? theme.tooltipStyle;
     final textStyle = baseStyle.copyWith(color: effectiveTextColor);
 
     final textPainter = TextPainter(
@@ -101,10 +102,16 @@ class FusionTooltipLayer extends FusionRenderLayer {
     textPainter.layout();
 
     final dpiScale = context.devicePixelRatio;
-    final padding = EdgeInsets.symmetric(horizontal: 12 * dpiScale, vertical: 8 * dpiScale);
+    // Use theme padding scaled by DPI
+    final basePadding = theme.tooltipPadding;
+    final padding = EdgeInsets.symmetric(
+      horizontal: basePadding.horizontal / 2 * dpiScale,
+      vertical: basePadding.vertical / 2 * dpiScale,
+    );
     final tooltipWidth = textPainter.width + padding.horizontal;
     final tooltipHeight = textPainter.height + padding.vertical;
     final tooltipSize = Size(tooltipWidth, tooltipHeight);
+    final borderRadius = theme.tooltipBorderRadius;
 
     final tooltipPosition = _calculateOptimalTooltipPosition(
       dataPointScreen: screenPos,
@@ -123,13 +130,13 @@ class FusionTooltipLayer extends FusionRenderLayer {
     );
 
     if (tooltipBehavior.elevation > 0) {
-      _paintShadow(canvas, tooltipRect, tooltipBehavior);
+      _paintShadow(canvas, tooltipRect, tooltipBehavior, borderRadius);
     }
 
-    _paintBackground(canvas, tooltipRect, bgColor, tooltipBehavior);
+    _paintBackground(canvas, tooltipRect, bgColor, tooltipBehavior, borderRadius);
 
     if (tooltipBehavior.borderWidth > 0) {
-      _paintBorder(canvas, tooltipRect, seriesColor, tooltipBehavior);
+      _paintBorder(canvas, tooltipRect, seriesColor, tooltipBehavior, borderRadius);
     }
 
     textPainter.paint(
@@ -138,7 +145,7 @@ class FusionTooltipLayer extends FusionRenderLayer {
     );
 
     if (tooltipBehavior.canShowMarker) {
-      _paintMarker(canvas, screenPos, seriesColor);
+      _paintMarker(canvas, screenPos, seriesColor, theme.markerBorderColor);
     }
 
     _paintSmartArrow(canvas, tooltipRect, screenPos, bgColor);
@@ -155,18 +162,26 @@ class FusionTooltipLayer extends FusionRenderLayer {
     Color primarySeriesColor,
     List<SharedTooltipPoint> sharedPoints,
   ) {
-    // Determine appropriate text color based on background
-    final bgColor = tooltipBehavior.color ?? Colors.black87;
+    final theme = context.theme;
+    
+    // Use theme background color as fallback
+    final bgColor = tooltipBehavior.color ?? theme.tooltipBackgroundColor;
     final effectiveTextColor = _getContrastingTextColor(bgColor);
 
     // Use config style with proper text color, or create from theme
-    final baseStyle = tooltipBehavior.textStyle ?? context.theme.tooltipStyle;
+    final baseStyle = tooltipBehavior.textStyle ?? theme.tooltipStyle;
     final textStyle = baseStyle.copyWith(color: effectiveTextColor);
 
     final dpiScale = context.devicePixelRatio;
-    final padding = EdgeInsets.symmetric(horizontal: 12 * dpiScale, vertical: 8 * dpiScale);
-    final lineHeight = (textStyle.fontSize ?? 12.0) * 1.4; // Better line height
+    // Use theme padding scaled by DPI
+    final basePadding = theme.tooltipPadding;
+    final padding = EdgeInsets.symmetric(
+      horizontal: basePadding.horizontal / 2 * dpiScale,
+      vertical: basePadding.vertical / 2 * dpiScale,
+    );
+    final lineHeight = (textStyle.fontSize ?? 12.0) * 1.4;
     final rowSpacing = 4.0 * dpiScale;
+    final borderRadius = theme.tooltipBorderRadius;
 
     // Build all entries (primary + shared)
     final entries = <_TooltipEntry>[
@@ -248,19 +263,19 @@ class FusionTooltipLayer extends FusionRenderLayer {
     // FIRST: Draw markers for all points (BEFORE tooltip so they don't overlap)
     if (tooltipBehavior.canShowMarker) {
       for (final entry in entries) {
-        _paintMarker(canvas, entry.screenPosition, entry.color);
+        _paintMarker(canvas, entry.screenPosition, entry.color, theme.markerBorderColor);
       }
     }
 
     // THEN: Draw tooltip background (on top of markers)
     if (tooltipBehavior.elevation > 0) {
-      _paintShadow(canvas, tooltipRect, tooltipBehavior);
+      _paintShadow(canvas, tooltipRect, tooltipBehavior, borderRadius);
     }
 
-    _paintBackground(canvas, tooltipRect, bgColor, tooltipBehavior);
+    _paintBackground(canvas, tooltipRect, bgColor, tooltipBehavior, borderRadius);
 
     if (tooltipBehavior.borderWidth > 0) {
-      _paintBorder(canvas, tooltipRect, primarySeriesColor, tooltipBehavior);
+      _paintBorder(canvas, tooltipRect, primarySeriesColor, tooltipBehavior, borderRadius);
     }
 
     // Draw each entry
@@ -290,7 +305,7 @@ class FusionTooltipLayer extends FusionRenderLayer {
         canvas,
         Offset(
           tooltipPosition.dx + padding.left + colorIndicatorSize + colorIndicatorMargin,
-          currentY + (lineHeight - textPainter.height) / 2, // Center text vertically
+          currentY + (lineHeight - textPainter.height) / 2,
         ),
       );
 
@@ -315,10 +330,12 @@ class FusionTooltipLayer extends FusionRenderLayer {
     String seriesName,
     Color seriesColor,
   ) {
-    final bgColor = tooltipBehavior.color ?? Colors.black87;
+    final theme = context.theme;
+    final bgColor = tooltipBehavior.color ?? theme.tooltipBackgroundColor;
     final effectiveTextColor = _getContrastingTextColor(bgColor);
-    final baseStyle = tooltipBehavior.textStyle ?? context.theme.tooltipStyle;
+    final baseStyle = tooltipBehavior.textStyle ?? theme.tooltipStyle;
     final textStyle = baseStyle.copyWith(color: effectiveTextColor);
+    final borderRadius = theme.tooltipBorderRadius;
 
     final valueText = tooltipBehavior.format != null
         ? tooltipBehavior.format!(point, seriesName)
@@ -333,7 +350,12 @@ class FusionTooltipLayer extends FusionRenderLayer {
     )..layout();
 
     final dpiScale = context.devicePixelRatio;
-    final padding = EdgeInsets.symmetric(horizontal: 12 * dpiScale, vertical: 8 * dpiScale);
+    // Use theme padding scaled by DPI
+    final basePadding = theme.tooltipPadding;
+    final padding = EdgeInsets.symmetric(
+      horizontal: basePadding.horizontal / 2 * dpiScale,
+      vertical: basePadding.vertical / 2 * dpiScale,
+    );
     final tooltipWidth = textPainter.width + padding.horizontal;
     final tooltipHeight = textPainter.height + padding.vertical;
     final boundaryPadding = 8.0 * dpiScale;
@@ -367,16 +389,16 @@ class FusionTooltipLayer extends FusionRenderLayer {
 
     // Draw marker
     if (tooltipBehavior.canShowMarker) {
-      _paintMarker(canvas, screenPos, seriesColor);
+      _paintMarker(canvas, screenPos, seriesColor, theme.markerBorderColor);
     }
 
     // Draw tooltip background
     if (tooltipBehavior.elevation > 0) {
-      _paintShadow(canvas, tooltipRect, tooltipBehavior);
+      _paintShadow(canvas, tooltipRect, tooltipBehavior, borderRadius);
     }
-    _paintBackground(canvas, tooltipRect, bgColor, tooltipBehavior);
+    _paintBackground(canvas, tooltipRect, bgColor, tooltipBehavior, borderRadius);
     if (tooltipBehavior.borderWidth > 0) {
-      _paintBorder(canvas, tooltipRect, seriesColor, tooltipBehavior);
+      _paintBorder(canvas, tooltipRect, seriesColor, tooltipBehavior, borderRadius);
     }
 
     // Draw text
@@ -397,13 +419,20 @@ class FusionTooltipLayer extends FusionRenderLayer {
     Color primarySeriesColor,
     List<SharedTooltipPoint> sharedPoints,
   ) {
-    final bgColor = tooltipBehavior.color ?? Colors.black87;
+    final theme = context.theme;
+    final bgColor = tooltipBehavior.color ?? theme.tooltipBackgroundColor;
     final effectiveTextColor = _getContrastingTextColor(bgColor);
-    final baseStyle = tooltipBehavior.textStyle ?? context.theme.tooltipStyle;
+    final baseStyle = tooltipBehavior.textStyle ?? theme.tooltipStyle;
     final textStyle = baseStyle.copyWith(color: effectiveTextColor);
+    final borderRadius = theme.tooltipBorderRadius;
 
     final dpiScale = context.devicePixelRatio;
-    final padding = EdgeInsets.symmetric(horizontal: 12 * dpiScale, vertical: 8 * dpiScale);
+    // Use theme padding scaled by DPI
+    final basePadding = theme.tooltipPadding;
+    final padding = EdgeInsets.symmetric(
+      horizontal: basePadding.horizontal / 2 * dpiScale,
+      vertical: basePadding.vertical / 2 * dpiScale,
+    );
     final lineHeight = (textStyle.fontSize ?? 12.0) * 1.4;
     final rowSpacing = 4.0 * dpiScale;
     final boundaryPadding = 8.0 * dpiScale;
@@ -486,17 +515,17 @@ class FusionTooltipLayer extends FusionRenderLayer {
     // Draw markers for all points
     if (tooltipBehavior.canShowMarker) {
       for (final entry in entries) {
-        _paintMarker(canvas, entry.screenPosition, entry.color);
+        _paintMarker(canvas, entry.screenPosition, entry.color, theme.markerBorderColor);
       }
     }
 
     // Draw tooltip background
     if (tooltipBehavior.elevation > 0) {
-      _paintShadow(canvas, tooltipRect, tooltipBehavior);
+      _paintShadow(canvas, tooltipRect, tooltipBehavior, borderRadius);
     }
-    _paintBackground(canvas, tooltipRect, bgColor, tooltipBehavior);
+    _paintBackground(canvas, tooltipRect, bgColor, tooltipBehavior, borderRadius);
     if (tooltipBehavior.borderWidth > 0) {
-      _paintBorder(canvas, tooltipRect, primarySeriesColor, tooltipBehavior);
+      _paintBorder(canvas, tooltipRect, primarySeriesColor, tooltipBehavior, borderRadius);
     }
 
     // Draw entries
@@ -547,8 +576,6 @@ class FusionTooltipLayer extends FusionRenderLayer {
         : chartArea.bottom - tooltipHeight - boundaryPadding;
 
     // Horizontal position: centered on data point X
-    // For anchored tooltips, we allow tooltip to extend to chart edges
-    // so trackball line connects properly when point is at edge
     double tooltipX = dataPointScreenX - tooltipWidth / 2;
     
     // Only clamp to stay within chart bounds, no extra padding
@@ -602,10 +629,8 @@ class FusionTooltipLayer extends FusionRenderLayer {
         ..style = PaintingStyle.stroke;
 
       if (dashPattern != null && dashPattern.isNotEmpty) {
-        // Dashed line
         _drawDashedLine(canvas, lineStart, lineEnd, paint, dashPattern);
       } else {
-        // Solid line
         canvas.drawLine(lineStart, lineEnd, paint);
       }
     }
@@ -651,9 +676,7 @@ class FusionTooltipLayer extends FusionRenderLayer {
 
   /// Returns a contrasting text color for the given background.
   Color _getContrastingTextColor(Color backgroundColor) {
-    // Calculate relative luminance
     final luminance = backgroundColor.computeLuminance();
-    // Use white text for dark backgrounds, black for light backgrounds
     return luminance > 0.5 ? Colors.black : Colors.white;
   }
 
@@ -681,18 +704,14 @@ class FusionTooltipLayer extends FusionRenderLayer {
     // Determine vertical position
     double tooltipY;
     if (spaceAbove >= requiredVerticalSpace) {
-      // Position above (preferred)
       tooltipY = dataPointScreen.dy - markerRadius - verticalGap - tooltipSize.height;
     } else if (spaceBelow >= requiredVerticalSpace) {
-      // Position below
       tooltipY = dataPointScreen.dy + markerRadius + verticalGap;
     } else {
-      // Not enough space above or below - center vertically
       final minY = chartArea.top + boundaryPadding;
       final maxY = chartArea.bottom - tooltipSize.height - boundaryPadding;
-      // Handle case where tooltip is taller than chart area
       if (maxY < minY) {
-        tooltipY = chartArea.top; // Just align to top
+        tooltipY = chartArea.top;
       } else {
         tooltipY = (dataPointScreen.dy - tooltipSize.height / 2).clamp(minY, maxY);
       }
@@ -701,18 +720,14 @@ class FusionTooltipLayer extends FusionRenderLayer {
     // Determine horizontal position (centered on data point)
     double tooltipX = dataPointScreen.dx - tooltipSize.width / 2;
 
-    // Apply boundary collision detection with safe clamp
     final minX = chartArea.left + horizontalPadding;
     final maxX = chartArea.right - tooltipSize.width - horizontalPadding;
-    // Handle case where tooltip is wider than chart area
     if (maxX < minX) {
-      // Center the tooltip as best we can
       tooltipX = chartArea.left + (chartArea.width - tooltipSize.width) / 2;
     } else {
       tooltipX = tooltipX.clamp(minX, maxX);
     }
 
-    // Ensure tooltip stays within chart bounds vertically with safe clamp
     final minYFinal = chartArea.top + boundaryPadding;
     final maxYFinal = chartArea.bottom - tooltipSize.height - boundaryPadding;
     if (maxYFinal >= minYFinal) {
@@ -731,17 +746,21 @@ class FusionTooltipLayer extends FusionRenderLayer {
         }
       }
     }
-
-    return 4.0 * context.devicePixelRatio;
+    return context.theme.markerSize / 2;
   }
 
   // ==========================================================================
   // RENDERING HELPERS
   // ==========================================================================
 
-  void _paintShadow(Canvas canvas, Rect tooltipRect, FusionTooltipBehavior behavior) {
+  void _paintShadow(
+    Canvas canvas,
+    Rect tooltipRect,
+    FusionTooltipBehavior behavior,
+    double borderRadius,
+  ) {
     canvas.drawRRect(
-      RRect.fromRectAndRadius(tooltipRect, const Radius.circular(8)),
+      RRect.fromRectAndRadius(tooltipRect, Radius.circular(borderRadius)),
       Paint()
         ..color = (behavior.shadowColor ?? Colors.black).withValues(alpha: 0.2)
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, behavior.elevation * 2),
@@ -753,9 +772,10 @@ class FusionTooltipLayer extends FusionRenderLayer {
     Rect tooltipRect,
     Color bgColor,
     FusionTooltipBehavior behavior,
+    double borderRadius,
   ) {
     canvas.drawRRect(
-      RRect.fromRectAndRadius(tooltipRect, const Radius.circular(8)),
+      RRect.fromRectAndRadius(tooltipRect, Radius.circular(borderRadius)),
       Paint()
         ..color = bgColor.withValues(alpha: behavior.opacity)
         ..style = PaintingStyle.fill,
@@ -767,9 +787,10 @@ class FusionTooltipLayer extends FusionRenderLayer {
     Rect tooltipRect,
     Color seriesColor,
     FusionTooltipBehavior behavior,
+    double borderRadius,
   ) {
     canvas.drawRRect(
-      RRect.fromRectAndRadius(tooltipRect, const Radius.circular(8)),
+      RRect.fromRectAndRadius(tooltipRect, Radius.circular(borderRadius)),
       Paint()
         ..color = behavior.borderColor ?? seriesColor
         ..strokeWidth = behavior.borderWidth
@@ -777,13 +798,13 @@ class FusionTooltipLayer extends FusionRenderLayer {
     );
   }
 
-  void _paintMarker(Canvas canvas, Offset position, Color color) {
+  void _paintMarker(Canvas canvas, Offset position, Color color, Color borderColor) {
     final markerPaint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
 
     final borderPaint = Paint()
-      ..color = Colors.white
+      ..color = borderColor
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 
@@ -792,20 +813,12 @@ class FusionTooltipLayer extends FusionRenderLayer {
   }
 
   /// Paints arrow pointing toward the data point, or no arrow if point is under tooltip.
-  ///
-  /// Smart positioning:
-  /// - If point is under tooltip → no arrow (marker is visible)
-  /// - If point is at corner → diagonal arrow (45°)
-  /// - If point is above/below → vertical arrow
-  /// - If point is to left/right → horizontal arrow
   void _paintSmartArrow(Canvas canvas, Rect tooltipRect, Offset dataPointScreen, Color bgColor) {
     const arrowSize = 6.0;
     const overlapTolerance = 4.0;
 
-    // Expand tooltip rect slightly to check if point is "under" it
     final expandedRect = tooltipRect.inflate(overlapTolerance);
 
-    // If point is inside/under the tooltip, don't draw arrow
     if (expandedRect.contains(dataPointScreen)) {
       return;
     }
@@ -813,33 +826,23 @@ class FusionTooltipLayer extends FusionRenderLayer {
     final path = Path();
     final paint = Paint()..color = bgColor.withValues(alpha: 0.9);
 
-    // Determine relative position
     final isLeft = dataPointScreen.dx < tooltipRect.left;
     final isRight = dataPointScreen.dx > tooltipRect.right;
     final isAbove = dataPointScreen.dy < tooltipRect.top;
     final isBelow = dataPointScreen.dy > tooltipRect.bottom;
 
-    // =========================================
-    // CORNER CASES - Diagonal arrows (45°)
-    // =========================================
+    // Corner cases
     if (isLeft && isBelow) {
-      // Point is BOTTOM-LEFT → diagonal arrow at bottom-left corner
       _drawCornerArrow(path, tooltipRect.bottomLeft, ArrowDirection.bottomLeft, arrowSize);
     } else if (isRight && isBelow) {
-      // Point is BOTTOM-RIGHT → diagonal arrow at bottom-right corner
       _drawCornerArrow(path, tooltipRect.bottomRight, ArrowDirection.bottomRight, arrowSize);
     } else if (isLeft && isAbove) {
-      // Point is TOP-LEFT → diagonal arrow at top-left corner
       _drawCornerArrow(path, tooltipRect.topLeft, ArrowDirection.topLeft, arrowSize);
     } else if (isRight && isAbove) {
-      // Point is TOP-RIGHT → diagonal arrow at top-right corner
       _drawCornerArrow(path, tooltipRect.topRight, ArrowDirection.topRight, arrowSize);
     }
-    // =========================================
-    // EDGE CASES - Straight arrows
-    // =========================================
+    // Edge cases
     else if (isAbove) {
-      // Point is ABOVE tooltip → arrow on top edge pointing up
       final arrowX = dataPointScreen.dx.clamp(
         tooltipRect.left + arrowSize + 4,
         tooltipRect.right - arrowSize - 4,
@@ -848,7 +851,6 @@ class FusionTooltipLayer extends FusionRenderLayer {
       path.lineTo(arrowX, tooltipRect.top - arrowSize);
       path.lineTo(arrowX + arrowSize, tooltipRect.top);
     } else if (isBelow) {
-      // Point is BELOW tooltip → arrow on bottom edge pointing down
       final arrowX = dataPointScreen.dx.clamp(
         tooltipRect.left + arrowSize + 4,
         tooltipRect.right - arrowSize - 4,
@@ -857,7 +859,6 @@ class FusionTooltipLayer extends FusionRenderLayer {
       path.lineTo(arrowX, tooltipRect.bottom + arrowSize);
       path.lineTo(arrowX + arrowSize, tooltipRect.bottom);
     } else if (isLeft) {
-      // Point is to the LEFT → arrow on left edge pointing left
       final arrowY = dataPointScreen.dy.clamp(
         tooltipRect.top + arrowSize + 4,
         tooltipRect.bottom - arrowSize - 4,
@@ -866,7 +867,6 @@ class FusionTooltipLayer extends FusionRenderLayer {
       path.lineTo(tooltipRect.left - arrowSize, arrowY);
       path.lineTo(tooltipRect.left, arrowY + arrowSize);
     } else if (isRight) {
-      // Point is to the RIGHT → arrow on right edge pointing right
       final arrowY = dataPointScreen.dy.clamp(
         tooltipRect.top + arrowSize + 4,
         tooltipRect.bottom - arrowSize - 4,
@@ -875,7 +875,6 @@ class FusionTooltipLayer extends FusionRenderLayer {
       path.lineTo(tooltipRect.right + arrowSize, arrowY);
       path.lineTo(tooltipRect.right, arrowY + arrowSize);
     } else {
-      // Fallback - no arrow
       return;
     }
 
@@ -883,38 +882,29 @@ class FusionTooltipLayer extends FusionRenderLayer {
     canvas.drawPath(path, paint);
   }
 
-  /// Draws a diagonal corner arrow pointing at 45 degrees.
   void _drawCornerArrow(Path path, Offset corner, ArrowDirection direction, double size) {
-    // Diagonal offset (45 degrees = size * 0.707, but we use size for visual consistency)
-    final diagOffset = size * 0.85; // Slightly less than size for better visual
+    final diagOffset = size * 0.85;
 
     switch (direction) {
       case ArrowDirection.bottomLeft:
-        // Arrow at bottom-left corner pointing down-left
-        path.moveTo(corner.dx, corner.dy - size); // Top of arrow (on left edge)
-        path.lineTo(corner.dx - diagOffset, corner.dy + diagOffset); // Tip (diagonal)
-        path.lineTo(corner.dx + size, corner.dy); // Right of arrow (on bottom edge)
+        path.moveTo(corner.dx, corner.dy - size);
+        path.lineTo(corner.dx - diagOffset, corner.dy + diagOffset);
+        path.lineTo(corner.dx + size, corner.dy);
         break;
-
       case ArrowDirection.bottomRight:
-        // Arrow at bottom-right corner pointing down-right
-        path.moveTo(corner.dx - size, corner.dy); // Left of arrow (on bottom edge)
-        path.lineTo(corner.dx + diagOffset, corner.dy + diagOffset); // Tip (diagonal)
-        path.lineTo(corner.dx, corner.dy - size); // Top of arrow (on right edge)
+        path.moveTo(corner.dx - size, corner.dy);
+        path.lineTo(corner.dx + diagOffset, corner.dy + diagOffset);
+        path.lineTo(corner.dx, corner.dy - size);
         break;
-
       case ArrowDirection.topLeft:
-        // Arrow at top-left corner pointing up-left
-        path.moveTo(corner.dx + size, corner.dy); // Right of arrow (on top edge)
-        path.lineTo(corner.dx - diagOffset, corner.dy - diagOffset); // Tip (diagonal)
-        path.lineTo(corner.dx, corner.dy + size); // Bottom of arrow (on left edge)
+        path.moveTo(corner.dx + size, corner.dy);
+        path.lineTo(corner.dx - diagOffset, corner.dy - diagOffset);
+        path.lineTo(corner.dx, corner.dy + size);
         break;
-
       case ArrowDirection.topRight:
-        // Arrow at top-right corner pointing up-right
-        path.moveTo(corner.dx, corner.dy + size); // Bottom of arrow (on right edge)
-        path.lineTo(corner.dx + diagOffset, corner.dy - diagOffset); // Tip (diagonal)
-        path.lineTo(corner.dx - size, corner.dy); // Left of arrow (on top edge)
+        path.moveTo(corner.dx, corner.dy + size);
+        path.lineTo(corner.dx + diagOffset, corner.dy - diagOffset);
+        path.lineTo(corner.dx - size, corner.dy);
         break;
     }
   }
