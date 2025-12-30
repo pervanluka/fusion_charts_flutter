@@ -13,7 +13,7 @@ import 'fusion_numeric_axis.dart';
 
 /// Renders numeric axes with continuous numeric values.
 ///
-/// ## Configuration Priority (Option A Architecture)
+/// ## Configuration Priority
 ///
 /// `FusionAxisConfiguration` is the **single source of truth** for all axis properties.
 /// The `FusionNumericAxis` only provides type-specific defaults and formatting hints.
@@ -89,9 +89,7 @@ class NumericAxisRenderer extends FusionAxisRenderer {
   /// Gets the effective desired interval count.
   /// Priority: configuration.desiredIntervals → axis.desiredIntervals → 5
   int get _effectiveDesiredIntervals =>
-      configuration.desiredIntervals != 5
-          ? configuration.desiredIntervals
-          : axis.desiredIntervals;
+      configuration.desiredIntervals != 5 ? configuration.desiredIntervals : axis.desiredIntervals;
 
   /// Gets whether to auto-calculate range.
   /// If min AND max are explicitly set, autoRange is effectively false.
@@ -156,10 +154,8 @@ class NumericAxisRenderer extends FusionAxisRenderer {
 
     if (_shouldAutoRange || _effectiveMin == null || _effectiveMax == null) {
       // Auto-calculate from data
-      final dataMin =
-          dataValues.isNotEmpty ? dataValues.reduce((a, b) => a < b ? a : b) : 0.0;
-      final dataMax =
-          dataValues.isNotEmpty ? dataValues.reduce((a, b) => a > b ? a : b) : 10.0;
+      final dataMin = dataValues.isNotEmpty ? dataValues.reduce((a, b) => a < b ? a : b) : 0.0;
+      final dataMax = dataValues.isNotEmpty ? dataValues.reduce((a, b) => a > b ? a : b) : 10.0;
 
       min = _effectiveMin ?? dataMin;
       max = _effectiveMax ?? dataMax;
@@ -266,11 +262,7 @@ class NumericAxisRenderer extends FusionAxisRenderer {
       final text = _formatValue(cleanValue);
       final position = _calculatePrecisePosition(cleanValue, bounds);
 
-      labels.add(AxisLabel(
-        value: cleanValue,
-        text: text,
-        position: position.clamp(0.0, 1.0),
-      ));
+      labels.add(AxisLabel(value: cleanValue, text: text, position: position.clamp(0.0, 1.0)));
     }
 
     _cachedLabels = labels;
@@ -448,10 +440,7 @@ class NumericAxisRenderer extends FusionAxisRenderer {
   void _drawLabels(Canvas canvas, Rect axisArea, AxisBounds bounds) {
     final labels = _cachedLabels ?? generateLabels(bounds);
 
-    final textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-      textAlign: TextAlign.center,
-    );
+    final textPainter = TextPainter(textDirection: TextDirection.ltr, textAlign: TextAlign.center);
 
     final labelStyle =
         configuration.labelStyle ?? theme?.axisLabelStyle ?? const TextStyle(fontSize: 12);
@@ -484,10 +473,7 @@ class NumericAxisRenderer extends FusionAxisRenderer {
           textPainter.paint(canvas, Offset(-textPainter.width / 2, 0));
           canvas.restore();
         } else {
-          final offset = Offset(
-            snappedX - (textPainter.width / 2),
-            axisArea.top + 8,
-          );
+          final offset = Offset(snappedX - (textPainter.width / 2), axisArea.top + 8);
           textPainter.paint(canvas, offset);
         }
       }
@@ -504,9 +490,8 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     if (!configuration.showGrid) return;
 
     final paint = Paint()
-      ..color = configuration.majorGridColor ??
-          theme?.gridColor ??
-          Colors.grey.withValues(alpha: 0.3)
+      ..color =
+          configuration.majorGridColor ?? theme?.gridColor ?? Colors.grey.withValues(alpha: 0.3)
       ..strokeWidth = configuration.majorGridWidth ?? 0.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.square;
@@ -519,19 +504,11 @@ class NumericAxisRenderer extends FusionAxisRenderer {
       if (isVertical) {
         final y = plotArea.bottom - (position * plotArea.height);
         final snappedY = y.roundToDouble();
-        canvas.drawLine(
-          Offset(plotArea.left, snappedY),
-          Offset(plotArea.right, snappedY),
-          paint,
-        );
+        canvas.drawLine(Offset(plotArea.left, snappedY), Offset(plotArea.right, snappedY), paint);
       } else {
         final x = plotArea.left + (position * plotArea.width);
         final snappedX = x.roundToDouble();
-        canvas.drawLine(
-          Offset(snappedX, plotArea.top),
-          Offset(snappedX, plotArea.bottom),
-          paint,
-        );
+        canvas.drawLine(Offset(snappedX, plotArea.top), Offset(snappedX, plotArea.bottom), paint);
       }
     }
   }

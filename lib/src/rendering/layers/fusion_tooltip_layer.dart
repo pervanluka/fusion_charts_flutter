@@ -85,7 +85,13 @@ class FusionTooltipLayer extends FusionRenderLayer {
         : FusionDataFormatter.formatPrecise(point.y, maxDecimals: tooltipBehavior.decimalPlaces);
 
     final labelText = point.label != null ? '${point.label}\n' : '';
-    final fullText = '$labelText$seriesName: $valueText';
+    // Handle empty series name gracefully
+    final String fullText;
+    if (seriesName.isEmpty) {
+      fullText = point.label != null ? '${point.label}: $valueText' : valueText;
+    } else {
+      fullText = '$labelText$seriesName: $valueText';
+    }
 
     // Use theme background color as fallback
     final bgColor = tooltipBehavior.color ?? theme.tooltipBackgroundColor;
@@ -342,7 +348,13 @@ class FusionTooltipLayer extends FusionRenderLayer {
         : FusionDataFormatter.formatPrecise(point.y, maxDecimals: tooltipBehavior.decimalPlaces);
 
     final labelText = point.label != null ? '${point.label}\n' : '';
-    final fullText = '$labelText$seriesName: $valueText';
+    // Handle empty series name gracefully
+    final String fullText;
+    if (seriesName.isEmpty) {
+      fullText = point.label != null ? '${point.label}: $valueText' : valueText;
+    } else {
+      fullText = '$labelText$seriesName: $valueText';
+    }
 
     final textPainter = TextPainter(
       text: TextSpan(text: fullText, style: textStyle),

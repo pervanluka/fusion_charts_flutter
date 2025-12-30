@@ -10,6 +10,15 @@ import 'fusion_datetime_axis.dart';
 
 /// Renders datetime axes with automatic date formatting.
 ///
+/// ## Calendar-Aware Intervals (DST-Safe)
+///
+/// For day-level and above intervals, this renderer uses **calendar arithmetic**
+/// instead of millisecond arithmetic. This ensures labels don't drift due to
+/// Daylight Saving Time transitions.
+///
+/// - Sub-day intervals (hours, minutes, seconds): millisecond arithmetic
+/// - Day+ intervals (days, weeks, months, years): calendar arithmetic
+///
 /// ## Configuration Priority (Option A Architecture)
 ///
 /// `FusionAxisConfiguration` is the **single source of truth** for all axis properties.
@@ -49,9 +58,10 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
   AxisBounds? _cachedBounds;
   List<AxisLabel>? _cachedLabels;
   DateFormat? _cachedFormat;
+  _IntervalUnit? _cachedIntervalUnit;
 
   // ==========================================================================
-  // TIME CONSTANTS (milliseconds)
+  // TIME CONSTANTS (milliseconds) - Used for interval detection
   // ==========================================================================
 
   static const double _msPerSecond = 1000.0;
@@ -59,8 +69,8 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
   static const double _msPerHour = 3600000.0;
   static const double _msPerDay = 86400000.0;
   static const double _msPerWeek = 604800000.0;
-  static const double _msPerMonth = 2592000000.0;
-  static const double _msPerYear = 31536000000.0;
+  static const double _msPerMonth = 2592000000.0; // ~30 days
+  static const double _msPerYear = 31536000000.0; // 365 days
 
   // ==========================================================================
   // EFFECTIVE VALUE GETTERS
@@ -68,9 +78,7 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
 
   /// Gets the effective desired interval count.
   int get _effectiveDesiredIntervals =>
-      configuration.desiredIntervals != 5
-          ? configuration.desiredIntervals
-          : axis.desiredIntervals;
+      configuration.desiredIntervals != 5 ? configuration.desiredIntervals : axis.desiredIntervals;
 
   // ==========================================================================
   // BOUNDS CALCULATION
@@ -104,60 +112,83 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
 
     final rangeMs = maxDate.difference(minDate).inMilliseconds.toDouble();
 
-    final intervalMs =
-        axis.interval?.inMilliseconds.toDouble() ??
-        _calculateAutoInterval(rangeMs, _effectiveDesiredIntervals);
+    // Calculate interval and detect its calendar unit
+    final intervalResult = axis.interval != null
+        ? _detectIntervalUnit(axis.interval!.inMilliseconds.toDouble())
+        : _calculateAutoIntervalWithUnit(rangeMs, _effectiveDesiredIntervals);
 
+    _cachedIntervalUnit = intervalResult.unit;
     _cachedFormat = axis.dateFormat ?? _selectDateFormat(rangeMs);
 
     _cachedBounds = AxisBounds(
       min: minDate.millisecondsSinceEpoch.toDouble(),
       max: maxDate.millisecondsSinceEpoch.toDouble(),
-      interval: intervalMs,
+      interval: intervalResult.intervalMs,
       decimalPlaces: 0,
     );
 
     return _cachedBounds!;
   }
 
-  double _calculateAutoInterval(double rangeMs, int desiredIntervals) {
+  /// Calculates auto interval and returns both ms value and detected unit.
+  _IntervalResult _calculateAutoIntervalWithUnit(double rangeMs, int desiredIntervals) {
     final roughInterval = rangeMs / desiredIntervals;
 
     if (roughInterval < _msPerMinute) {
-      return _findNiceInterval(
+      final ms = _findNiceInterval(
         roughInterval,
         [1, 5, 10, 15, 30].map((s) => s * _msPerSecond).toList(),
       );
+      return _IntervalResult(ms, _IntervalUnit.second);
     } else if (roughInterval < _msPerHour) {
-      return _findNiceInterval(
+      final ms = _findNiceInterval(
         roughInterval,
         [1, 5, 10, 15, 30].map((m) => m * _msPerMinute).toList(),
       );
+      return _IntervalResult(ms, _IntervalUnit.minute);
     } else if (roughInterval < _msPerDay) {
-      return _findNiceInterval(
+      final ms = _findNiceInterval(
         roughInterval,
         [1, 2, 3, 6, 12].map((h) => h * _msPerHour).toList(),
       );
+      return _IntervalResult(ms, _IntervalUnit.hour);
     } else if (roughInterval < _msPerWeek) {
-      return _findNiceInterval(
-        roughInterval,
-        [1, 2, 3, 7].map((d) => d * _msPerDay).toList(),
-      );
+      final ms = _findNiceInterval(roughInterval, [1, 2, 3, 7].map((d) => d * _msPerDay).toList());
+      return _IntervalResult(ms, _IntervalUnit.day);
     } else if (roughInterval < _msPerMonth) {
-      return _findNiceInterval(
-        roughInterval,
-        [1, 2, 4].map((w) => w * _msPerWeek).toList(),
-      );
+      final ms = _findNiceInterval(roughInterval, [1, 2, 4].map((w) => w * _msPerWeek).toList());
+      return _IntervalResult(ms, _IntervalUnit.week);
     } else if (roughInterval < _msPerYear) {
-      return _findNiceInterval(
+      final ms = _findNiceInterval(
         roughInterval,
         [1, 2, 3, 6].map((m) => m * _msPerMonth).toList(),
       );
+      return _IntervalResult(ms, _IntervalUnit.month);
     } else {
-      return _findNiceInterval(
+      final ms = _findNiceInterval(
         roughInterval,
         [1, 2, 5, 10].map((y) => y * _msPerYear).toList(),
       );
+      return _IntervalResult(ms, _IntervalUnit.year);
+    }
+  }
+
+  /// Detects the calendar unit from a millisecond interval.
+  _IntervalResult _detectIntervalUnit(double intervalMs) {
+    if (intervalMs >= _msPerYear * 0.9) {
+      return _IntervalResult(intervalMs, _IntervalUnit.year);
+    } else if (intervalMs >= _msPerMonth * 0.9) {
+      return _IntervalResult(intervalMs, _IntervalUnit.month);
+    } else if (intervalMs >= _msPerWeek * 0.9) {
+      return _IntervalResult(intervalMs, _IntervalUnit.week);
+    } else if (intervalMs >= _msPerDay * 0.9) {
+      return _IntervalResult(intervalMs, _IntervalUnit.day);
+    } else if (intervalMs >= _msPerHour * 0.9) {
+      return _IntervalResult(intervalMs, _IntervalUnit.hour);
+    } else if (intervalMs >= _msPerMinute * 0.9) {
+      return _IntervalResult(intervalMs, _IntervalUnit.minute);
+    } else {
+      return _IntervalResult(intervalMs, _IntervalUnit.second);
     }
   }
 
@@ -182,13 +213,66 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
   }
 
   // ==========================================================================
-  // LABEL GENERATION
+  // LABEL GENERATION (DST-SAFE)
   // ==========================================================================
 
   @override
   List<AxisLabel> generateLabels(AxisBounds bounds) {
-    final labels = <AxisLabel>[];
     final format = _cachedFormat ?? _selectDateFormat(bounds.range);
+    final unit = _cachedIntervalUnit ?? _IntervalUnit.day;
+
+    final minDate = DateTime.fromMillisecondsSinceEpoch(bounds.min.toInt());
+    final maxDate = DateTime.fromMillisecondsSinceEpoch(bounds.max.toInt());
+
+    // Use calendar arithmetic for day+ intervals (DST-safe)
+    // Use millisecond arithmetic for sub-day intervals
+    if (unit.isDayOrAbove) {
+      return _generateCalendarLabels(minDate, maxDate, bounds, format, unit);
+    } else {
+      return _generateMillisecondLabels(bounds, format);
+    }
+  }
+
+  /// Generates labels using calendar arithmetic (DST-safe for day+ intervals).
+  List<AxisLabel> _generateCalendarLabels(
+    DateTime minDate,
+    DateTime maxDate,
+    AxisBounds bounds,
+    DateFormat format,
+    _IntervalUnit unit,
+  ) {
+    final labels = <AxisLabel>[];
+
+    // Normalize start to midnight for day+ intervals
+    DateTime current = DateTime(minDate.year, minDate.month, minDate.day);
+
+    // Calculate interval value in calendar units
+    final intervalValue = _getIntervalValue(bounds.interval, unit);
+
+    int iterations = 0;
+    while (!current.isAfter(maxDate) && iterations < _maxLabels) {
+      final ms = current.millisecondsSinceEpoch.toDouble();
+      final position = _calculatePrecisePosition(ms, bounds);
+
+      // Only add label if within bounds
+      if (position >= -_epsilon && position <= 1.0 + _epsilon) {
+        labels.add(
+          AxisLabel(value: ms, text: format.format(current), position: position.clamp(0.0, 1.0)),
+        );
+      }
+
+      // Advance using CALENDAR arithmetic (DST-safe)
+      current = _addCalendarInterval(current, intervalValue, unit);
+      iterations++;
+    }
+
+    _cachedLabels = labels;
+    return labels;
+  }
+
+  /// Generates labels using millisecond arithmetic (for sub-day intervals).
+  List<AxisLabel> _generateMillisecondLabels(AxisBounds bounds, DateFormat format) {
+    final labels = <AxisLabel>[];
 
     final labelCount = _calculateLabelCount(bounds);
 
@@ -201,15 +285,84 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
       final text = format.format(date);
       final position = _calculatePrecisePosition(currentMs, bounds);
 
-      labels.add(AxisLabel(
-        value: currentMs,
-        text: text,
-        position: position.clamp(0.0, 1.0),
-      ));
+      labels.add(AxisLabel(value: currentMs, text: text, position: position.clamp(0.0, 1.0)));
     }
 
     _cachedLabels = labels;
     return labels;
+  }
+
+  /// Converts millisecond interval to calendar unit value.
+  int _getIntervalValue(double intervalMs, _IntervalUnit unit) {
+    switch (unit) {
+      case _IntervalUnit.second:
+        return (intervalMs / _msPerSecond).round();
+      case _IntervalUnit.minute:
+        return (intervalMs / _msPerMinute).round();
+      case _IntervalUnit.hour:
+        return (intervalMs / _msPerHour).round();
+      case _IntervalUnit.day:
+        return (intervalMs / _msPerDay).round();
+      case _IntervalUnit.week:
+        return (intervalMs / _msPerWeek).round();
+      case _IntervalUnit.month:
+        return (intervalMs / _msPerMonth).round();
+      case _IntervalUnit.year:
+        return (intervalMs / _msPerYear).round();
+    }
+  }
+
+  /// Adds a calendar interval to a date (DST-safe).
+  ///
+  /// This is the key function that prevents DST drift.
+  /// Instead of adding milliseconds, we manipulate calendar components directly.
+  DateTime _addCalendarInterval(DateTime date, int value, _IntervalUnit unit) {
+    switch (unit) {
+      case _IntervalUnit.second:
+      case _IntervalUnit.minute:
+      case _IntervalUnit.hour:
+        // Sub-day: Duration addition is fine
+        return date.add(
+          Duration(
+            hours: unit == _IntervalUnit.hour ? value : 0,
+            minutes: unit == _IntervalUnit.minute ? value : 0,
+            seconds: unit == _IntervalUnit.second ? value : 0,
+          ),
+        );
+
+      case _IntervalUnit.day:
+        // Calendar day arithmetic - DST safe
+        // Always normalize to midnight
+        return DateTime(date.year, date.month, date.day + value);
+
+      case _IntervalUnit.week:
+        // 7 calendar days
+        return DateTime(date.year, date.month, date.day + (value * 7));
+
+      case _IntervalUnit.month:
+        // Calendar month arithmetic with day clamping
+        return _addMonths(date, value);
+
+      case _IntervalUnit.year:
+        // Calendar year arithmetic
+        return _addMonths(date, value * 12);
+    }
+  }
+
+  /// Adds months to a date, clamping day to valid range.
+  ///
+  /// Handles cases like Jan 31 + 1 month = Feb 28 (not Mar 2/3).
+  DateTime _addMonths(DateTime date, int months) {
+    final targetYear = date.year + (date.month + months - 1) ~/ 12;
+    final targetMonth = (date.month + months - 1) % 12 + 1;
+
+    // Find last day of target month
+    final lastDayOfMonth = DateTime(targetYear, targetMonth + 1, 0).day;
+
+    // Clamp day to valid range
+    final clampedDay = date.day.clamp(1, lastDayOfMonth);
+
+    return DateTime(targetYear, targetMonth, clampedDay);
   }
 
   int _calculateLabelCount(AxisBounds bounds) {
@@ -360,10 +513,7 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
 
   void _drawLabels(Canvas canvas, Rect axisArea, AxisBounds bounds) {
     final labels = _cachedLabels ?? generateLabels(bounds);
-    final textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-      textAlign: TextAlign.center,
-    );
+    final textPainter = TextPainter(textDirection: TextDirection.ltr, textAlign: TextAlign.center);
 
     final labelStyle =
         configuration.labelStyle ?? theme?.axisLabelStyle ?? const TextStyle(fontSize: 12);
@@ -393,10 +543,7 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
           textPainter.paint(canvas, Offset(-textPainter.width / 2, 0));
           canvas.restore();
         } else {
-          final offset = Offset(
-            snappedX - (textPainter.width / 2),
-            axisArea.top + 8,
-          );
+          final offset = Offset(snappedX - (textPainter.width / 2), axisArea.top + 8);
           textPainter.paint(canvas, offset);
         }
       }
@@ -408,9 +555,8 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
     if (!configuration.showGrid) return;
 
     final paint = Paint()
-      ..color = configuration.majorGridColor ??
-          theme?.gridColor ??
-          Colors.grey.withValues(alpha: 0.3)
+      ..color =
+          configuration.majorGridColor ?? theme?.gridColor ?? Colors.grey.withValues(alpha: 0.3)
       ..strokeWidth = configuration.majorGridWidth ?? 0.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.square;
@@ -423,19 +569,11 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
       if (isVertical) {
         final y = plotArea.bottom - (position * plotArea.height);
         final snappedY = y.roundToDouble();
-        canvas.drawLine(
-          Offset(plotArea.left, snappedY),
-          Offset(plotArea.right, snappedY),
-          paint,
-        );
+        canvas.drawLine(Offset(plotArea.left, snappedY), Offset(plotArea.right, snappedY), paint);
       } else {
         final x = plotArea.left + (position * plotArea.width);
         final snappedX = x.roundToDouble();
-        canvas.drawLine(
-          Offset(snappedX, plotArea.top),
-          Offset(snappedX, plotArea.bottom),
-          paint,
-        );
+        canvas.drawLine(Offset(snappedX, plotArea.top), Offset(snappedX, plotArea.bottom), paint);
       }
     }
   }
@@ -449,6 +587,7 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
     _cachedBounds = null;
     _cachedLabels = null;
     _cachedFormat = null;
+    _cachedIntervalUnit = null;
   }
 
   @override
@@ -456,7 +595,34 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
     return 'DateTimeAxisRenderer('
         'visible: ${configuration.visible}, '
         'isVertical: $isVertical, '
+        'intervalUnit: $_cachedIntervalUnit, '
         'bounds: $_cachedBounds'
         ')';
   }
+}
+
+// =============================================================================
+// INTERNAL TYPES
+// =============================================================================
+
+/// Calendar unit for interval detection.
+enum _IntervalUnit {
+  second,
+  minute,
+  hour,
+  day,
+  week,
+  month,
+  year;
+
+  /// Returns true for day-level and above intervals (need calendar arithmetic).
+  bool get isDayOrAbove => index >= _IntervalUnit.day.index;
+}
+
+/// Result of interval calculation with detected unit.
+class _IntervalResult {
+  final double intervalMs;
+  final _IntervalUnit unit;
+
+  const _IntervalResult(this.intervalMs, this.unit);
 }
