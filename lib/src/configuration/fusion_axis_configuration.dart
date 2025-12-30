@@ -48,7 +48,7 @@ class FusionAxisConfiguration {
     this.showGrid = true,
     this.showMinorGrid = false,
     this.showMinorTicks = false,
-    this.showTicks = true,
+    this.showTicks = false,
     this.showLabels = true,
     this.showAxisLine = true,
     this.position,
