@@ -32,7 +32,7 @@ import 'fusion_chart_theme.dart';
 /// - WCAG 2.1 Level AA compliant
 /// - Minimum contrast ratio: 4.5:1
 /// - Color-blind friendly palette
-class FusionLightTheme with FusionThemeUtils implements FusionChartTheme {
+class FusionLightTheme extends FusionChartTheme with FusionThemeUtils {
   /// Creates a light theme with default colors.
   const FusionLightTheme();
 

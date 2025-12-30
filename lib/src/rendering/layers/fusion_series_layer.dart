@@ -217,7 +217,7 @@ class FusionSeriesLayer extends FusionRenderLayer {
 
     // Create fill paint
     final areaPaint = context.getPaint(
-      color: series.color.withOpacity(series.areaOpacity),
+      color: series.color.withValues(alpha: series.areaOpacity),
       style: PaintingStyle.fill,
     );
 
@@ -226,7 +226,7 @@ class FusionSeriesLayer extends FusionRenderLayer {
       // Create gradient with opacity applied to each color stop
       final gradientWithOpacity = LinearGradient(
         colors: series.gradient!.colors
-            .map((c) => c.withOpacity(series.areaOpacity))
+            .map((c) => c.withValues(alpha: series.areaOpacity))
             .toList(),
         stops: series.gradient!.stops,
         begin: Alignment.topCenter,

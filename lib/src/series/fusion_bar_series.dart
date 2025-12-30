@@ -40,8 +40,8 @@ class FusionBarSeries extends FusionSeries
   /// Creates a bar series.
   const FusionBarSeries({
     required this.dataPoints,
-    required super.name,
     required super.color,
+    super.name,
     super.visible,
     this.barWidth = 0.6,
     this.borderRadius = 4.0,

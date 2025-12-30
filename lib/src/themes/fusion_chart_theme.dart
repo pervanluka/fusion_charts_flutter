@@ -45,6 +45,8 @@ import 'package:flutter/material.dart';
 /// )
 /// ```
 abstract class FusionChartTheme {
+  /// Creates a chart theme.
+  const FusionChartTheme();
   // ==========================================================================
   // COLORS
   // ==========================================================================
@@ -285,6 +287,51 @@ abstract class FusionChartTheme {
   // ==========================================================================
   // HELPER METHODS
   // ==========================================================================
+
+  /// Gets contrasting text color for a background.
+  ///
+  /// Returns white for dark backgrounds, black for light backgrounds.
+  Color getContrastingTextColor(Color backgroundColor) {
+    final luminance = backgroundColor.computeLuminance();
+    return luminance > 0.5 ? Colors.black87 : Colors.white;
+  }
+
+  // ==========================================================================
+  // PIE CHART SPECIFIC
+  // ==========================================================================
+
+  /// Default stroke color for pie segments.
+  Color get pieStrokeColor => Colors.white;
+
+  /// Default shadow color for pie charts.
+  Color get pieShadowColor => Colors.black26;
+
+  /// Tooltip border width.
+  double get tooltipBorderWidth => 2.0;
+
+  /// Legend width for vertical legend layouts.
+  double get legendWidth => 120.0;
+
+  /// Legend height for horizontal legend layouts.
+  double get legendHeight => 40.0;
+
+  /// Legend item icon size.
+  double get legendIconSize => 12.0;
+
+  /// Legend item text spacing.
+  double get legendItemSpacing => 8.0;
+
+  /// Legend value text size ratio (relative to legend text).
+  double get legendValueFontSizeRatio => 0.85;
+
+  /// Legend line indicator thickness.
+  double get legendLineThickness => 3.0;
+
+  /// Legend icon corner radius.
+  double get legendIconCornerRadius => 2.0;
+
+  /// Color indicator corner radius in tooltips.
+  double get tooltipIndicatorRadius => 2.0;
 
   /// Creates a lighter version of a color.
   ///

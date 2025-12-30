@@ -30,9 +30,10 @@ import '../core/enums/marker_shape.dart';
 abstract class FusionSeries {
   /// Creates a base series.
   ///
-  /// The [name] and [color] parameters are required.
+  /// The [color] parameter is required.
+  /// The [name] defaults to an empty string (auto-generated in legends/tooltips).
   /// The [visible] parameter defaults to `true`.
-  const FusionSeries({required this.name, required this.color, this.visible = true});
+  const FusionSeries({this.name = '', required this.color, this.visible = true});
 
   /// The display name of this series.
   ///
@@ -40,6 +41,8 @@ abstract class FusionSeries {
   /// - Legend labels
   /// - Tooltips
   /// - Accessibility descriptions
+  ///
+  /// If empty, legends and tooltips will use auto-generated names like "Series 1".
   ///
   /// Example: "Revenue", "Profit", "Q1 Sales"
   final String name;

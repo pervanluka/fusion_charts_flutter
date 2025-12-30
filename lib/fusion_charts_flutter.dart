@@ -97,6 +97,12 @@ export 'src/data/fusion_line_chart_data.dart';
 /// Bar chart data model.
 export 'src/data/fusion_bar_chart_data.dart';
 
+/// Pie data point.
+export 'src/data/fusion_pie_data_point.dart';
+
+/// Pie series.
+export 'src/series/fusion_pie_series.dart';
+
 // ============================================================================
 // SERIES
 // ============================================================================
@@ -132,6 +138,9 @@ export 'src/charts/fusion_bar_chart.dart';
 /// Stacked bar chart widget.
 export 'src/charts/fusion_stacked_bar_chart.dart';
 
+/// Pie chart widget.
+export 'src/charts/pie/fusion_pie_chart.dart';
+
 // ============================================================================
 // THEMES
 // ============================================================================
@@ -160,6 +169,9 @@ export 'src/configuration/fusion_bar_chart_configuration.dart';
 
 /// Stacked bar chart specific configuration.
 export 'src/configuration/fusion_stacked_bar_chart_configuration.dart';
+
+/// Pie chart configuration.
+export 'src/configuration/fusion_pie_chart_configuration.dart';
 
 /// Axis configuration.
 export 'src/configuration/fusion_axis_configuration.dart';
@@ -325,6 +337,12 @@ export 'src/utils/fusion_datetime_utils.dart';
 
 /// Coordinate transformation system.
 export 'src/rendering/fusion_coordinate_system.dart';
+
+/// Polar coordinate math for pie/donut charts.
+export 'src/rendering/polar/fusion_polar_math.dart';
+
+/// Pie segment computation.
+export 'src/rendering/polar/fusion_pie_segment.dart';
 
 // ============================================================================
 // WIDGETS

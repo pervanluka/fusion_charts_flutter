@@ -48,8 +48,8 @@ class FusionLineSeries extends FusionSeries
   /// Creates a line series.
   const FusionLineSeries({
     required this.dataPoints,
-    required super.name,
     required super.color,
+    super.name,
     super.visible,
     this.lineWidth = 3.0,
     this.isCurved = true,

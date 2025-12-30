@@ -2,6 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
+import 'pie_chart_showcase.dart';
+import 'line_chart_showcase.dart';
+import 'bar_chart_showcase.dart';
+import 'feature_highlights.dart';
 
 void main() {
   runApp(const FusionChartsShowcaseApp());
@@ -11,14 +15,28 @@ void main() {
 // MAIN APP
 // =============================================================================
 
-class FusionChartsShowcaseApp extends StatelessWidget {
+class FusionChartsShowcaseApp extends StatefulWidget {
   const FusionChartsShowcaseApp({super.key});
+
+  @override
+  State<FusionChartsShowcaseApp> createState() => _FusionChartsShowcaseAppState();
+}
+
+class _FusionChartsShowcaseAppState extends State<FusionChartsShowcaseApp> {
+  ThemeMode _themeMode = ThemeMode.system;
+
+  void _toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Fusion Charts Flutter - Showcase Gallery',
+      title: 'Fusion Charts Flutter',
       debugShowCheckedModeBanner: false,
+      themeMode: _themeMode,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
@@ -41,7 +59,7 @@ class FusionChartsShowcaseApp extends StatelessWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
       ),
-      home: const ShowcaseGalleryHome(),
+      home: ShowcaseGalleryHome(onThemeToggle: _toggleTheme),
     );
   }
 }
@@ -51,7 +69,9 @@ class FusionChartsShowcaseApp extends StatelessWidget {
 // =============================================================================
 
 class ShowcaseGalleryHome extends StatelessWidget {
-  const ShowcaseGalleryHome({super.key});
+  final VoidCallback onThemeToggle;
+
+  const ShowcaseGalleryHome({super.key, required this.onThemeToggle});
 
   @override
   Widget build(BuildContext context) {
@@ -64,25 +84,28 @@ class ShowcaseGalleryHome extends StatelessWidget {
               'Fusion Charts Flutter',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            Text('Professional Charting Library', style: TextStyle(fontSize: 12)),
+            Text('High-Performance Charting Library', style: TextStyle(fontSize: 12)),
           ],
         ),
         elevation: 0,
         actions: [
           IconButton(
             icon: Icon(
-              Theme.of(context).brightness == Brightness.dark ? Icons.light_mode : Icons.dark_mode,
+              Theme.of(context).brightness == Brightness.dark 
+                ? Icons.light_mode 
+                : Icons.dark_mode,
             ),
-            onPressed: () {
-              // Toggle theme (would need theme provider in real app)
-            },
+            onPressed: onThemeToggle,
+            tooltip: 'Toggle theme',
           ),
         ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildHeader(),
+          _buildHeader(context),
+          const SizedBox(height: 24),
+          _buildShowcaseSection(context),
           const SizedBox(height: 24),
           ...categories.map((category) => _buildCategory(context, category)),
         ],
@@ -90,7 +113,7 @@ class ShowcaseGalleryHome extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -103,7 +126,9 @@ class ShowcaseGalleryHome extends StatelessWidget {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    ),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(Icons.auto_graph, color: Colors.white, size: 32),
@@ -114,7 +139,7 @@ class ShowcaseGalleryHome extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Feature Showcase',
+                        'Feature Gallery',
                         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 4),
@@ -129,12 +154,12 @@ class ShowcaseGalleryHome extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _buildBadge('📊 Line & Bar Charts'),
-                _buildBadge('🎨 Themes & Styles'),
-                _buildBadge('🎯 Markers & Labels'),
-                _buildBadge('🎮 Interactive'),
-                _buildBadge('⚡ High Performance'),
-                _buildBadge('📱 Responsive'),
+                _buildBadge('📊 5 Chart Types'),
+                _buildBadge('⚡ O(log n) Hit Testing'),
+                _buildBadge('📈 LTTB Downsampling'),
+                _buildBadge('🎯 Smart Labels'),
+                _buildBadge('🎨 Themes'),
+                _buildBadge('📱 60fps'),
               ],
             ),
           ],
@@ -151,7 +176,84 @@ class ShowcaseGalleryHome extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
       ),
-      child: Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+      child: Text(
+        text,
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+      ),
+    );
+  }
+
+  Widget _buildShowcaseSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              Icon(Icons.auto_awesome, size: 28, color: Color(0xFF6366F1)),
+              SizedBox(width: 12),
+              Text(
+                '🌟 Full API Showcases',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 180,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              _ShowcaseCard(
+                title: 'Feature Highlights',
+                subtitle: 'Unique differentiators',
+                icon: Icons.star,
+                color: const Color(0xFF10B981),
+                examples: '6 demos',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const FeatureHighlights()),
+                ),
+              ),
+              _ShowcaseCard(
+                title: 'Pie Charts',
+                subtitle: 'Complete API reference',
+                icon: Icons.pie_chart,
+                color: const Color(0xFF6366F1),
+                examples: '14 examples',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PieChartShowcase()),
+                ),
+              ),
+              _ShowcaseCard(
+                title: 'Line Charts',
+                subtitle: 'Complete API reference',
+                icon: Icons.show_chart,
+                color: const Color(0xFF8B5CF6),
+                examples: '11 examples',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LineChartShowcase()),
+                ),
+              ),
+              _ShowcaseCard(
+                title: 'Bar Charts',
+                subtitle: 'Complete API reference',
+                icon: Icons.bar_chart,
+                color: const Color(0xFFF59E0B),
+                examples: '10 examples',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const BarChartShowcase()),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -208,7 +310,10 @@ class ShowcaseGalleryHome extends StatelessWidget {
             Expanded(
               child: Container(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                child: Padding(padding: const EdgeInsets.all(8), child: example.builder(context)),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: example.builder(context),
+                ),
               ),
             ),
             Padding(
@@ -239,6 +344,95 @@ class ShowcaseGalleryHome extends StatelessWidget {
   }
 }
 
+class _ShowcaseCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final String examples;
+  final VoidCallback onTap;
+
+  const _ShowcaseCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.examples,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 152,
+      margin: const EdgeInsets.only(right: 12),
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 22),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  title,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    examples,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // =============================================================================
 // EXAMPLE DETAIL PAGE
 // =============================================================================
@@ -260,17 +454,17 @@ class ExampleDetailPage extends StatelessWidget {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Text(example.description, style: const TextStyle(fontSize: 16))],
-                ),
+                child: Text(example.description, style: const TextStyle(fontSize: 16)),
               ),
             ),
             const SizedBox(height: 16),
             Card(
-              child: Padding(
-                padding: const EdgeInsets.all(0),
-                child: SizedBox(height: 400, child: example.builder(context)),
+              child: SizedBox(
+                height: 400,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: example.builder(context),
+                ),
               ),
             ),
           ],
@@ -306,38 +500,74 @@ class ShowcaseExample {
 
 final List<ShowcaseCategory> categories = [
   ShowcaseCategory(
+    name: '🥧 Pie Charts',
+    icon: Icons.pie_chart,
+    examples: [
+      ShowcaseExample(
+        title: 'Basic Pie',
+        description: 'Simple pie with auto-coloring',
+        builder: (context) => const BasicPieExample(),
+      ),
+      ShowcaseExample(
+        title: 'Donut Chart',
+        description: 'With center label',
+        builder: (context) => const DonutExample(),
+      ),
+      ShowcaseExample(
+        title: 'Rounded Corners',
+        description: 'cornerRadius for smooth edges',
+        builder: (context) => const RoundedCornersPieExample(),
+      ),
+      ShowcaseExample(
+        title: 'Smart Labels',
+        description: 'Auto-contrast text',
+        builder: (context) => const SmartLabelsPieExample(),
+      ),
+      ShowcaseExample(
+        title: 'Selection Mode',
+        description: 'Tap to select',
+        builder: (context) => const SelectablePieExample(),
+      ),
+      ShowcaseExample(
+        title: 'Dark Theme',
+        description: 'Full dark mode',
+        builder: (context) => const DarkThemePieExample(),
+      ),
+    ],
+  ),
+  ShowcaseCategory(
     name: '📈 Line Charts',
     icon: Icons.show_chart,
     examples: [
       ShowcaseExample(
-        title: 'Basic Line Chart',
-        description: 'Simple line chart with single series',
-        builder: (context) => const BasicLineChartExample(),
+        title: 'Basic Line',
+        description: 'With area fill',
+        builder: (context) => const BasicLineExample(),
       ),
       ShowcaseExample(
-        title: 'Multi-Series Lines',
-        description: 'Multiple lines on the same chart',
+        title: 'Multi-Series',
+        description: 'Multiple lines',
         builder: (context) => const MultiSeriesLineExample(),
       ),
       ShowcaseExample(
-        title: 'Curved Lines',
-        description: 'Smooth Catmull-Rom curves',
+        title: 'Curved Line',
+        description: 'Smooth curves',
         builder: (context) => const CurvedLineExample(),
       ),
       ShowcaseExample(
-        title: 'Area Chart',
-        description: 'Filled area beneath line',
-        builder: (context) => const AreaChartExample(),
+        title: 'With Markers',
+        description: 'Data point indicators',
+        builder: (context) => const MarkersLineExample(),
       ),
       ShowcaseExample(
-        title: 'Gradient Lines',
-        description: 'Beautiful gradient effects',
+        title: 'Gradient',
+        description: 'Beautiful gradients',
         builder: (context) => const GradientLineExample(),
       ),
       ShowcaseExample(
-        title: 'Line with Markers',
-        description: 'Data points highlighted',
-        builder: (context) => const LineWithMarkersExample(),
+        title: 'Large Dataset',
+        description: '1000+ points (LTTB)',
+        builder: (context) => const LargeDatasetExample(),
       ),
     ],
   ),
@@ -346,55 +576,34 @@ final List<ShowcaseCategory> categories = [
     icon: Icons.bar_chart,
     examples: [
       ShowcaseExample(
-        title: 'Vertical Bars',
-        description: 'Classic column chart',
-        builder: (context) => const VerticalBarsExample(),
+        title: 'Basic Bars',
+        description: 'Vertical columns',
+        builder: (context) => const BasicBarsExample(),
       ),
       ShowcaseExample(
         title: 'Grouped Bars',
-        description: 'Multiple series side by side',
+        description: 'Side by side',
         builder: (context) => const GroupedBarsExample(),
       ),
       ShowcaseExample(
-        title: 'Rounded Corners',
-        description: 'Beautiful rounded bar edges',
+        title: 'Stacked Bars',
+        description: 'Series stacked',
+        builder: (context) => const StackedBarsExample(),
+      ),
+      ShowcaseExample(
+        title: 'Rounded',
+        description: 'Beautiful edges',
         builder: (context) => const RoundedBarsExample(),
       ),
       ShowcaseExample(
-        title: 'Bar with Borders',
-        description: 'Bars with custom borders',
-        builder: (context) => const BorderedBarsExample(),
-      ),
-      ShowcaseExample(
-        title: 'Gradient Bars',
-        description: 'Gradient fill on bars',
+        title: 'Gradient',
+        description: 'Color gradients',
         builder: (context) => const GradientBarsExample(),
       ),
       ShowcaseExample(
-        title: 'Bar with Shadows',
-        description: 'Depth with shadow effects',
+        title: 'With Shadows',
+        description: 'Depth effects',
         builder: (context) => const ShadowBarsExample(),
-      ),
-    ],
-  ),
-  ShowcaseCategory(
-    name: '🎯 Markers & Labels',
-    icon: Icons.scatter_plot,
-    examples: [
-      ShowcaseExample(
-        title: 'Marker Shapes',
-        description: 'Circle, square, diamond, triangle',
-        builder: (context) => const MarkerShapesExample(),
-      ),
-      ShowcaseExample(
-        title: 'Data Labels',
-        description: 'Show values on data points',
-        builder: (context) => const DataLabelsExample(),
-      ),
-      ShowcaseExample(
-        title: 'Custom Markers',
-        description: 'Custom styled markers',
-        builder: (context) => const CustomMarkersExample(),
       ),
     ],
   ),
@@ -404,108 +613,196 @@ final List<ShowcaseCategory> categories = [
     examples: [
       ShowcaseExample(
         title: 'Tooltips',
-        description: 'Interactive tooltips on tap',
-        builder: (context) => const TooltipsExample(),
+        description: 'Tap for info',
+        builder: (context) => const TooltipExample(),
       ),
       ShowcaseExample(
         title: 'Crosshair',
-        description: 'Crosshair indicator for precision',
+        description: 'Precision tracking',
         builder: (context) => const CrosshairExample(),
       ),
       ShowcaseExample(
-        title: 'Interactive Chart',
-        description: 'Full interactivity enabled',
-        builder: (context) => const InteractiveChartExample(),
-      ),
-    ],
-  ),
-  ShowcaseCategory(
-    name: '🎨 Themes & Styles',
-    icon: Icons.palette,
-    examples: [
-      ShowcaseExample(
-        title: 'Light Theme',
-        description: 'Default light theme',
-        builder: (context) => const LightThemeExample(),
-      ),
-      ShowcaseExample(
-        title: 'Dark Theme',
-        description: 'Beautiful dark mode',
-        builder: (context) => const DarkThemeExample(),
-      ),
-      ShowcaseExample(
-        title: 'Custom Colors',
-        description: 'Personalized color schemes',
-        builder: (context) => const CustomColorsExample(),
-      ),
-    ],
-  ),
-  ShowcaseCategory(
-    name: '⚙️ Axis Configuration',
-    icon: Icons.settings,
-    examples: [
-      ShowcaseExample(
-        title: 'Numeric Axis',
-        description: 'Auto-calculated intervals',
-        builder: (context) => const NumericAxisExample(),
-      ),
-      ShowcaseExample(
-        title: 'Category Axis',
-        description: 'Named categories',
-        builder: (context) => const CategoryAxisExample(),
-      ),
-      ShowcaseExample(
-        title: 'Custom Labels',
-        description: 'Formatted axis labels',
-        builder: (context) => const CustomLabelsExample(),
-      ),
-      ShowcaseExample(
-        title: 'Grid Customization',
-        description: 'Custom grid lines',
-        builder: (context) => const GridCustomizationExample(),
-      ),
-    ],
-  ),
-  ShowcaseCategory(
-    name: '⚡ Performance',
-    icon: Icons.speed,
-    examples: [
-      ShowcaseExample(
-        title: 'Large Dataset',
-        description: '1000+ data points',
-        builder: (context) => const LargeDatasetExample(),
-      ),
-      ShowcaseExample(
-        title: 'Real-time Updates',
-        description: 'Live data streaming',
-        builder: (context) => const RealTimeExample(),
-      ),
-    ],
-  ),
-  ShowcaseCategory(
-    name: '✨ Animations',
-    icon: Icons.animation,
-    examples: [
-      ShowcaseExample(
-        title: 'Animated Entry',
-        description: 'Smooth chart entrance',
-        builder: (context) => const AnimatedEntryExample(),
-      ),
-      ShowcaseExample(
-        title: 'Custom Animation',
-        description: 'Custom animation curves',
-        builder: (context) => const CustomAnimationExample(),
+        title: 'Zoom & Pan',
+        description: 'Navigate data',
+        builder: (context) => const ZoomPanExample(),
       ),
     ],
   ),
 ];
 
 // =============================================================================
-// LINE CHART EXAMPLES
+// EXAMPLE WIDGETS - PIE
 // =============================================================================
 
-class BasicLineChartExample extends StatelessWidget {
-  const BasicLineChartExample({super.key});
+final _pieData = [
+  FusionPieDataPoint(35, label: 'Sales', color: const Color(0xFF6366F1)),
+  FusionPieDataPoint(25, label: 'Marketing', color: const Color(0xFF22C55E)),
+  FusionPieDataPoint(20, label: 'Engineering', color: const Color(0xFFF59E0B)),
+  FusionPieDataPoint(15, label: 'Support', color: const Color(0xFFA855F7)),
+  FusionPieDataPoint(5, label: 'Other', color: const Color(0xFF6B7280)),
+];
+
+class _PieContainer extends StatelessWidget {
+  final Widget child;
+  final Color? backgroundColor;
+
+  const _PieContainer({required this.child, this.backgroundColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: backgroundColor != null
+          ? BoxDecoration(color: backgroundColor, borderRadius: BorderRadius.circular(8))
+          : null,
+      child: Center(child: AspectRatio(aspectRatio: 1.0, child: child)),
+    );
+  }
+}
+
+class BasicPieExample extends StatelessWidget {
+  const BasicPieExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _PieContainer(
+      child: FusionPieChart(
+        series: FusionPieSeries(dataPoints: _pieData),
+        config: const FusionPieChartConfiguration(
+          enableLegend: false,
+          labelPosition: PieLabelPosition.none,
+        ),
+      ),
+    );
+  }
+}
+
+class DonutExample extends StatelessWidget {
+  const DonutExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _PieContainer(
+      child: FusionPieChart(
+        series: FusionPieSeries(dataPoints: _pieData),
+        config: const FusionPieChartConfiguration(
+          innerRadiusPercent: 0.55,
+          showCenterLabel: true,
+          centerLabelText: '\$2.4M',
+          centerSubLabelText: 'Total',
+          enableLegend: false,
+          labelPosition: PieLabelPosition.none,
+        ),
+      ),
+    );
+  }
+}
+
+class RoundedCornersPieExample extends StatelessWidget {
+  const RoundedCornersPieExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _PieContainer(
+      child: FusionPieChart(
+        series: FusionPieSeries(
+          dataPoints: _pieData,
+          strokeWidth: 2,
+          strokeColor: Colors.white,
+        ),
+        config: const FusionPieChartConfiguration(
+          innerRadiusPercent: 0.5,
+          cornerRadius: 10.0,
+          gapBetweenSlices: 2.0,
+          enableLegend: false,
+          labelPosition: PieLabelPosition.none,
+        ),
+      ),
+    );
+  }
+}
+
+class SmartLabelsPieExample extends StatelessWidget {
+  const SmartLabelsPieExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _PieContainer(
+      child: FusionPieChart(
+        series: FusionPieSeries(
+          dataPoints: [
+            FusionPieDataPoint(40, label: 'Dark', color: const Color(0xFF1E293B)),
+            FusionPieDataPoint(30, label: 'Light', color: const Color(0xFFFEF3C7)),
+            FusionPieDataPoint(20, label: 'Blue', color: const Color(0xFF3B82F6)),
+            FusionPieDataPoint(10, label: 'Green', color: const Color(0xFF22C55E)),
+          ],
+        ),
+        config: const FusionPieChartConfiguration(
+          labelPosition: PieLabelPosition.inside,
+          showPercentages: true,
+          enableLegend: false,
+        ),
+      ),
+    );
+  }
+}
+
+class SelectablePieExample extends StatelessWidget {
+  const SelectablePieExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _PieContainer(
+      child: FusionPieChart(
+        series: FusionPieSeries(dataPoints: _pieData),
+        config: const FusionPieChartConfiguration(
+          selectionMode: PieSelectionMode.single,
+          selectedScale: 1.05,
+          explodeOnSelection: true,
+          enableLegend: false,
+          labelPosition: PieLabelPosition.none,
+        ),
+      ),
+    );
+  }
+}
+
+class DarkThemePieExample extends StatelessWidget {
+  const DarkThemePieExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _PieContainer(
+      backgroundColor: const Color(0xFF1E1E2E),
+      child: FusionPieChart(
+        series: FusionPieSeries(
+          dataPoints: [
+            FusionPieDataPoint(35, label: 'A', color: const Color(0xFF8B5CF6)),
+            FusionPieDataPoint(25, label: 'B', color: const Color(0xFF06B6D4)),
+            FusionPieDataPoint(20, label: 'C', color: const Color(0xFF10B981)),
+            FusionPieDataPoint(15, label: 'D', color: const Color(0xFFF59E0B)),
+            FusionPieDataPoint(5, label: 'E', color: const Color(0xFF6B7280)),
+          ],
+        ),
+        config: const FusionPieChartConfiguration(
+          theme: FusionDarkTheme(),
+          innerRadiusPercent: 0.5,
+          showCenterLabel: true,
+          centerLabelText: 'Dark',
+          centerLabelStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          enableLegend: false,
+          labelPosition: PieLabelPosition.none,
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// EXAMPLE WIDGETS - LINE
+// =============================================================================
+
+class BasicLineExample extends StatelessWidget {
+  const BasicLineExample({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -524,22 +821,10 @@ class BasicLineChartExample extends StatelessWidget {
           color: const Color(0xFF6366F1),
           lineWidth: 2.5,
           showArea: true,
-          areaOpacity: 0.4,
-          gradient: LinearGradient(
-            colors: [const Color(0xFF6366F1), const Color(0xFF6366F1).withValues(alpha: 0.3)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+          areaOpacity: 0.3,
+          isCurved: true,
         ),
       ],
-      config: const FusionLineChartConfiguration(
-        enableAnimation: true,
-        enableMarkers: false,
-        tooltipBehavior: FusionTooltipBehavior(
-          trackballMode: FusionTooltipTrackballMode.snapToX,
-          position: FusionTooltipPosition.floating,
-        ),
-      ),
     );
   }
 }
@@ -552,54 +837,29 @@ class MultiSeriesLineExample extends StatelessWidget {
     return FusionLineChart(
       series: [
         FusionLineSeries(
-          name: 'Product A',
+          name: 'A',
           dataPoints: [
             FusionDataPoint(0, 30),
             FusionDataPoint(1, 45),
             FusionDataPoint(2, 35),
             FusionDataPoint(3, 60),
-            FusionDataPoint(4, 50),
-            FusionDataPoint(5, 75),
           ],
           color: const Color(0xFF6366F1),
           lineWidth: 2.5,
         ),
         FusionLineSeries(
-          name: 'Product B',
+          name: 'B',
           dataPoints: [
             FusionDataPoint(0, 20),
             FusionDataPoint(1, 35),
             FusionDataPoint(2, 45),
             FusionDataPoint(3, 40),
-            FusionDataPoint(4, 65),
-            FusionDataPoint(5, 55),
           ],
-          color: const Color(0xFF8B5CF6),
-          lineWidth: 2.5,
-        ),
-        FusionLineSeries(
-          name: 'Product C',
-          dataPoints: [
-            FusionDataPoint(0, 15),
-            FusionDataPoint(1, 25),
-            FusionDataPoint(2, 30),
-            FusionDataPoint(3, 35),
-            FusionDataPoint(4, 45),
-            FusionDataPoint(5, 50),
-          ],
-          color: const Color(0xFF10B981),
+          color: const Color(0xFF22C55E),
           lineWidth: 2.5,
         ),
       ],
-      config: const FusionChartConfiguration(
-        enableAnimation: true,
-        enableLegend: true,
-        enableCrosshair: false,
-        tooltipBehavior: FusionTooltipBehavior(
-          trackballMode: FusionTooltipTrackballMode.magnetic,
-          shared: true,
-        ),
-      ),
+      config: const FusionChartConfiguration(enableLegend: true),
     );
   }
 }
@@ -612,7 +872,6 @@ class CurvedLineExample extends StatelessWidget {
     return FusionLineChart(
       series: [
         FusionLineSeries(
-          name: 'Smooth Curve',
           dataPoints: [
             FusionDataPoint(0, 20),
             FusionDataPoint(1, 45),
@@ -631,30 +890,27 @@ class CurvedLineExample extends StatelessWidget {
   }
 }
 
-class AreaChartExample extends StatelessWidget {
-  const AreaChartExample({super.key});
+class MarkersLineExample extends StatelessWidget {
+  const MarkersLineExample({super.key});
 
   @override
   Widget build(BuildContext context) {
     return FusionLineChart(
       series: [
         FusionLineSeries(
-          name: 'Area Data',
           dataPoints: [
             FusionDataPoint(0, 30),
             FusionDataPoint(1, 50),
             FusionDataPoint(2, 40),
-            FusionDataPoint(3, 70),
-            FusionDataPoint(4, 55),
-            FusionDataPoint(5, 85),
+            FusionDataPoint(3, 65),
           ],
-          color: const Color(0xFF3B82F6),
+          color: const Color(0xFF6366F1),
           lineWidth: 2.5,
-          showArea: true,
-          areaOpacity: 0.3,
-          isCurved: true,
+          showMarkers: true,
+          markerSize: 8.0,
         ),
       ],
+      config: const FusionLineChartConfiguration(enableMarkers: true),
     );
   }
 }
@@ -667,7 +923,6 @@ class GradientLineExample extends StatelessWidget {
     return FusionLineChart(
       series: [
         FusionLineSeries(
-          name: 'Gradient Line',
           dataPoints: [
             FusionDataPoint(0, 25),
             FusionDataPoint(1, 55),
@@ -680,52 +935,45 @@ class GradientLineExample extends StatelessWidget {
           lineWidth: 3.0,
           gradient: const LinearGradient(
             colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
           ),
           showArea: true,
           areaOpacity: 0.2,
+          isCurved: true,
         ),
       ],
     );
   }
 }
 
-class LineWithMarkersExample extends StatelessWidget {
-  const LineWithMarkersExample({super.key});
+class LargeDatasetExample extends StatelessWidget {
+  const LargeDatasetExample({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final dataPoints = List.generate(
+      500,
+      (i) => FusionDataPoint(i.toDouble(), 20 + (50 * (i % 10 / 10)) + (10 * (i % 3))),
+    );
+
     return FusionLineChart(
       series: [
         FusionLineSeries(
-          name: 'With Markers',
-          dataPoints: [
-            FusionDataPoint(0, 30),
-            FusionDataPoint(1, 50),
-            FusionDataPoint(2, 40),
-            FusionDataPoint(3, 65),
-            FusionDataPoint(4, 55),
-            FusionDataPoint(5, 80),
-          ],
+          dataPoints: dataPoints,
           color: const Color(0xFF6366F1),
-          lineWidth: 2.5,
-          showMarkers: true,
-          markerSize: 8.0,
-          markerShape: MarkerShape.circle,
+          lineWidth: 1.5,
         ),
       ],
-      config: const FusionLineChartConfiguration(enableMarkers: true),
+      config: const FusionChartConfiguration(enableAnimation: false),
     );
   }
 }
 
 // =============================================================================
-// BAR CHART EXAMPLES
+// EXAMPLE WIDGETS - BAR
 // =============================================================================
 
-class VerticalBarsExample extends StatelessWidget {
-  const VerticalBarsExample({super.key});
+class BasicBarsExample extends StatelessWidget {
+  const BasicBarsExample({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -741,6 +989,7 @@ class VerticalBarsExample extends StatelessWidget {
           ],
           color: const Color(0xFF3B82F6),
           barWidth: 0.6,
+          borderRadius: 6.0,
         ),
       ],
     );
@@ -763,7 +1012,7 @@ class GroupedBarsExample extends StatelessWidget {
             FusionDataPoint(3, 70),
           ],
           color: const Color(0xFF6366F1),
-          barWidth: 0.4,
+          barWidth: 0.35,
         ),
         FusionBarSeries(
           name: '2024',
@@ -774,9 +1023,53 @@ class GroupedBarsExample extends StatelessWidget {
             FusionDataPoint(3, 85),
           ],
           color: const Color(0xFF8B5CF6),
-          barWidth: 0.4,
+          barWidth: 0.35,
         ),
       ],
+      config: const FusionBarChartConfiguration(enableLegend: true),
+    );
+  }
+}
+
+class StackedBarsExample extends StatelessWidget {
+  const StackedBarsExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FusionStackedBarChart(
+      series: [
+        FusionStackedBarSeries(
+          name: 'A',
+          dataPoints: [
+            FusionDataPoint(0, 30),
+            FusionDataPoint(1, 35),
+            FusionDataPoint(2, 28),
+            FusionDataPoint(3, 40),
+          ],
+          color: const Color(0xFF6366F1),
+        ),
+        FusionStackedBarSeries(
+          name: 'B',
+          dataPoints: [
+            FusionDataPoint(0, 25),
+            FusionDataPoint(1, 30),
+            FusionDataPoint(2, 35),
+            FusionDataPoint(3, 28),
+          ],
+          color: const Color(0xFF22C55E),
+        ),
+        FusionStackedBarSeries(
+          name: 'C',
+          dataPoints: [
+            FusionDataPoint(0, 20),
+            FusionDataPoint(1, 18),
+            FusionDataPoint(2, 22),
+            FusionDataPoint(3, 25),
+          ],
+          color: const Color(0xFFF59E0B),
+        ),
+      ],
+      config: const FusionStackedBarChartConfiguration(enableLegend: true),
     );
   }
 }
@@ -789,7 +1082,6 @@ class RoundedBarsExample extends StatelessWidget {
     return FusionBarChart(
       series: [
         FusionBarSeries(
-          name: 'Rounded',
           dataPoints: [
             FusionDataPoint(0, 60),
             FusionDataPoint(1, 75),
@@ -797,34 +1089,8 @@ class RoundedBarsExample extends StatelessWidget {
             FusionDataPoint(3, 90),
           ],
           color: const Color(0xFF10B981),
-          barWidth: 0.6,
+          barWidth: 0.5,
           borderRadius: 12.0,
-        ),
-      ],
-    );
-  }
-}
-
-class BorderedBarsExample extends StatelessWidget {
-  const BorderedBarsExample({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FusionBarChart(
-      series: [
-        FusionBarSeries(
-          name: 'Bordered',
-          dataPoints: [
-            FusionDataPoint(1, 55),
-            FusionDataPoint(2, 70),
-            FusionDataPoint(3, 60),
-            FusionDataPoint(4, 85),
-          ],
-          color: const Color(0xFFF59E0B),
-          barWidth: 0.6,
-          borderRadius: 8.0,
-          borderColor: const Color(0xFFD97706),
-          borderWidth: 2.0,
         ),
       ],
     );
@@ -839,7 +1105,6 @@ class GradientBarsExample extends StatelessWidget {
     return FusionBarChart(
       series: [
         FusionBarSeries(
-          name: 'Gradient',
           dataPoints: [
             FusionDataPoint(0, 60),
             FusionDataPoint(1, 75),
@@ -848,7 +1113,7 @@ class GradientBarsExample extends StatelessWidget {
           ],
           color: const Color(0xFF8B5CF6),
           barWidth: 0.6,
-          borderRadius: 10.0,
+          borderRadius: 8.0,
           gradient: const LinearGradient(
             colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
             begin: Alignment.topCenter,
@@ -868,7 +1133,6 @@ class ShadowBarsExample extends StatelessWidget {
     return FusionBarChart(
       series: [
         FusionBarSeries(
-          name: 'Shadowed',
           dataPoints: [
             FusionDataPoint(0, 55),
             FusionDataPoint(1, 70),
@@ -879,7 +1143,11 @@ class ShadowBarsExample extends StatelessWidget {
           barWidth: 0.6,
           borderRadius: 8.0,
           showShadow: true,
-          shadow: const BoxShadow(color: Color(0x40000000), blurRadius: 8, offset: Offset(0, 4)),
+          shadow: const BoxShadow(
+            color: Color(0x40000000),
+            blurRadius: 8,
+            offset: Offset(2, 4),
+          ),
         ),
       ],
     );
@@ -887,127 +1155,17 @@ class ShadowBarsExample extends StatelessWidget {
 }
 
 // =============================================================================
-// MARKER & LABEL EXAMPLES
+// EXAMPLE WIDGETS - INTERACTIONS
 // =============================================================================
 
-class MarkerShapesExample extends StatelessWidget {
-  const MarkerShapesExample({super.key});
+class TooltipExample extends StatelessWidget {
+  const TooltipExample({super.key});
 
   @override
   Widget build(BuildContext context) {
     return FusionLineChart(
       series: [
         FusionLineSeries(
-          name: 'Circle',
-          dataPoints: [
-            FusionDataPoint(0, 30),
-            FusionDataPoint(1, 45),
-            FusionDataPoint(2, 35),
-            FusionDataPoint(3, 60),
-          ],
-          color: const Color(0xFF6366F1),
-          showMarkers: true,
-          markerShape: MarkerShape.circle,
-          markerSize: 8.0,
-        ),
-        FusionLineSeries(
-          name: 'Square',
-          dataPoints: [
-            FusionDataPoint(0, 25),
-            FusionDataPoint(1, 40),
-            FusionDataPoint(2, 50),
-            FusionDataPoint(3, 45),
-          ],
-          color: const Color(0xFF8B5CF6),
-          showMarkers: true,
-          markerShape: MarkerShape.square,
-          markerSize: 8.0,
-        ),
-        FusionLineSeries(
-          name: 'Diamond',
-          dataPoints: [
-            FusionDataPoint(0, 20),
-            FusionDataPoint(1, 35),
-            FusionDataPoint(2, 45),
-            FusionDataPoint(3, 40),
-          ],
-          color: const Color(0xFF10B981),
-          showMarkers: true,
-          markerShape: MarkerShape.diamond,
-          markerSize: 8.0,
-        ),
-      ],
-      config: const FusionLineChartConfiguration(enableMarkers: true, enableLegend: true),
-    );
-  }
-}
-
-class DataLabelsExample extends StatelessWidget {
-  const DataLabelsExample({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FusionLineChart(
-      series: [
-        FusionLineSeries(
-          name: 'With Labels',
-          dataPoints: [
-            FusionDataPoint(0, 30),
-            FusionDataPoint(1, 50),
-            FusionDataPoint(2, 40),
-            FusionDataPoint(3, 65),
-          ],
-          color: const Color(0xFF6366F1),
-          showDataLabels: true,
-          dataLabelDisplay: FusionDataLabelDisplay.maxAndMin,
-          dataLabelFormatter: (value) => '\$${value.toStringAsFixed(0)}',
-        ),
-      ],
-      config: const FusionChartConfiguration(enableDataLabels: true),
-    );
-  }
-}
-
-class CustomMarkersExample extends StatelessWidget {
-  const CustomMarkersExample({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FusionLineChart(
-      series: [
-        FusionLineSeries(
-          name: 'Custom Style',
-          dataPoints: [
-            FusionDataPoint(0, 35),
-            FusionDataPoint(1, 55),
-            FusionDataPoint(2, 45),
-            FusionDataPoint(3, 70),
-          ],
-          color: const Color(0xFFEC4899),
-          lineWidth: 3.0,
-          showMarkers: true,
-          markerSize: 10.0,
-          markerShape: MarkerShape.diamond,
-        ),
-      ],
-      config: const FusionLineChartConfiguration(enableMarkers: true),
-    );
-  }
-}
-
-// =============================================================================
-// INTERACTION EXAMPLES
-// =============================================================================
-
-class TooltipsExample extends StatelessWidget {
-  const TooltipsExample({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FusionLineChart(
-      series: [
-        FusionLineSeries(
-          name: 'Revenue',
           dataPoints: [
             FusionDataPoint(0, 30),
             FusionDataPoint(1, 50),
@@ -1020,7 +1178,12 @@ class TooltipsExample extends StatelessWidget {
           lineWidth: 2.5,
         ),
       ],
-      config: const FusionChartConfiguration(enableTooltip: true, enableCrosshair: false),
+      config: const FusionChartConfiguration(
+        enableTooltip: true,
+        tooltipBehavior: FusionTooltipBehavior(
+          activationMode: FusionTooltipActivationMode.singleTap,
+        ),
+      ),
     );
   }
 }
@@ -1033,7 +1196,6 @@ class CrosshairExample extends StatelessWidget {
     return FusionLineChart(
       series: [
         FusionLineSeries(
-          name: 'Data',
           dataPoints: [
             FusionDataPoint(0, 30),
             FusionDataPoint(1, 50),
@@ -1044,394 +1206,45 @@ class CrosshairExample extends StatelessWidget {
           ],
           color: const Color(0xFF8B5CF6),
           lineWidth: 2.5,
-        ),
-      ],
-      config: const FusionChartConfiguration(enableCrosshair: true, enableTooltip: true),
-    );
-  }
-}
-
-class InteractiveChartExample extends StatelessWidget {
-  const InteractiveChartExample({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FusionLineChart(
-      series: [
-        FusionLineSeries(
-          name: 'Interactive',
-          dataPoints: [
-            FusionDataPoint(0, 30),
-            FusionDataPoint(1, 50),
-            FusionDataPoint(2, 40),
-            FusionDataPoint(3, 65),
-            FusionDataPoint(4, 55),
-            FusionDataPoint(5, 80),
-          ],
-          color: const Color(0xFF10B981),
-          lineWidth: 2.5,
-          showMarkers: true,
         ),
       ],
       config: const FusionChartConfiguration(
-        enableTooltip: true,
         enableCrosshair: true,
-        enableSelection: true,
+        enableTooltip: true,
       ),
     );
   }
 }
 
-// =============================================================================
-// THEME EXAMPLES
-// =============================================================================
-
-class LightThemeExample extends StatelessWidget {
-  const LightThemeExample({super.key});
+class ZoomPanExample extends StatelessWidget {
+  const ZoomPanExample({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return FusionLineChart(
-      series: [
-        FusionLineSeries(
-          name: 'Light Theme',
-          dataPoints: [
-            FusionDataPoint(0, 30),
-            FusionDataPoint(1, 50),
-            FusionDataPoint(2, 40),
-            FusionDataPoint(3, 65),
-          ],
-          color: const Color(0xFF6366F1),
-          lineWidth: 2.5,
-        ),
-      ],
-      config: const FusionChartConfiguration(theme: FusionLightTheme()),
-    );
-  }
-}
-
-class DarkThemeExample extends StatelessWidget {
-  const DarkThemeExample({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFF1F2937),
-      child: FusionLineChart(
-        series: [
-          FusionLineSeries(
-            name: 'Dark Theme',
-            dataPoints: [
-              FusionDataPoint(0, 30),
-              FusionDataPoint(1, 50),
-              FusionDataPoint(2, 40),
-              FusionDataPoint(3, 65),
-            ],
-            color: const Color(0xFF8B5CF6),
-            lineWidth: 2.5,
-          ),
-        ],
-        config: const FusionChartConfiguration(theme: FusionDarkTheme()),
-      ),
-    );
-  }
-}
-
-class CustomColorsExample extends StatelessWidget {
-  const CustomColorsExample({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FusionLineChart(
-      series: [
-        FusionLineSeries(
-          name: 'Custom 1',
-          dataPoints: [
-            FusionDataPoint(0, 25),
-            FusionDataPoint(1, 40),
-            FusionDataPoint(2, 35),
-            FusionDataPoint(3, 55),
-          ],
-          color: const Color(0xFFFF6B6B),
-          lineWidth: 2.5,
-        ),
-        FusionLineSeries(
-          name: 'Custom 2',
-          dataPoints: [
-            FusionDataPoint(0, 20),
-            FusionDataPoint(1, 35),
-            FusionDataPoint(2, 45),
-            FusionDataPoint(3, 40),
-          ],
-          color: const Color(0xFF4ECDC4),
-          lineWidth: 2.5,
-        ),
-        FusionLineSeries(
-          name: 'Custom 3',
-          dataPoints: [
-            FusionDataPoint(0, 15),
-            FusionDataPoint(1, 25),
-            FusionDataPoint(2, 30),
-            FusionDataPoint(3, 35),
-          ],
-          color: const Color(0xFFFFE66D),
-          lineWidth: 2.5,
-        ),
-      ],
-      config: const FusionChartConfiguration(enableLegend: true),
-    );
-  }
-}
-
-// =============================================================================
-// AXIS CONFIGURATION EXAMPLES
-// =============================================================================
-
-class NumericAxisExample extends StatelessWidget {
-  const NumericAxisExample({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FusionLineChart(
-      series: [
-        FusionLineSeries(
-          name: 'Numeric',
-          dataPoints: [
-            FusionDataPoint(0, 120),
-            FusionDataPoint(1, 250),
-            FusionDataPoint(2, 180),
-            FusionDataPoint(3, 320),
-          ],
-          color: const Color(0xFF6366F1),
-          lineWidth: 2.5,
-        ),
-      ],
-      yAxis: FusionAxisConfiguration(title: 'Value', showGrid: true, showTicks: true),
-    );
-  }
-}
-
-class CategoryAxisExample extends StatelessWidget {
-  const CategoryAxisExample({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FusionBarChart(
-      series: [
-        FusionBarSeries(
-          name: 'Sales',
-          dataPoints: [
-            FusionDataPoint(0, 65, label: 'Jan'),
-            FusionDataPoint(1, 78, label: 'Feb'),
-            FusionDataPoint(2, 82, label: 'Mar'),
-            FusionDataPoint(3, 95, label: 'Apr'),
-          ],
-          color: const Color(0xFF3B82F6),
-          barWidth: 0.6,
-        ),
-      ],
-      xAxis: FusionAxisConfiguration(title: 'Month'),
-    );
-  }
-}
-
-class CustomLabelsExample extends StatelessWidget {
-  const CustomLabelsExample({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FusionLineChart(
-      series: [
-        FusionLineSeries(
-          name: 'Revenue',
-          dataPoints: [
-            FusionDataPoint(0, 1200),
-            FusionDataPoint(1, 2500),
-            FusionDataPoint(2, 1800),
-            FusionDataPoint(3, 3200),
-          ],
-          color: const Color(0xFF8B5CF6),
-          lineWidth: 2.5,
-        ),
-      ],
-      yAxis: FusionAxisConfiguration(
-        title: 'Revenue',
-        labelFormatter: (value) => '\$${(value / 1000).toStringAsFixed(1)}K',
-        showGrid: true,
-      ),
-    );
-  }
-}
-
-class GridCustomizationExample extends StatelessWidget {
-  const GridCustomizationExample({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FusionLineChart(
-      series: [
-        FusionLineSeries(
-          name: 'Data',
-          dataPoints: [
-            FusionDataPoint(0, 30),
-            FusionDataPoint(1, 50),
-            FusionDataPoint(2, 40),
-            FusionDataPoint(3, 65),
-          ],
-          color: const Color(0xFF10B981),
-          lineWidth: 2.5,
-        ),
-      ],
-      config: const FusionChartConfiguration(enableGrid: true),
-    );
-  }
-}
-
-// =============================================================================
-// PERFORMANCE EXAMPLES
-// =============================================================================
-
-class LargeDatasetExample extends StatelessWidget {
-  const LargeDatasetExample({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // Generate 100 data points
     final dataPoints = List.generate(
       100,
-      (i) => FusionDataPoint(i.toDouble(), 20 + (50 * (i % 10 / 10)) + (10 * (i % 3))),
+      (i) => FusionDataPoint(i.toDouble(), 30 + 40 * (i % 10 / 10) + (i % 5)),
     );
 
     return FusionLineChart(
       series: [
         FusionLineSeries(
-          name: 'Large Dataset',
           dataPoints: dataPoints,
-          color: const Color(0xFF6366F1),
-          lineWidth: 2.0,
-          isCurved: true,
-        ),
-      ],
-      config: const FusionChartConfiguration(enableAnimation: false),
-    );
-  }
-}
-
-class RealTimeExample extends StatefulWidget {
-  const RealTimeExample({super.key});
-
-  @override
-  _RealTimeExampleState createState() => _RealTimeExampleState();
-}
-
-class _RealTimeExampleState extends State<RealTimeExample> {
-  List<FusionDataPoint> dataPoints = [];
-  int counter = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize with some data
-    dataPoints = List.generate(20, (i) => FusionDataPoint(i.toDouble(), 50.0));
-
-    // Simulate real-time updates
-    Future.delayed(const Duration(milliseconds: 100), updateData);
-  }
-
-  void updateData() {
-    if (!mounted) return;
-
-    setState(() {
-      if (dataPoints.length >= 50) {
-        dataPoints.removeAt(0);
-        // Shift x values
-        for (int i = 0; i < dataPoints.length; i++) {
-          dataPoints[i] = FusionDataPoint(i.toDouble(), dataPoints[i].y);
-        }
-      }
-
-      final newY = 30 + (40 * (counter % 20 / 20));
-      dataPoints.add(FusionDataPoint(dataPoints.length.toDouble(), newY));
-      counter++;
-    });
-
-    Future.delayed(const Duration(milliseconds: 100), updateData);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FusionLineChart(
-      series: [
-        FusionLineSeries(
-          name: 'Real-time',
-          dataPoints: dataPoints,
-          color: const Color(0xFFEF4444),
+          color: const Color(0xFF3B82F6),
           lineWidth: 2.0,
         ),
       ],
-      config: const FusionChartConfiguration(enableAnimation: false),
-    );
-  }
-}
-
-// =============================================================================
-// ANIMATION EXAMPLES
-// =============================================================================
-
-class AnimatedEntryExample extends StatelessWidget {
-  const AnimatedEntryExample({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FusionLineChart(
-      series: [
-        FusionLineSeries(
-          name: 'Animated',
-          dataPoints: [
-            FusionDataPoint(0, 30),
-            FusionDataPoint(1, 55),
-            FusionDataPoint(2, 45),
-            FusionDataPoint(3, 75),
-            FusionDataPoint(4, 60),
-            FusionDataPoint(5, 85),
-          ],
-          color: const Color(0xFF8B5CF6),
-          lineWidth: 3.0,
-          isCurved: true,
-        ),
-      ],
       config: const FusionChartConfiguration(
-        enableAnimation: true,
-        animationDuration: Duration(milliseconds: 1500),
-      ),
-    );
-  }
-}
-
-class CustomAnimationExample extends StatelessWidget {
-  const CustomAnimationExample({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FusionBarChart(
-      series: [
-        FusionBarSeries(
-          name: 'Custom Curve',
-          dataPoints: [
-            FusionDataPoint(0, 60),
-            FusionDataPoint(1, 75),
-            FusionDataPoint(2, 65),
-            FusionDataPoint(3, 90),
-          ],
-          color: const Color(0xFFEC4899),
-          barWidth: 0.6,
-          borderRadius: 10.0,
+        enableAnimation: false,
+        enableZoom: true,
+        enablePanning: true,
+        zoomBehavior: FusionZoomConfiguration(
+          enabled: true,
+          enablePinchZoom: true,
+          enableMouseWheelZoom: true,
+          enableDoubleTapZoom: true,
         ),
-      ],
-      config: const FusionChartConfiguration(
-        enableAnimation: true,
-        animationDuration: Duration(milliseconds: 2000),
-        animationCurve: Curves.elasticOut,
+        panBehavior: FusionPanConfiguration(enabled: true),
       ),
     );
   }

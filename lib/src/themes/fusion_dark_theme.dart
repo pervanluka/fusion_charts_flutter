@@ -31,7 +31,7 @@ import 'fusion_chart_theme.dart';
 /// - WCAG 2.1 Level AA compliant
 /// - Reduced eye strain for dark environments
 /// - High contrast ratios (>7:1)
-class FusionDarkTheme with FusionThemeUtils implements FusionChartTheme {
+class FusionDarkTheme extends FusionChartTheme with FusionThemeUtils {
   /// Creates a dark theme with default colors.
   const FusionDarkTheme();
 
