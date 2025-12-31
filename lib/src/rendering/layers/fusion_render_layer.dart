@@ -136,38 +136,69 @@ class FusionGridLayer extends FusionRenderLayer {
         strokeCap: StrokeCap.square,
       );
 
-      final xInterval =
-          verticalInterval ??
-          xAxisConfig.interval ??
-          _calculateNiceInterval(dataBounds.right - dataBounds.left, xAxisConfig.desiredIntervals);
+      // Check if we should use discrete bucket grid (for bar/column charts)
+      // Discrete bucket grids draw lines at BOUNDARIES (between bars)
+      // not at bar centers. This works for Category, DateTime, and Numeric axes.
+      final useDiscreteBuckets = context.useDiscreteBucketGridX;
 
-      if (xInterval > 0) {
-        // Start from nice number
-        double startX = (dataBounds.left / xInterval).floor() * xInterval;
-        if (startX < dataBounds.left) startX += xInterval;
+      if (useDiscreteBuckets) {
+        // DISCRETE BUCKET MODE: Draw grid lines at boundaries (-0.5, 0.5, 1.5, ...)
+        // This places lines BETWEEN bars, not through them
+        // Works for any axis type (category, datetime, numeric)
+        final bucketCount = (dataBounds.right - dataBounds.left).round() + 1;
 
-        double currentX = startX;
-        int iterations = 0;
-
-        while (currentX <= dataBounds.right && iterations < _maxIterations) {
-          final screenX = context.dataXToScreenX(currentX).roundToDouble();
-          canvas.drawLine(Offset(screenX, chartArea.top), Offset(screenX, chartArea.bottom), paint);
-          currentX += xInterval;
-          iterations++;
+        // Draw boundary lines from -0.5 to bucketCount - 0.5
+        for (int i = 0; i <= bucketCount; i++) {
+          final boundaryX = i - 0.5;
+          // Only draw if within visible range
+          if (boundaryX >= dataBounds.left && boundaryX <= dataBounds.right) {
+            final screenX = context.dataXToScreenX(boundaryX).roundToDouble();
+            canvas.drawLine(
+              Offset(screenX, chartArea.top),
+              Offset(screenX, chartArea.bottom),
+              paint,
+            );
+          }
         }
-      }
+      } else {
+        // NUMERIC AXIS: Standard behavior - lines at regular intervals
+        final xInterval =
+            verticalInterval ??
+            xAxisConfig.interval ??
+            _calculateNiceInterval(dataBounds.right - dataBounds.left, xAxisConfig.desiredIntervals);
 
-      // Minor grid lines for X-axis
-      if (xAxisConfig.showMinorGrid) {
-        _renderMinorGridLines(
-          canvas,
-          context,
-          xAxisConfig,
-          dataBounds.left,
-          dataBounds.right,
-          xInterval,
-          isVertical: true,
-        );
+        if (xInterval > 0) {
+          // Start from nice number
+          double startX = (dataBounds.left / xInterval).floor() * xInterval;
+          if (startX < dataBounds.left) startX += xInterval;
+
+          double currentX = startX;
+          int iterations = 0;
+
+          while (currentX <= dataBounds.right && iterations < _maxIterations) {
+            final screenX = context.dataXToScreenX(currentX).roundToDouble();
+            canvas.drawLine(Offset(screenX, chartArea.top), Offset(screenX, chartArea.bottom), paint);
+            currentX += xInterval;
+            iterations++;
+          }
+        }
+
+        // Minor grid lines for X-axis (only for numeric axis)
+        if (xAxisConfig.showMinorGrid) {
+          final xInterval =
+              verticalInterval ??
+              xAxisConfig.interval ??
+              _calculateNiceInterval(dataBounds.right - dataBounds.left, xAxisConfig.desiredIntervals);
+          _renderMinorGridLines(
+            canvas,
+            context,
+            xAxisConfig,
+            dataBounds.left,
+            dataBounds.right,
+            xInterval,
+            isVertical: true,
+          );
+        }
       }
 
       context.returnPaint(paint);

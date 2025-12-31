@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui';
 import '../data/fusion_data_point.dart';
 import '../utils/fusion_mathematics.dart';
@@ -8,18 +9,28 @@ import 'fusion_coordinate_system.dart';
 /// ## Features
 ///
 /// - Straight line paths
-/// - Smooth Bezier curves
+/// - Smooth Bezier curves (Catmull-Rom based)
 /// - Catmull-Rom splines
 /// - Area fills
 /// - Optimized for performance
 ///
 /// ## Mathematics
 ///
-/// Uses control point calculation based on adjacent points:
+/// For smooth curves, uses Catmull-Rom tangent calculation converted to
+/// cubic Bezier control points. The tangent at interior point i is:
+///
 /// ```
-/// controlPoint1 = p1 + (p2 - p0) × smoothness
-/// controlPoint2 = p2 - (p3 - p1) × smoothness
+/// tangent[i] = tension × (P[i+1] - P[i-1])
 /// ```
+///
+/// Control points are calculated using Hermite-to-Bezier conversion:
+///
+/// ```
+/// controlPoint1 = P0 + tangent0 / 3
+/// controlPoint2 = P1 - tangent1 / 3
+/// ```
+///
+/// This guarantees the curve passes exactly through each data point.
 class FusionPathBuilder {
   FusionPathBuilder._();
 
@@ -62,23 +73,33 @@ class FusionPathBuilder {
 
   /// Creates a smooth curved path using cubic Bezier curves.
   ///
+  /// This implementation uses a **Cardinal spline** approach that guarantees:
+  /// - Curve passes exactly through each data point
+  /// - Smooth C1-continuous transitions at each point
+  /// - Configurable smoothness that affects curve roundness
+  /// - Consistent curvature regardless of segment length
+  ///
   /// Parameters:
   /// - [dataPoints]: The data to render
   /// - [coordSystem]: Coordinate transformation system
-  /// - [smoothness]: Curve smoothness (0.0-1.0), default 0.35
+  /// - [smoothness]: Controls how round/smooth the curves are (0.0-1.0)
+  ///   - 0.0 = straight lines between points (no curvature)
+  ///   - 0.2-0.4 = subtle, natural-looking curves (recommended)
+  ///   - 0.5 = moderate curves
+  ///   - 1.0 = very round curves (may look exaggerated)
   ///
   /// Example:
   /// ```dart
   /// final path = FusionPathBuilder.createSmoothPath(
   ///   dataPoints,
   ///   coordSystem,
-  ///   smoothness: 0.35,
+  ///   smoothness: 0.3,
   /// );
   /// ```
   static Path createSmoothPath(
     List<FusionDataPoint> dataPoints,
     FusionCoordinateSystem coordSystem, {
-    double smoothness = 0.35,
+    double smoothness = 0.3,
   }) {
     final path = Path();
 
@@ -91,39 +112,100 @@ class FusionPathBuilder {
 
     // Convert data points to screen coordinates
     final screenPoints = dataPoints.map(coordSystem.dataToScreen).toList();
+    final n = screenPoints.length;
 
     // Move to first point
     path.moveTo(screenPoints[0].dx, screenPoints[0].dy);
 
-    if (screenPoints.length == 2) {
+    if (n == 2) {
       // Only two points: draw straight line
       path.lineTo(screenPoints[1].dx, screenPoints[1].dy);
       return path;
     }
 
-    // Generate control points for smooth curves
-    for (int i = 0; i < screenPoints.length - 1; i++) {
-      final p0 = i > 0 ? screenPoints[i - 1] : screenPoints[i];
-      final p1 = screenPoints[i];
-      final p2 = screenPoints[i + 1];
-      final p3 = i < screenPoints.length - 2 ? screenPoints[i + 2] : screenPoints[i + 1];
+    // Calculate normalized tangent directions at each point
+    final tangentDirections = _calculateTangentDirections(screenPoints);
+
+    // Generate cubic Bezier curves between consecutive points
+    for (int i = 0; i < n - 1; i++) {
+      final p0 = screenPoints[i];
+      final p1 = screenPoints[i + 1];
+
+      // Calculate segment length for scaling control points
+      final segmentLength = _distance(p0, p1);
+
+      // Scale factor for control points based on smoothness and segment length
+      // The key insight: control point distance should be proportional to
+      // segment length, not the chord between neighboring points
+      final controlDistance = segmentLength * smoothness;
+
+      // Get tangent directions at both endpoints
+      final dir0 = tangentDirections[i];
+      final dir1 = tangentDirections[i + 1];
 
       // Calculate control points
-      final cp1 = Offset(
-        p1.dx + (p2.dx - p0.dx) * smoothness,
-        p1.dy + (p2.dy - p0.dy) * smoothness,
-      );
+      // CP1 is offset from P0 in the tangent direction
+      // CP2 is offset from P1 against the tangent direction
+      final cp1 = Offset(p0.dx + dir0.dx * controlDistance, p0.dy + dir0.dy * controlDistance);
 
-      final cp2 = Offset(
-        p2.dx - (p3.dx - p1.dx) * smoothness,
-        p2.dy - (p3.dy - p1.dy) * smoothness,
-      );
+      final cp2 = Offset(p1.dx - dir1.dx * controlDistance, p1.dy - dir1.dy * controlDistance);
 
-      // Draw cubic Bezier curve
-      path.cubicTo(cp1.dx, cp1.dy, cp2.dx, cp2.dy, p2.dx, p2.dy);
+      // Draw cubic Bezier curve that passes exactly through p0 and p1
+      path.cubicTo(cp1.dx, cp1.dy, cp2.dx, cp2.dy, p1.dx, p1.dy);
     }
 
     return path;
+  }
+
+  /// Calculates normalized tangent direction vectors at each point.
+  ///
+  /// Returns unit vectors (or zero vectors for degenerate cases) that indicate
+  /// the direction of the curve at each point. The magnitude is always 1.0
+  /// (or 0.0), allowing the caller to scale appropriately per segment.
+  ///
+  /// Algorithm:
+  /// - Interior points: direction from P[i-1] to P[i+1] (central difference)
+  /// - End points: direction of the adjacent segment
+  static List<Offset> _calculateTangentDirections(List<Offset> points) {
+    final n = points.length;
+    final directions = List<Offset>.filled(n, Offset.zero);
+
+    if (n < 2) return directions;
+
+    // First point: direction toward second point
+    directions[0] = _normalizeDirection(
+      Offset(points[1].dx - points[0].dx, points[1].dy - points[0].dy),
+    );
+
+    // Interior points: direction from previous to next (central difference)
+    // This gives the average direction, creating smooth transitions
+    for (int i = 1; i < n - 1; i++) {
+      directions[i] = _normalizeDirection(
+        Offset(points[i + 1].dx - points[i - 1].dx, points[i + 1].dy - points[i - 1].dy),
+      );
+    }
+
+    // Last point: direction from second-to-last point
+    directions[n - 1] = _normalizeDirection(
+      Offset(points[n - 1].dx - points[n - 2].dx, points[n - 1].dy - points[n - 2].dy),
+    );
+
+    return directions;
+  }
+
+  /// Normalizes a direction vector to unit length.
+  /// Returns Offset.zero if the input has zero length.
+  static Offset _normalizeDirection(Offset direction) {
+    final length = _distance(Offset.zero, direction);
+    if (length < 0.0001) return Offset.zero;
+    return Offset(direction.dx / length, direction.dy / length);
+  }
+
+  /// Calculates Euclidean distance between two points.
+  static double _distance(Offset a, Offset b) {
+    final dx = b.dx - a.dx;
+    final dy = b.dy - a.dy;
+    return math.sqrt(dx * dx + dy * dy);
   }
 
   // ==========================================================================
@@ -144,7 +226,7 @@ class FusionPathBuilder {
     List<FusionDataPoint> dataPoints,
     FusionCoordinateSystem coordSystem, {
     bool isCurved = true,
-    double smoothness = 0.35,
+    double smoothness = 0.3,
     double baseline = 0.0,
   }) {
     if (dataPoints.isEmpty) return Path();

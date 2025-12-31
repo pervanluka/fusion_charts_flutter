@@ -230,6 +230,7 @@ class FusionBarChartPainter extends CustomPainter {
       devicePixelRatio: 1.0,
       dataBounds: dataBounds,
       viewportBounds: null,
+      useDiscreteBucketGridX: true,
     );
   }
 

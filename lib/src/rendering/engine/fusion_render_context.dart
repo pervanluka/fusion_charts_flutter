@@ -52,6 +52,7 @@ class FusionRenderContext {
     this.devicePixelRatio = 1.0,
     this.dataBounds,
     this.viewportBounds,
+    this.useDiscreteBucketGridX = false,
   });
 
   // ==========================================================================
@@ -95,6 +96,18 @@ class FusionRenderContext {
 
   /// Y-axis definition (type: numeric, category, or datetime).
   final FusionAxisBase? yAxisDefinition;
+
+  /// Whether to draw X-axis grid lines at bucket boundaries (for bar charts).
+  ///
+  /// When `true`, vertical grid lines are drawn BETWEEN data points
+  /// (at -0.5, 0.5, 1.5, etc.) creating lanes for bars.
+  ///
+  /// When `false` (default), vertical grid lines are drawn AT data points
+  /// (at 0, 1, 2, etc.) which is correct for line charts.
+  ///
+  /// This applies to Category, DateTime, and Numeric axes when used
+  /// with bar/column chart types.
+  final bool useDiscreteBucketGridX;
 
   // ==========================================================================
   // PERFORMANCE RESOURCES
@@ -250,6 +263,7 @@ class FusionRenderContext {
     double? devicePixelRatio,
     Rect? dataBounds,
     Rect? viewportBounds,
+    bool? useDiscreteBucketGridX,
   }) {
     return FusionRenderContext(
       chartArea: chartArea ?? this.chartArea,
@@ -264,6 +278,7 @@ class FusionRenderContext {
       devicePixelRatio: devicePixelRatio ?? this.devicePixelRatio,
       dataBounds: dataBounds ?? this.dataBounds,
       viewportBounds: viewportBounds ?? this.viewportBounds,
+      useDiscreteBucketGridX: useDiscreteBucketGridX ?? this.useDiscreteBucketGridX,
     );
   }
 

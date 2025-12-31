@@ -129,6 +129,7 @@ class FusionStackedBarChartPainter extends CustomPainter {
       devicePixelRatio: 1.0,
       dataBounds: dataBounds,
       viewportBounds: null,
+      useDiscreteBucketGridX: true,
     );
   }
 
@@ -141,18 +142,16 @@ class FusionStackedBarChartPainter extends CustomPainter {
 
     // 2. For stacked bar charts, X-axis is always category-based
     if (series.isEmpty) return const FusionNumericAxis();
-    
+
     // Labels come from: point.label > point.x.toString()
     final categories = series.first.dataPoints.map((p) {
       if (p.label != null && p.label!.isNotEmpty) {
         return p.label!;
       }
       // Use x value as label (format nicely)
-      return p.x == p.x.roundToDouble() 
-          ? p.x.round().toString() 
-          : p.x.toString();
+      return p.x == p.x.roundToDouble() ? p.x.round().toString() : p.x.toString();
     }).toList();
-    
+
     return FusionCategoryAxis(categories: categories);
   }
 

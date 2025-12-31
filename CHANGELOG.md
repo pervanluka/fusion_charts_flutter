@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2025-01-23
+## [1.0.0] - 2025-12-31
 
 ### Added
 
@@ -13,11 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **FusionLineChart** — Line chart with straight or smooth curved lines (Bezier/Catmull-Rom splines)
 - **FusionBarChart** — Bar chart for categorical data comparison
 - **FusionStackedBarChart** — Stacked bar chart for cumulative data visualization
+- **FusionPieChart** — Pie and Donut charts with smart labels, selection, and center content
 
 #### Series Features
 - `FusionLineSeries` — Line series with configurable width, curves, dash patterns
 - `FusionBarSeries` — Bar series with customizable bar width, spacing, and border radius
 - `FusionStackedBarSeries` — Stacked bar series for cumulative visualization
+- `FusionPieSeries` — Pie series with customizable colors, strokes, and corner radius
 - `FusionAreaSeries` — Area fill support with gradient backgrounds
 - Series visibility toggling
 - Gradient support (linear gradients)
@@ -103,7 +105,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Pie/Donut charts
 - Scatter charts
 - Bubble charts
 - Candlestick/OHLC charts
@@ -122,4 +123,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date       | Description     |
 |---------|------------|-----------------|
-| 1.0.0   | 2025-01-23 | Initial release |
+| 1.0.0   | 2025-12-31 | Initial release |

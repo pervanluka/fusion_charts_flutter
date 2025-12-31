@@ -12,7 +12,7 @@
 
 ## ✨ Features
 
-- 📊 **Chart Types**: Line, Bar, and Stacked Bar charts
+- 📊 **Chart Types**: Line, Bar, Stacked Bar, Pie, and Donut charts
 - ⚡ **High Performance**: Optimized for 10,000+ data points with LTTB downsampling
 - 🎨 **Professional Themes**: Light and Dark themes out-of-the-box
 - 🎬 **Smooth Animations**: Configurable animations with cubic easing curves
@@ -115,6 +115,27 @@ FusionStackedBarChart(
 )
 ```
 
+### Pie / Donut Chart
+
+```dart
+FusionPieChart(
+  series: FusionPieSeries(
+    dataPoints: [
+      FusionPieDataPoint(35, label: 'Sales', color: Colors.indigo),
+      FusionPieDataPoint(25, label: 'Marketing', color: Colors.green),
+      FusionPieDataPoint(20, label: 'Engineering', color: Colors.orange),
+      FusionPieDataPoint(20, label: 'Other', color: Colors.grey),
+    ],
+  ),
+  config: const FusionPieChartConfiguration(
+    innerRadiusPercent: 0.5, // Set to 0 for pie, >0 for donut
+    showCenterLabel: true,
+    centerLabelText: '\$2.4M',
+    centerSubLabelText: 'Revenue',
+  ),
+)
+```
+
 ---
 
 ## 🎨 Theming
@@ -183,7 +204,6 @@ FusionLineChart(
 
 Future releases will include:
 
-- 🥧 Pie & Donut charts
 - 🔵 Scatter & Bubble charts
 - 📈 Candlestick/OHLC charts
 - 🎯 Radar/Spider charts

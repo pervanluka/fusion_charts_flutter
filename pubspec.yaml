@@ -1,5 +1,5 @@
 name: fusion_charts_flutter
-description: Professional Flutter charting library with line and bar charts, smooth animations, interactive tooltips, zoom/pan gestures, and enterprise-grade performance optimizations.
+description: Professional Flutter charting library with line, bar and pie/donut charts, smooth animations, interactive tooltips, zoom/pan gestures, and enterprise-grade performance optimizations.
 version: 1.0.0
 homepage: https://github.com/pervanluka/fusion_charts_flutter
 repository: https://github.com/pervanluka/fusion_charts_flutter
@@ -12,12 +12,15 @@ topics:
   - widgets
   - ui
 
-# Uncomment after adding screenshots:
+# TODO: Uncomment after adding screenshot images to /screenshots folder
+# Screenshots significantly improve pub.dev visibility!
 # screenshots:
 #   - description: 'Line chart with smooth curves and gradient area fill'
 #     path: screenshots/line_chart.png
-#   - description: 'Bar chart with tooltips'
+#   - description: 'Bar chart with rounded corners and tooltips'
 #     path: screenshots/bar_chart.png
+#   - description: 'Pie and Donut charts with center labels'
+#     path: screenshots/pie_chart.png
 
 environment:
   sdk: ^3.9.0

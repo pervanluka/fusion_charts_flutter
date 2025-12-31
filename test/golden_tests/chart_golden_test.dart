@@ -194,5 +194,137 @@ void main() {
         matchesGoldenFile('goldens/stacked_bar_chart.png'),
       );
     });
+
+    testWidgets('pie chart matches golden', (tester) async {
+      final chartKey = GlobalKey();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            backgroundColor: Colors.white,
+            body: RepaintBoundary(
+              key: chartKey,
+              child: SizedBox(
+                width: 400,
+                height: 300,
+                child: FusionPieChart(
+                  series: FusionPieSeries(
+                    dataPoints: [
+                      FusionPieDataPoint(35, label: 'Sales', color: const Color(0xFF6366F1)),
+                      FusionPieDataPoint(25, label: 'Marketing', color: const Color(0xFF22C55E)),
+                      FusionPieDataPoint(20, label: 'Engineering', color: const Color(0xFFF59E0B)),
+                      FusionPieDataPoint(15, label: 'Support', color: const Color(0xFFA855F7)),
+                      FusionPieDataPoint(5, label: 'Other', color: const Color(0xFF6B7280)),
+                    ],
+                  ),
+                  config: const FusionPieChartConfiguration(
+                    enableAnimation: false,
+                    enableLegend: false,
+                    labelPosition: PieLabelPosition.none,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      await expectLater(
+        find.byKey(chartKey),
+        matchesGoldenFile('goldens/pie_chart.png'),
+      );
+    });
+
+    testWidgets('donut chart matches golden', (tester) async {
+      final chartKey = GlobalKey();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            backgroundColor: Colors.white,
+            body: RepaintBoundary(
+              key: chartKey,
+              child: SizedBox(
+                width: 400,
+                height: 300,
+                child: FusionPieChart(
+                  series: FusionPieSeries(
+                    dataPoints: [
+                      FusionPieDataPoint(40, label: 'Revenue', color: const Color(0xFF3B82F6)),
+                      FusionPieDataPoint(30, label: 'Costs', color: const Color(0xFFEF4444)),
+                      FusionPieDataPoint(20, label: 'Profit', color: const Color(0xFF10B981)),
+                      FusionPieDataPoint(10, label: 'Tax', color: const Color(0xFF6B7280)),
+                    ],
+                  ),
+                  config: const FusionPieChartConfiguration(
+                    enableAnimation: false,
+                    innerRadiusPercent: 0.55,
+                    showCenterLabel: true,
+                    centerLabelText: '\$2.4M',
+                    centerSubLabelText: 'Total',
+                    enableLegend: false,
+                    labelPosition: PieLabelPosition.none,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      await expectLater(
+        find.byKey(chartKey),
+        matchesGoldenFile('goldens/donut_chart.png'),
+      );
+    });
+
+    testWidgets('dark theme pie chart matches golden', (tester) async {
+      final chartKey = GlobalKey();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            backgroundColor: const Color(0xFF1E1E2E),
+            body: RepaintBoundary(
+              key: chartKey,
+              child: Container(
+                color: const Color(0xFF1E1E2E),
+                width: 400,
+                height: 300,
+                child: FusionPieChart(
+                  series: FusionPieSeries(
+                    dataPoints: [
+                      FusionPieDataPoint(35, label: 'A', color: const Color(0xFF8B5CF6)),
+                      FusionPieDataPoint(25, label: 'B', color: const Color(0xFF06B6D4)),
+                      FusionPieDataPoint(20, label: 'C', color: const Color(0xFF10B981)),
+                      FusionPieDataPoint(15, label: 'D', color: const Color(0xFFF59E0B)),
+                      FusionPieDataPoint(5, label: 'E', color: const Color(0xFF6B7280)),
+                    ],
+                  ),
+                  config: const FusionPieChartConfiguration(
+                    theme: FusionDarkTheme(),
+                    enableAnimation: false,
+                    innerRadiusPercent: 0.5,
+                    enableLegend: false,
+                    labelPosition: PieLabelPosition.none,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      await expectLater(
+        find.byKey(chartKey),
+        matchesGoldenFile('goldens/dark_theme_pie_chart.png'),
+      );
+    });
   });
 }
