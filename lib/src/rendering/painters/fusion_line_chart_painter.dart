@@ -166,6 +166,9 @@ class FusionLineChartPainter extends CustomPainter {
         // Layer 90: Axes (if enabled)
         if (effectiveConfig.enableAxis) FusionAxisLayer(showXAxis: true, showYAxis: true),
 
+        // Layer 95: Border (if enabled)
+        if (effectiveConfig.enableBorder) FusionBorderLayer(),
+
         // Layer 1000: Tooltip (if showing)
         if (tooltipData != null && effectiveConfig.enableTooltip)
           FusionTooltipLayer(

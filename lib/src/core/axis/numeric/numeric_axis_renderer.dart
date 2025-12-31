@@ -183,8 +183,10 @@ class NumericAxisRenderer extends FusionAxisRenderer {
       if (max < 0) max = 0;
     }
 
-    // Step 4: Apply range padding (only if auto-ranging)
-    if (_shouldAutoRange) {
+    // Step 4: Apply range padding (only if auto-ranging AND vertical axis)
+    // For horizontal (X) axis, we use exact data bounds - no padding
+    // This ensures the first/last data points are at the edges of the chart
+    if (_shouldAutoRange && isVertical) {
       final range = max - min;
       final padding = _rangePaddingFraction;
       min -= range * padding;
@@ -212,7 +214,9 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     }
 
     // Step 6: Round bounds to nice numbers if auto-ranging
-    if (_shouldAutoRange) {
+    // For vertical (Y) axis: round to nice intervals for clean labels
+    // For horizontal (X) axis: use exact bounds to prevent gaps at edges
+    if (_shouldAutoRange && isVertical) {
       min = (min / interval).floor() * interval;
       max = (max / interval).ceil() * interval;
     }

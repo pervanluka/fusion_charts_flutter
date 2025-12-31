@@ -61,6 +61,7 @@ class FusionChartConfiguration {
     this.enableSelection = true,
     this.enableLegend = true,
     this.enableDataLabels = false,
+    this.enableBorder = false,
     this.enableGrid = true,
     this.enableAxis = true,
     this.padding = const EdgeInsets.all(16.0),
@@ -169,6 +170,14 @@ class FusionChartConfiguration {
   /// Default: `false`
   final bool enableDataLabels;
 
+  /// Whether to show a border around the chart area.
+  ///
+  /// When enabled, draws a rectangle around the plot area using
+  /// the theme's [borderColor].
+  ///
+  /// Default: `false`
+  final bool enableBorder;
+
   /// Whether to show grid lines.
   ///
   /// Default: `true`
@@ -240,6 +249,7 @@ class FusionChartConfiguration {
     bool? enableSelection,
     bool? enableLegend,
     bool? enableDataLabels,
+    bool? enableBorder,
     bool? enableGrid,
     bool? enableAxis,
     EdgeInsets? padding,
@@ -260,6 +270,7 @@ class FusionChartConfiguration {
       enableSelection: enableSelection ?? this.enableSelection,
       enableLegend: enableLegend ?? this.enableLegend,
       enableDataLabels: enableDataLabels ?? this.enableDataLabels,
+      enableBorder: enableBorder ?? this.enableBorder,
       enableGrid: enableGrid ?? this.enableGrid,
       enableAxis: enableAxis ?? this.enableAxis,
       padding: padding ?? this.padding,
@@ -285,6 +296,7 @@ class FusionChartConfiguration {
         other.enableSelection == enableSelection &&
         other.enableLegend == enableLegend &&
         other.enableDataLabels == enableDataLabels &&
+        other.enableBorder == enableBorder &&
         other.enableGrid == enableGrid &&
         other.enableAxis == enableAxis &&
         other.padding == padding &&
@@ -308,6 +320,7 @@ class FusionChartConfiguration {
       enableSelection,
       enableLegend,
       enableDataLabels,
+      enableBorder,
       enableGrid,
       enableAxis,
       padding,

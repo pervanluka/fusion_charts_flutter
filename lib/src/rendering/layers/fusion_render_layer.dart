@@ -97,6 +97,32 @@ class FusionBackgroundLayer extends FusionRenderLayer {
 }
 
 // ==========================================================================
+// BORDER LAYER - Draws a rectangle border around the chart area
+// ==========================================================================
+
+class FusionBorderLayer extends FusionRenderLayer {
+  FusionBorderLayer() : super(name: 'border', zIndex: 95, cacheable: false);
+
+  @override
+  void paint(Canvas canvas, Size size, FusionRenderContext context) {
+    final chartArea = context.chartArea;
+    
+    final paint = Paint()
+      ..color = context.theme.borderColor
+      ..strokeWidth = context.theme.axisLineWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.square;
+
+    canvas.drawRect(chartArea, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant FusionBorderLayer oldLayer) {
+    return false; // Border doesn't have internal state that changes
+  }
+}
+
+// ==========================================================================
 // GRID LAYER - Fixed to respect per-axis showGrid
 // ==========================================================================
 

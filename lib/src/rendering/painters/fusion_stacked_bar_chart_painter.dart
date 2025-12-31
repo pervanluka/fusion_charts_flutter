@@ -95,6 +95,9 @@ class FusionStackedBarChartPainter extends CustomPainter {
         // Axes
         if (effectiveConfig.enableAxis) FusionAxisLayer(showXAxis: true, showYAxis: true),
 
+        // Border
+        if (effectiveConfig.enableBorder) FusionBorderLayer(),
+
         // Crosshair
         if (crosshairPosition != null && effectiveConfig.enableCrosshair)
           FusionCrosshairLayer(

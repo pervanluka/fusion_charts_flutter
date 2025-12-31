@@ -34,6 +34,11 @@ FusionLineChart(
       areaOpacity: 0.3,
     ),
   ],
+  xAxis: FusionAxisConfiguration(interval: 1),
+  config: const FusionChartConfiguration(
+    enableAnimation: true,
+    animationDuration: Duration(milliseconds: 1200),
+  ),
 )''',
       builder: _buildBasicLineChart,
     ),
@@ -241,9 +246,9 @@ FusionChartConfiguration(
               children: [
                 Text(
                   _showcaseItems[_currentPage].title,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -362,6 +367,7 @@ Widget _buildBasicLineChart() {
         smoothness: 0.3,
       ),
     ],
+    xAxis: FusionAxisConfiguration(interval: 1),
     config: const FusionChartConfiguration(
       enableAnimation: true,
       animationDuration: Duration(milliseconds: 1200),
@@ -424,7 +430,7 @@ Widget _buildMultiSeriesChart() {
 
 Widget _buildCurvedChart() {
   final data = _generateMonthlyData();
-  
+
   return Column(
     children: [
       Expanded(
@@ -481,10 +487,7 @@ Widget _buildMarkersChart() {
         dataLabelDisplay: FusionDataLabelDisplay.maxAndMin,
       ),
     ],
-    config: const FusionLineChartConfiguration(
-      enableMarkers: true,
-      enableDataLabels: true,
-    ),
+    config: const FusionLineChartConfiguration(enableMarkers: true, enableDataLabels: true),
   );
 }
 
@@ -539,10 +542,7 @@ Widget _buildZoomPanChart() {
         maxZoomLevel: 5.0,
         zoomMode: FusionZoomMode.both,
       ),
-      panBehavior: FusionPanConfiguration(
-        enabled: true,
-        panMode: FusionPanMode.both,
-      ),
+      panBehavior: FusionPanConfiguration(enabled: true, panMode: FusionPanMode.both),
     ),
   );
 }
@@ -572,9 +572,7 @@ Widget _buildDateTimeChart() {
         isCurved: true,
       ),
     ],
-    config: const FusionChartConfiguration(
-      enableAnimation: true,
-    ),
+    config: const FusionChartConfiguration(enableAnimation: true),
     xAxis: FusionAxisConfiguration(
       title: 'Month',
       labelFormatter: (value) {
@@ -590,8 +588,20 @@ Widget _buildDateTimeChart() {
 }
 
 String _monthName(int month) {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   return months[month - 1];
 }
 
@@ -630,9 +640,7 @@ Widget _buildLargeDatasetChart() {
               lineWidth: 1.5,
             ),
           ],
-          config: const FusionChartConfiguration(
-            enableAnimation: false,
-          ),
+          config: const FusionChartConfiguration(enableAnimation: false),
         ),
       ),
     ],
@@ -729,10 +737,7 @@ Widget _buildDarkThemeChart() {
           isCurved: true,
         ),
       ],
-      config: const FusionChartConfiguration(
-        theme: FusionDarkTheme(),
-        enableLegend: true,
-      ),
+      config: const FusionChartConfiguration(theme: FusionDarkTheme(), enableLegend: true),
     ),
   );
 }
