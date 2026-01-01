@@ -1,11 +1,10 @@
-// lib/src/configuration/fusion_line_chart_configuration.dart
-
 import 'package:flutter/material.dart';
+
 import '../themes/fusion_chart_theme.dart';
 import 'fusion_chart_configuration.dart';
-import 'fusion_tooltip_configuration.dart';
 import 'fusion_crosshair_configuration.dart';
 import 'fusion_pan_configuration.dart';
+import 'fusion_tooltip_configuration.dart';
 import 'fusion_zoom_configuration.dart';
 
 /// Configuration specifically for line charts.
@@ -25,7 +24,7 @@ import 'fusion_zoom_configuration.dart';
 ///     theme: FusionDarkTheme(),
 ///     enableAnimation: true,
 ///     enableTooltip: true,
-///     
+///
 ///     // Line-specific settings
 ///     lineWidth: 2.5,
 ///     enableMarkers: true,
@@ -69,10 +68,13 @@ class FusionLineChartConfiguration extends FusionChartConfiguration {
     this.areaFillOpacity = 0.3,
     this.enableCurveSmoothing = false,
     this.curveTension = 0.4,
-  })  : assert(lineWidth > 0 && lineWidth <= 10, 'lineWidth must be between 0 and 10'),
-        assert(markerSize > 0 && markerSize <= 20, 'markerSize must be between 0 and 20'),
-        assert(areaFillOpacity >= 0 && areaFillOpacity <= 1, 'areaFillOpacity must be between 0 and 1'),
-        assert(curveTension >= 0 && curveTension <= 1, 'curveTension must be between 0 and 1');
+  }) : assert(lineWidth > 0 && lineWidth <= 10, 'lineWidth must be between 0 and 10'),
+       assert(markerSize > 0 && markerSize <= 20, 'markerSize must be between 0 and 20'),
+       assert(
+         areaFillOpacity >= 0 && areaFillOpacity <= 1,
+         'areaFillOpacity must be between 0 and 1',
+       ),
+       assert(curveTension >= 0 && curveTension <= 1, 'curveTension must be between 0 and 1');
 
   // ==========================================================================
   // LINE-SPECIFIC SETTINGS
