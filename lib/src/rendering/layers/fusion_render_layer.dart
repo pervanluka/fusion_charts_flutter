@@ -82,9 +82,7 @@ class FusionBackgroundLayer extends FusionRenderLayer {
     final paint = Paint()..style = PaintingStyle.fill;
 
     if (gradient != null) {
-      paint.shader = gradient!.createShader(
-        Rect.fromLTWH(0, 0, size.width, size.height),
-      );
+      paint.shader = gradient!.createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     } else {
       paint.color = color ?? context.theme.backgroundColor;
     }
@@ -256,10 +254,7 @@ class FusionGridLayer extends FusionRenderLayer {
       final yInterval =
           horizontalInterval ??
           yAxisConfig.interval ??
-          _calculateNiceInterval(
-            dataBounds.bottom - dataBounds.top,
-            yAxisConfig.desiredIntervals,
-          );
+          _calculateNiceInterval(dataBounds.bottom - dataBounds.top, yAxisConfig.desiredIntervals);
 
       if (yInterval > 0) {
         // Start from nice number
@@ -271,11 +266,7 @@ class FusionGridLayer extends FusionRenderLayer {
 
         while (currentY <= dataBounds.bottom && iterations < _maxIterations) {
           final screenY = context.dataYToScreenY(currentY).roundToDouble();
-          canvas.drawLine(
-            Offset(yAxisX, screenY),
-            Offset(chartArea.right, screenY),
-            paint,
-          );
+          canvas.drawLine(Offset(yAxisX, screenY), Offset(chartArea.right, screenY), paint);
           currentY += yInterval;
           iterations++;
         }
@@ -314,9 +305,7 @@ class FusionGridLayer extends FusionRenderLayer {
     final paint = context.getPaint(
       color:
           config.minorGridColor ??
-          (config.majorGridColor ?? context.theme.gridColor).withValues(
-            alpha: 0.15,
-          ),
+          (config.majorGridColor ?? context.theme.gridColor).withValues(alpha: 0.15),
       strokeWidth: config.minorGridWidth ?? 0.5,
       strokeCap: StrokeCap.square,
     );
@@ -331,26 +320,16 @@ class FusionGridLayer extends FusionRenderLayer {
 
     while (current <= dataMax && iterations < _maxIterations * 5) {
       // Skip if it's on a major line
-      final isOnMajor =
-          (current / majorInterval - (current / majorInterval).round()).abs() <
-          0.01;
+      final isOnMajor = (current / majorInterval - (current / majorInterval).round()).abs() < 0.01;
 
       if (!isOnMajor) {
         if (isVertical) {
           final screenX = context.dataXToScreenX(current).roundToDouble();
-          canvas.drawLine(
-            Offset(screenX, chartArea.top),
-            Offset(screenX, chartArea.bottom),
-            paint,
-          );
+          canvas.drawLine(Offset(screenX, chartArea.top), Offset(screenX, chartArea.bottom), paint);
         } else {
           final screenY = context.dataYToScreenY(current).roundToDouble();
           final yAxisX = coordSystem.dataXToScreenX(coordSystem.dataXMin);
-          canvas.drawLine(
-            Offset(yAxisX, screenY),
-            Offset(chartArea.right, screenY),
-            paint,
-          );
+          canvas.drawLine(Offset(yAxisX, screenY), Offset(chartArea.right, screenY), paint);
         }
       }
 
@@ -434,21 +413,11 @@ class FusionAxisLayer extends FusionRenderLayer {
           strokeCap: StrokeCap.square,
         );
 
-        canvas.drawLine(
-          Offset(yAxisX, xAxisY),
-          Offset(chartArea.right, xAxisY),
-          paint,
-        );
+        canvas.drawLine(Offset(yAxisX, xAxisY), Offset(chartArea.right, xAxisY), paint);
         context.returnPaint(paint);
       }
 
-      _renderAxisWithRenderer(
-        canvas,
-        context,
-        _xAxisRenderer!,
-        xAxisConfig,
-        isVertical: false,
-      );
+      _renderAxisWithRenderer(canvas, context, _xAxisRenderer!, xAxisConfig, isVertical: false);
 
       // Render axis title
       if (xAxisConfig.title != null && xAxisConfig.title!.isNotEmpty) {
@@ -475,21 +444,11 @@ class FusionAxisLayer extends FusionRenderLayer {
           strokeCap: StrokeCap.square,
         );
 
-        canvas.drawLine(
-          Offset(yAxisX, chartArea.top),
-          Offset(yAxisX, chartArea.bottom),
-          paint,
-        );
+        canvas.drawLine(Offset(yAxisX, chartArea.top), Offset(yAxisX, chartArea.bottom), paint);
         context.returnPaint(paint);
       }
 
-      _renderAxisWithRenderer(
-        canvas,
-        context,
-        _yAxisRenderer!,
-        yAxisConfig,
-        isVertical: true,
-      );
+      _renderAxisWithRenderer(canvas, context, _yAxisRenderer!, yAxisConfig, isVertical: true);
 
       // Render axis title
       if (yAxisConfig.title != null && yAxisConfig.title!.isNotEmpty) {
@@ -571,10 +530,7 @@ class FusionAxisLayer extends FusionRenderLayer {
         canvas.rotate(-pi / 2);
       }
 
-      textPainter.paint(
-        canvas,
-        Offset(-textPainter.width / 2, -textPainter.height / 2),
-      );
+      textPainter.paint(canvas, Offset(-textPainter.width / 2, -textPainter.height / 2));
       canvas.restore();
     } else {
       // X-axis title - positioned below labels
@@ -616,8 +572,9 @@ class FusionAxisLayer extends FusionRenderLayer {
         final screenY = coordSystem.dataYToScreenY(label.value).roundToDouble();
         final yAxisX = coordSystem.dataXToScreenX(coordSystem.dataXMin);
 
-        if (screenY < chartArea.top - 1 || screenY > chartArea.bottom + 1)
+        if (screenY < chartArea.top - 1 || screenY > chartArea.bottom + 1) {
           continue;
+        }
 
         if (position == AxisPosition.right) {
           canvas.drawLine(
@@ -626,17 +583,14 @@ class FusionAxisLayer extends FusionRenderLayer {
             paint,
           );
         } else {
-          canvas.drawLine(
-            Offset(yAxisX - tickLength, screenY),
-            Offset(yAxisX, screenY),
-            paint,
-          );
+          canvas.drawLine(Offset(yAxisX - tickLength, screenY), Offset(yAxisX, screenY), paint);
         }
       } else {
         final screenX = coordSystem.dataXToScreenX(label.value).roundToDouble();
 
-        if (screenX < chartArea.left - 1 || screenX > chartArea.right + 1)
+        if (screenX < chartArea.left - 1 || screenX > chartArea.right + 1) {
           continue;
+        }
 
         if (position == AxisPosition.top) {
           canvas.drawLine(
@@ -673,9 +627,7 @@ class FusionAxisLayer extends FusionRenderLayer {
     final position = config.getEffectivePosition(isVertical: isVertical);
 
     final paint = context.getPaint(
-      color:
-          config.minorTickColor ??
-          (config.majorTickColor ?? context.theme.axisColor),
+      color: config.minorTickColor ?? (config.majorTickColor ?? context.theme.axisColor),
       strokeWidth: config.minorTickWidth ?? 0.5,
       strokeCap: StrokeCap.square,
     );
@@ -689,9 +641,7 @@ class FusionAxisLayer extends FusionRenderLayer {
     double current = dataMin;
     while (current <= dataMax) {
       // Skip if on major tick
-      final isOnMajor = majorLabels.any(
-        (l) => (l.value - current).abs() < majorInterval * 0.01,
-      );
+      final isOnMajor = majorLabels.any((l) => (l.value - current).abs() < majorInterval * 0.01);
 
       if (!isOnMajor) {
         if (isVertical) {
@@ -756,10 +706,7 @@ class FusionAxisLayer extends FusionRenderLayer {
     final textStyle = config.labelStyle ?? context.theme.axisLabelStyle;
     final rotation = config.labelRotation ?? 0.0;
 
-    final textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-      textAlign: TextAlign.center,
-    );
+    final textPainter = TextPainter(textDirection: TextDirection.ltr, textAlign: TextAlign.center);
 
     for (final label in labels) {
       textPainter.text = TextSpan(text: label.text, style: textStyle);
@@ -769,8 +716,9 @@ class FusionAxisLayer extends FusionRenderLayer {
         final screenY = coordSystem.dataYToScreenY(label.value).roundToDouble();
         final yAxisX = coordSystem.dataXToScreenX(coordSystem.dataXMin);
 
-        if (screenY < chartArea.top - 1 || screenY > chartArea.bottom + 1)
+        if (screenY < chartArea.top - 1 || screenY > chartArea.bottom + 1) {
           continue;
+        }
 
         // Apply labelAlignment for vertical axis
         double yOffset;
@@ -794,8 +742,9 @@ class FusionAxisLayer extends FusionRenderLayer {
       } else {
         final screenX = coordSystem.dataXToScreenX(label.value).roundToDouble();
 
-        if (screenX < chartArea.left - 1 || screenX > chartArea.right + 1)
+        if (screenX < chartArea.left - 1 || screenX > chartArea.right + 1) {
           continue;
+        }
 
         // Apply labelAlignment for horizontal axis
         double xOffset;
@@ -836,10 +785,7 @@ class FusionAxisLayer extends FusionRenderLayer {
           final Offset labelOffset;
 
           if (position == AxisPosition.top) {
-            labelOffset = Offset(
-              xOffset,
-              chartArea.top - textPainter.height - 8,
-            );
+            labelOffset = Offset(xOffset, chartArea.top - textPainter.height - 8);
           } else {
             labelOffset = Offset(xOffset, chartArea.bottom + 8);
           }
