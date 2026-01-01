@@ -64,9 +64,6 @@ class FusionTooltipBehavior {
     // Advanced
     this.hapticFeedback = true,
     this.fadeOutOnPanZoom = true,
-
-    // Legacy support (deprecated but kept for compatibility)
-    @Deprecated('Use dismissStrategy instead') this.shouldAlwaysShow = false,
   });
 
   // ========================================================================
@@ -264,13 +261,6 @@ class FusionTooltipBehavior {
   final bool fadeOutOnPanZoom;
 
   // ========================================================================
-  // LEGACY SUPPORT (Deprecated)
-  // ========================================================================
-
-  /// @deprecated Use [dismissStrategy] = [FusionDismissStrategy.never] instead
-  final bool shouldAlwaysShow;
-
-  // ========================================================================
   // HELPER METHODS
   // ========================================================================
 
@@ -296,10 +286,6 @@ class FusionTooltipBehavior {
 
   /// Should dismiss on pointer release?
   bool shouldDismissOnRelease() {
-    // Handle legacy shouldAlwaysShow
-    // ignore: deprecated_member_use_from_same_package
-    if (shouldAlwaysShow) return false;
-
     return dismissStrategy == FusionDismissStrategy.onRelease ||
         dismissStrategy == FusionDismissStrategy.onReleaseDelayed ||
         dismissStrategy == FusionDismissStrategy.smart;
@@ -307,22 +293,12 @@ class FusionTooltipBehavior {
 
   /// Should use timer for dismissal?
   bool shouldUseTimer() {
-    // Handle legacy shouldAlwaysShow
-    // ignore: deprecated_member_use_from_same_package
-    if (shouldAlwaysShow) return false;
-
     return dismissStrategy == FusionDismissStrategy.onTimer ||
         dismissStrategy == FusionDismissStrategy.smart;
   }
 
   /// Get dismiss delay duration
   Duration getDismissDelay(bool wasLongPress) {
-    // Handle legacy shouldAlwaysShow
-    // ignore: deprecated_member_use_from_same_package
-    if (shouldAlwaysShow) {
-      return const Duration(days: 365); // Effectively never
-    }
-
     switch (dismissStrategy) {
       case FusionDismissStrategy.onRelease:
         return Duration.zero;
@@ -379,7 +355,6 @@ class FusionTooltipBehavior {
     Color? shadowColor,
     bool? hapticFeedback,
     bool? fadeOutOnPanZoom,
-    bool? shouldAlwaysShow,
   }) {
     return FusionTooltipBehavior(
       enable: enable ?? this.enable,
@@ -414,8 +389,6 @@ class FusionTooltipBehavior {
       shadowColor: shadowColor ?? this.shadowColor,
       hapticFeedback: hapticFeedback ?? this.hapticFeedback,
       fadeOutOnPanZoom: fadeOutOnPanZoom ?? this.fadeOutOnPanZoom,
-      // ignore: deprecated_member_use_from_same_package
-      shouldAlwaysShow: shouldAlwaysShow ?? this.shouldAlwaysShow,
     );
   }
 }

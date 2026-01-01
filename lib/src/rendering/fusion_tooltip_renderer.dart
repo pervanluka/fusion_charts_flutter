@@ -57,7 +57,8 @@ class _FusionTooltipRendererState extends State<FusionTooltipRenderer>
     _hideTimer?.cancel();
     _animationController.forward();
 
-    if (!widget.behavior.shouldAlwaysShow) {
+    // Auto-hide based on dismiss strategy
+    if (widget.behavior.dismissStrategy != FusionDismissStrategy.never) {
       _hideTimer = Timer(widget.behavior.duration, () {
         if (mounted) {
           _hideTooltip();

@@ -238,9 +238,9 @@ abstract class FusionChartPainterBase extends CustomPainter {
       ..strokeCap = StrokeCap.square; // Crisp grid lines
 
     // Get effective intervals
-    final xInterval = xAxis?.getEffectiveInterval(_dataBounds.left, _dataBounds.right) ?? 1.0;
+    final xInterval = xAxis?.interval ?? xAxis?.effectiveInterval ?? 1.0;
 
-    final yInterval = yAxis?.getEffectiveInterval(_dataBounds.top, _dataBounds.bottom) ?? 10.0;
+    final yInterval = yAxis?.interval ?? yAxis?.effectiveInterval ?? 10.0;
 
     // Draw vertical grid lines (X-axis)
     double currentX = _dataBounds.left;
@@ -320,7 +320,7 @@ abstract class FusionChartPainterBase extends CustomPainter {
   void _drawXAxisLabels(Canvas canvas) {
     final labelStyle = xAxis!.labelStyle ?? theme.axisLabelStyle;
 
-    final xInterval = xAxis!.getEffectiveInterval(_dataBounds.left, _dataBounds.right);
+    final xInterval = xAxis!.interval ?? xAxis!.effectiveInterval;
 
     double currentX = _dataBounds.left;
     while (currentX <= _dataBounds.right) {
@@ -340,14 +340,14 @@ abstract class FusionChartPainterBase extends CustomPainter {
 
       textPainter.paint(canvas, offset);
 
-      currentX += xInterval ?? 0;
+      currentX += xInterval;
     }
   }
 
   void _drawYAxisLabels(Canvas canvas) {
     final labelStyle = yAxis!.labelStyle ?? theme.axisLabelStyle;
 
-    final yInterval = yAxis!.getEffectiveInterval(_dataBounds.top, _dataBounds.bottom);
+    final yInterval = yAxis!.interval ?? yAxis!.effectiveInterval;
 
     double currentY = _dataBounds.top;
     while (currentY <= _dataBounds.bottom) {
@@ -370,7 +370,7 @@ abstract class FusionChartPainterBase extends CustomPainter {
 
       textPainter.paint(canvas, offset);
 
-      currentY += yInterval ?? 0;
+      currentY += yInterval;
     }
   }
 

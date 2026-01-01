@@ -422,18 +422,6 @@ class FusionAxisConfiguration {
   }
 
   // ==========================================================================
-  // LEGACY SUPPORT
-  // ==========================================================================
-
-  /// Gets the effective interval for this axis.
-  ///
-  /// @deprecated Use [effectiveInterval] getter instead.
-  /// This method is kept for backward compatibility.
-  double? getEffectiveInterval(double min, double max) {
-    return interval;
-  }
-
-  // ==========================================================================
   // COPY WITH
   // ==========================================================================
 

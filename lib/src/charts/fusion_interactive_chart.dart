@@ -20,8 +20,7 @@ import 'base/fusion_interactive_state_base.dart';
 ///
 /// Implements [FusionInteractiveStateBase] for compatibility with
 /// [FusionChartBaseState].
-class FusionInteractiveChartState extends ChangeNotifier
-    implements FusionInteractiveStateBase {
+class FusionInteractiveChartState extends ChangeNotifier implements FusionInteractiveStateBase {
   FusionInteractiveChartState({
     required this.config,
     required FusionCoordinateSystem initialCoordSystem,
@@ -76,7 +75,7 @@ class FusionInteractiveChartState extends ChangeNotifier
   bool get isPointerDown => _isPointerDown;
 
   /// Updates the coordinate system when chart dimensions change.
-  /// 
+  ///
   /// IMPORTANT: Always updates without comparison to ensure
   /// the painter always has the correct bounds.
   @override
@@ -469,11 +468,7 @@ class FusionInteractiveChartState extends ChangeNotifier
     return (point: nearest, magneticOffset: null);
   }
 
-  void _updateTooltipPosition(
-    FusionDataPoint point,
-    Offset position, {
-    Offset? magneticOffset,
-  }) {
+  void _updateTooltipPosition(FusionDataPoint point, Offset position, {Offset? magneticOffset}) {
     final seriesInfo = _findSeriesForPoint(point);
 
     // Use magnetic offset for marker position if provided,
@@ -580,7 +575,8 @@ class FusionInteractiveChartState extends ChangeNotifier
     );
     notifyListeners();
 
-    if (!config.tooltipBehavior.shouldAlwaysShow) {
+    // Auto-hide based on dismiss strategy
+    if (config.tooltipBehavior.dismissStrategy != FusionDismissStrategy.never) {
       Future.delayed(config.tooltipBehavior.duration, () {
         _hideTooltip();
       });
