@@ -5,10 +5,6 @@ import 'package:flutter/material.dart';
 /// Defines the visual style and appearance of all charts.
 /// Implement this interface to create custom themes.
 ///
-/// Replaces:
-/// - Custom theme systems from Syncfusion
-/// - Manual styling in fl_chart
-///
 /// Follows the **Open/Closed Principle** (SOLID):
 /// - Open for extension (create new themes)
 /// - Closed for modification (don't change this interface)
@@ -49,6 +45,8 @@ import 'package:flutter/material.dart';
 /// )
 /// ```
 abstract class FusionChartTheme {
+  /// Creates a chart theme.
+  const FusionChartTheme();
   // ==========================================================================
   // COLORS
   // ==========================================================================
@@ -141,11 +139,32 @@ abstract class FusionChartTheme {
   /// Recommended: 12-13px, weight 600
   TextStyle get tooltipStyle;
 
+  /// Border radius for tooltips.
+  double get tooltipBorderRadius => 8.0;
+
+  /// Padding inside tooltips.
+  EdgeInsets get tooltipPadding => const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+
+  /// Default tooltip background color.
+  Color get tooltipBackgroundColor => const Color(0xDD000000); // Colors.black87 equivalent
+
+  /// Marker border color (usually white for contrast).
+  Color get markerBorderColor => const Color(0xFFFFFFFF);
+
   /// Text style for data labels on the chart.
   ///
   /// Should be small enough not to clutter but readable.
   /// Recommended: 10-11px, weight 500
   TextStyle get dataLabelStyle => axisLabelStyle.copyWith(fontWeight: FontWeight.w600);
+
+  /// Padding inside data label backgrounds.
+  EdgeInsets get dataLabelPadding => const EdgeInsets.symmetric(horizontal: 4, vertical: 2);
+
+  /// Background opacity for data labels.
+  double get dataLabelBackgroundOpacity => 0.9;
+
+  /// Border radius for data labels (uses borderRadius by default).
+  double get dataLabelBorderRadius => 3.0;
 
   /// Text style for subtitle or secondary text.
   TextStyle get subtitleStyle => titleStyle.copyWith(fontSize: 14, fontWeight: FontWeight.w500);
@@ -156,13 +175,11 @@ abstract class FusionChartTheme {
 
   /// Border radius for chart containers and tooltips.
   ///
-  /// Syncfusion uses 12px for modern rounded look.
   /// Range: 8-16px
   double get borderRadius;
 
   /// Elevation (shadow depth) for the chart card.
   ///
-  /// Syncfusion uses 4dp for light theme, 8dp for dark theme.
   /// Range: 0-16dp
   double get elevation;
 
@@ -174,13 +191,11 @@ abstract class FusionChartTheme {
   /// Width of grid lines.
   ///
   /// Should be thinner than axis lines.
-  /// Syncfusion uses 0.8px for subtle grid.
   /// Recommended: 0.5-1.0px
   double get gridLineWidth;
 
   /// Default line width for series.
   ///
-  /// Syncfusion uses 3px for prominent, clear lines.
   /// Range: 2-4px
   double get seriesLineWidth => 3.0;
 
@@ -190,7 +205,7 @@ abstract class FusionChartTheme {
   double get markerSize => 6.0;
 
   /// Padding inside the chart container.
-  EdgeInsets get chartPadding => const EdgeInsets.all(16.0);
+  EdgeInsets get chartPadding => const EdgeInsets.all(4);
 
   /// Spacing between legend items.
   double get legendSpacing => 8.0;
@@ -214,7 +229,6 @@ abstract class FusionChartTheme {
 
   /// Opacity for area fill under line charts.
   ///
-  /// Syncfusion uses 0.3 for subtle area fill.
   /// Range: 0.1-0.5
   double get areaFillOpacity => 0.3;
 
@@ -224,15 +238,13 @@ abstract class FusionChartTheme {
 
   /// Duration for chart animations.
   ///
-  /// Syncfusion uses 1500ms for smooth, professional feel.
   /// Range: 500-2000ms
   Duration get animationDuration;
 
   /// Curve for chart animations.
   ///
-  /// Syncfusion uses easeInOutCubic for natural motion.
   /// Popular choices:
-  /// - Curves.easeInOutCubic (Syncfusion default)
+  /// - Curves.easeInOutCubic
   /// - Curves.easeOut
   /// - Curves.fastOutSlowIn (Material Design)
   Curve get animationCurve;
@@ -243,7 +255,7 @@ abstract class FusionChartTheme {
 
   /// Shadow for chart series lines/bars.
   ///
-  /// Adds depth to the chart. Syncfusion uses subtle shadows.
+  /// Adds depth to the chart.
   BoxShadow get seriesShadow => BoxShadow(
     color: primaryColor.withValues(alpha: 0.2),
     offset: const Offset(0, 2),
@@ -275,6 +287,51 @@ abstract class FusionChartTheme {
   // ==========================================================================
   // HELPER METHODS
   // ==========================================================================
+
+  /// Gets contrasting text color for a background.
+  ///
+  /// Returns white for dark backgrounds, black for light backgrounds.
+  Color getContrastingTextColor(Color backgroundColor) {
+    final luminance = backgroundColor.computeLuminance();
+    return luminance > 0.5 ? Colors.black87 : Colors.white;
+  }
+
+  // ==========================================================================
+  // PIE CHART SPECIFIC
+  // ==========================================================================
+
+  /// Default stroke color for pie segments.
+  Color get pieStrokeColor => Colors.white;
+
+  /// Default shadow color for pie charts.
+  Color get pieShadowColor => Colors.black26;
+
+  /// Tooltip border width.
+  double get tooltipBorderWidth => 2.0;
+
+  /// Legend width for vertical legend layouts.
+  double get legendWidth => 120.0;
+
+  /// Legend height for horizontal legend layouts.
+  double get legendHeight => 40.0;
+
+  /// Legend item icon size.
+  double get legendIconSize => 12.0;
+
+  /// Legend item text spacing.
+  double get legendItemSpacing => 8.0;
+
+  /// Legend value text size ratio (relative to legend text).
+  double get legendValueFontSizeRatio => 0.85;
+
+  /// Legend line indicator thickness.
+  double get legendLineThickness => 3.0;
+
+  /// Legend icon corner radius.
+  double get legendIconCornerRadius => 2.0;
+
+  /// Color indicator corner radius in tooltips.
+  double get tooltipIndicatorRadius => 2.0;
 
   /// Creates a lighter version of a color.
   ///

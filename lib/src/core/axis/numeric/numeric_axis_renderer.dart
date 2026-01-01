@@ -1,5 +1,3 @@
-// lib/src/core/axis/numeric/numeric_axis_renderer.dart
-
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
@@ -7,19 +5,37 @@ import '../../../configuration/fusion_axis_configuration.dart';
 import '../../../themes/fusion_chart_theme.dart';
 import '../../../utils/axis_calculator.dart';
 import '../../../utils/fusion_data_formatter.dart';
-import '../../enums/axis_range_padding.dart';
 import '../../models/axis_bounds.dart';
 import '../../models/axis_label.dart';
+import '../../enums/axis_range_padding.dart';
 import '../base/fusion_axis_renderer.dart';
 import 'fusion_numeric_axis.dart';
 
 /// Renders numeric axes with continuous numeric values.
 ///
-/// ✅ FIX #2: PRECISION LABEL ALIGNMENT
-/// - Removed floating-point accumulation errors
-/// - Implemented index-based label generation
-/// - Added epsilon-based equality checks
-/// - Pixel-perfect label positioning
+/// ## Configuration Priority
+///
+/// `FusionAxisConfiguration` is the **single source of truth** for all axis properties.
+/// The `FusionNumericAxis` only provides type-specific defaults and formatting hints.
+///
+/// Priority order for each property:
+/// 1. `configuration.property` (if set)
+/// 2. `axis.property` (type-specific fallback)
+/// 3. Calculated/default value
+///
+/// ## Example
+///
+/// ```dart
+/// // Configuration controls everything
+/// FusionAxisConfiguration(
+///   min: 0,
+///   max: 100,
+///   interval: 20,
+///   desiredIntervals: 5,
+///   visible: true,
+///   showLabels: true,
+/// )
+/// ```
 class NumericAxisRenderer extends FusionAxisRenderer {
   NumericAxisRenderer({
     required this.axis,
@@ -28,19 +44,23 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     this.isVertical = true,
   });
 
+  /// The numeric axis type definition (provides type-specific defaults).
   final FusionNumericAxis axis;
+
+  /// The axis configuration (PRIMARY source of truth).
   final FusionAxisConfiguration configuration;
+
+  /// Theme for fallback styling.
   final FusionChartTheme? theme;
+
+  /// Whether this is a vertical axis.
   final bool isVertical;
 
   // ==========================================================================
   // PRECISION CONSTANTS
   // ==========================================================================
 
-  /// ✅ CRITICAL: Epsilon for floating-point comparisons
   static const double _epsilon = 1e-10;
-
-  /// ✅ Maximum labels to prevent infinite loops
   static const int _maxLabels = 1000;
 
   // ==========================================================================
@@ -51,19 +71,101 @@ class NumericAxisRenderer extends FusionAxisRenderer {
   List<AxisLabel>? _cachedLabels;
 
   // ==========================================================================
-  // BOUNDS CALCULATION (unchanged - already good)
+  // EFFECTIVE VALUE GETTERS (Configuration → Axis → Default)
+  // ==========================================================================
+
+  /// Gets the effective minimum value.
+  /// Priority: configuration.min → axis.min → null (auto-calculate)
+  double? get _effectiveMin => configuration.min ?? axis.min;
+
+  /// Gets the effective maximum value.
+  /// Priority: configuration.max → axis.max → null (auto-calculate)
+  double? get _effectiveMax => configuration.max ?? axis.max;
+
+  /// Gets the effective interval.
+  /// Priority: configuration.interval → axis.interval → null (auto-calculate)
+  double? get _effectiveInterval => configuration.interval ?? axis.interval;
+
+  /// Gets the effective desired interval count.
+  /// Priority: configuration.desiredIntervals → axis.desiredIntervals → 5
+  int get _effectiveDesiredIntervals =>
+      configuration.desiredIntervals != 5 ? configuration.desiredIntervals : axis.desiredIntervals;
+
+  /// Gets whether to auto-calculate range.
+  /// If min AND max are explicitly set, autoRange is effectively false.
+  bool get _shouldAutoRange =>
+      configuration.autoRange && (_effectiveMin == null || _effectiveMax == null);
+
+  /// Gets whether to auto-calculate interval.
+  bool get _shouldAutoInterval => configuration.autoInterval && _effectiveInterval == null;
+
+  /// Gets whether to include zero in the range.
+  /// Priority: configuration.includeZero → false
+  bool get _shouldIncludeZero => configuration.includeZero ?? false;
+
+  /// Gets the range padding fraction.
+  /// Priority: configuration.rangePadding (double) → axis.rangePadding (enum) → 0.05
+  double get _rangePaddingFraction {
+    // Priority 1: Use configuration.rangePadding if set (it's a double 0.0-1.0)
+    if (configuration.rangePadding != null) {
+      return configuration.rangePadding!.clamp(0.0, 1.0);
+    }
+
+    // Priority 2: Convert axis.rangePadding enum to fraction
+    switch (axis.rangePadding) {
+      case AxisRangePadding.none:
+        return 0.0;
+      case AxisRangePadding.normal:
+        return 0.05;
+      case AxisRangePadding.additional:
+        return 0.10;
+      case AxisRangePadding.auto:
+      case AxisRangePadding.round:
+        return 0.05;
+    }
+  }
+
+  /// Gets decimal places for formatting.
+  int get _effectiveDecimalPlaces => axis.decimalPlaces;
+
+  /// Gets label formatter.
+  String Function(double)? get _effectiveLabelFormatter =>
+      configuration.labelFormatter ?? axis.labelFormatter;
+
+  /// Gets whether to use scientific notation.
+  bool get _effectiveUseScientificNotation =>
+      configuration.useScientificNotation || axis.useScientificNotation;
+
+  // ==========================================================================
+  // BOUNDS CALCULATION
   // ==========================================================================
 
   @override
   AxisBounds calculateBounds(List<double> dataValues) {
-    if (dataValues.isEmpty) {
+    if (dataValues.isEmpty && _effectiveMin == null && _effectiveMax == null) {
+      // No data and no explicit bounds - use safe defaults
       _cachedBounds = AxisBounds(min: 0, max: 10, interval: 1, decimalPlaces: 0);
       return _cachedBounds!;
     }
 
-    double min = axis.min ?? dataValues.reduce((a, b) => a < b ? a : b);
-    double max = axis.max ?? dataValues.reduce((a, b) => a > b ? a : b);
+    // Step 1: Determine min/max
+    double min;
+    double max;
 
+    if (_shouldAutoRange || _effectiveMin == null || _effectiveMax == null) {
+      // Auto-calculate from data
+      final dataMin = dataValues.isNotEmpty ? dataValues.reduce((a, b) => a < b ? a : b) : 0.0;
+      final dataMax = dataValues.isNotEmpty ? dataValues.reduce((a, b) => a > b ? a : b) : 10.0;
+
+      min = _effectiveMin ?? dataMin;
+      max = _effectiveMax ?? dataMax;
+    } else {
+      // Use explicit values
+      min = _effectiveMin!;
+      max = _effectiveMax!;
+    }
+
+    // Step 2: Handle edge case where min == max
     if (min == max) {
       if (min == 0) {
         min = -1;
@@ -75,16 +177,46 @@ class NumericAxisRenderer extends FusionAxisRenderer {
       }
     }
 
-    final range = max - min;
-    final paddingFraction = _getPaddingFraction();
+    // Step 3: Include zero if requested
+    if (_shouldIncludeZero) {
+      if (min > 0) min = 0;
+      if (max < 0) max = 0;
+    }
 
-    min -= range * paddingFraction;
-    max += range * paddingFraction;
+    // Step 4: Apply range padding (only if auto-ranging AND vertical axis)
+    // For horizontal (X) axis, we use exact data bounds - no padding
+    // This ensures the first/last data points are at the edges of the chart
+    if (_shouldAutoRange && isVertical) {
+      final range = max - min;
+      final padding = _rangePaddingFraction;
+      min -= range * padding;
+      max += range * padding;
 
-    final interval =
-        axis.interval ?? AxisCalculator.calculateNiceInterval(min, max, axis.desiredIntervals);
+      // Re-apply includeZero after padding (don't pad past zero)
+      if (_shouldIncludeZero) {
+        if (min > 0) min = 0;
+        if (max < 0) max = 0;
+      }
+    }
 
-    if (axis.rangePadding == AxisRangePadding.round) {
+    // Step 5: Calculate interval
+    double interval;
+    if (_shouldAutoInterval) {
+      interval = AxisCalculator.calculateNiceInterval(min, max, _effectiveDesiredIntervals);
+    } else {
+      interval = _effectiveInterval ?? 1.0;
+    }
+
+    // Ensure interval is positive
+    if (interval <= 0) {
+      interval = (max - min) / _effectiveDesiredIntervals;
+      if (interval <= 0) interval = 1.0;
+    }
+
+    // Step 6: Round bounds to nice numbers if auto-ranging
+    // For vertical (Y) axis: round to nice intervals for clean labels
+    // For horizontal (X) axis: use exact bounds to prevent gaps at edges
+    if (_shouldAutoRange && isVertical) {
       min = (min / interval).floor() * interval;
       max = (max / interval).ceil() * interval;
     }
@@ -99,20 +231,6 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     );
 
     return _cachedBounds!;
-  }
-
-  double _getPaddingFraction() {
-    switch (axis.rangePadding) {
-      case AxisRangePadding.none:
-        return 0.0;
-      case AxisRangePadding.normal:
-        return 0.05;
-      case AxisRangePadding.additional:
-        return 0.10;
-      case AxisRangePadding.auto:
-      case AxisRangePadding.round:
-        return 0.05;
-    }
   }
 
   int _calculateDecimalPlaces(double interval) {
@@ -130,30 +248,22 @@ class NumericAxisRenderer extends FusionAxisRenderer {
   }
 
   // ==========================================================================
-  // ✅ FIX #2: PRECISION LABEL GENERATION
+  // LABEL GENERATION
   // ==========================================================================
 
   @override
   List<AxisLabel> generateLabels(AxisBounds bounds) {
     final labels = <AxisLabel>[];
 
-    // ✅ FIX: Calculate label count FIRST to avoid accumulation
     final labelCount = _calculateLabelCount(bounds);
 
-    // ✅ FIX: Generate labels using INDEX-BASED calculation
     for (int i = 0; i < labelCount; i++) {
-      // ✅ Calculate each value INDEPENDENTLY (no accumulation)
       final currentValue = bounds.min + (bounds.interval * i);
 
-      // ✅ Precision check - don't exceed max
       if (currentValue > bounds.max + _epsilon) break;
 
-      // ✅ Clean floating-point errors
       final cleanValue = _cleanFloatingPoint(currentValue, bounds.interval);
-
       final text = _formatValue(cleanValue);
-
-      // ✅ Calculate normalized position with high precision
       final position = _calculatePrecisePosition(cleanValue, bounds);
 
       labels.add(AxisLabel(value: cleanValue, text: text, position: position.clamp(0.0, 1.0)));
@@ -163,81 +273,68 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     return labels;
   }
 
-  /// ✅ Calculates the number of labels based on bounds.
   int _calculateLabelCount(AxisBounds bounds) {
     if (bounds.range <= 0 || bounds.interval <= 0) return 1;
 
-    // Calculate theoretical count
     final theoreticalCount = (bounds.range / bounds.interval).round() + 1;
-
-    // Clamp to reasonable limits
     return theoreticalCount.clamp(1, _maxLabels);
   }
 
-  /// ✅ Calculates position with maximum precision.
-  ///
-  /// **Algorithm:**
-  /// 1. Handle zero-range edge case
-  /// 2. Calculate normalized position (0.0 to 1.0)
-  /// 3. Apply epsilon-based boundary checks
-  /// 4. Return clamped position
   double _calculatePrecisePosition(double value, AxisBounds bounds) {
     if (bounds.range <= _epsilon) return 0.5;
 
-    // Use high-precision division
     final normalized = (value - bounds.min) / bounds.range;
 
-    // ✅ Clean floating-point errors at boundaries
     if (normalized.abs() < _epsilon) return 0.0;
     if ((1.0 - normalized).abs() < _epsilon) return 1.0;
 
     return normalized.clamp(0.0, 1.0);
   }
 
-  /// ✅ Cleans floating-point precision errors.
-  ///
-  /// **Example:**
-  /// - Input: 0.30000000000000004
-  /// - Output: 0.3
-  ///
-  /// This prevents labels like "0.30000000000000004" from appearing.
   double _cleanFloatingPoint(double value, double interval) {
-    // Determine precision based on interval
     final decimalPlaces = _calculateDecimalPlaces(interval);
-
-    // Round to appropriate precision
     final multiplier = math.pow(10, decimalPlaces);
     return (value * multiplier).roundToDouble() / multiplier;
   }
 
   // ==========================================================================
-  // LABEL FORMATTING (unchanged - already good)
+  // LABEL FORMATTING
   // ==========================================================================
 
   String _formatValue(double value) {
-    if (axis.labelFormatter != null) {
-      return axis.labelFormatter!(value);
+    // Priority 1: Custom formatter from configuration or axis
+    final formatter = _effectiveLabelFormatter;
+    if (formatter != null) {
+      return formatter(value);
     }
 
+    // Priority 2: Abbreviation (K, M, B)
     if (configuration.useAbbreviation) {
-      return FusionDataFormatter.formatLargeNumber(value, decimals: axis.decimalPlaces);
+      return FusionDataFormatter.formatLargeNumber(value, decimals: _effectiveDecimalPlaces);
     }
 
-    if (axis.useScientificNotation) {
+    // Priority 3: Scientific notation
+    if (_effectiveUseScientificNotation) {
       if (value.abs() >= 1e6 || (value.abs() <= 1e-3 && value != 0)) {
-        return value.toStringAsExponential(axis.decimalPlaces);
+        return value.toStringAsExponential(_effectiveDecimalPlaces);
       }
     }
 
-    return value.toStringAsFixed(axis.decimalPlaces);
+    // Default: Fixed decimal places
+    return value.toStringAsFixed(_effectiveDecimalPlaces);
   }
 
   // ==========================================================================
-  // SIZE MEASUREMENT (unchanged - already good)
+  // SIZE MEASUREMENT
   // ==========================================================================
 
   @override
   Size measureAxisLabels(List<AxisLabel> labels, Size availableSize) {
+    // If axis is not visible, return zero size
+    if (!configuration.visible) {
+      return Size.zero;
+    }
+
     if (labels.isEmpty) return Size.zero;
 
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
@@ -271,6 +368,11 @@ class NumericAxisRenderer extends FusionAxisRenderer {
 
   @override
   void renderAxis(Canvas canvas, Rect axisArea, AxisBounds bounds) {
+    // CRITICAL: Check visibility first
+    if (!configuration.visible) {
+      return; // Don't render anything if axis is not visible
+    }
+
     if (configuration.showAxisLine) {
       _drawAxisLine(canvas, axisArea);
     }
@@ -306,7 +408,6 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     }
   }
 
-  /// ✅ FIX: Pixel-perfect tick positioning
   void _drawTicks(Canvas canvas, Rect axisArea, AxisBounds bounds) {
     final paint = Paint()
       ..color = configuration.majorTickColor ?? theme?.axisColor ?? Colors.grey
@@ -322,7 +423,6 @@ class NumericAxisRenderer extends FusionAxisRenderer {
 
       if (isVertical) {
         final y = axisArea.bottom - (position * axisArea.height);
-        // ✅ Snap to pixel boundary for crisp rendering
         final snappedY = y.roundToDouble();
         canvas.drawLine(
           Offset(axisArea.right, snappedY),
@@ -331,7 +431,6 @@ class NumericAxisRenderer extends FusionAxisRenderer {
         );
       } else {
         final x = axisArea.left + (position * axisArea.width);
-        // ✅ Snap to pixel boundary for crisp rendering
         final snappedX = x.roundToDouble();
         canvas.drawLine(
           Offset(snappedX, axisArea.top),
@@ -342,7 +441,6 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     }
   }
 
-  /// ✅ FIX: Pixel-perfect label positioning
   void _drawLabels(Canvas canvas, Rect axisArea, AxisBounds bounds) {
     final labels = _cachedLabels ?? generateLabels(bounds);
 
@@ -351,32 +449,48 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     final labelStyle =
         configuration.labelStyle ?? theme?.axisLabelStyle ?? const TextStyle(fontSize: 12);
 
+    final rotation = configuration.labelRotation ?? 0.0;
+
     for (final label in labels) {
       textPainter.text = TextSpan(text: label.text, style: labelStyle);
       textPainter.layout();
 
       final position = label.position;
 
-      final Offset offset;
       if (isVertical) {
         final y = axisArea.bottom - (position * axisArea.height);
-        // ✅ Snap to pixel boundary
         final snappedY = y.roundToDouble();
-        offset = Offset(axisArea.left - textPainter.width - 8, snappedY - (textPainter.height / 2));
+        final offset = Offset(
+          axisArea.left - textPainter.width - 8,
+          snappedY - (textPainter.height / 2),
+        );
+        textPainter.paint(canvas, offset);
       } else {
         final x = axisArea.left + (position * axisArea.width);
-        // ✅ Snap to pixel boundary
         final snappedX = x.roundToDouble();
-        offset = Offset(snappedX - (textPainter.width / 2), axisArea.top + 8);
-      }
 
-      textPainter.paint(canvas, offset);
+        if (rotation != 0.0) {
+          // Apply rotation
+          canvas.save();
+          canvas.translate(snappedX, axisArea.top + 8);
+          canvas.rotate(rotation * (math.pi / 180));
+          textPainter.paint(canvas, Offset(-textPainter.width / 2, 0));
+          canvas.restore();
+        } else {
+          final offset = Offset(snappedX - (textPainter.width / 2), axisArea.top + 8);
+          textPainter.paint(canvas, offset);
+        }
+      }
     }
   }
 
-  /// ✅ FIX: Pixel-perfect grid line rendering
+  // ==========================================================================
+  // GRID LINES
+  // ==========================================================================
+
   @override
   void renderGridLines(Canvas canvas, Rect plotArea, AxisBounds bounds) {
+    // Check visibility - if axis is not visible, still show grid if showGrid is true
     if (!configuration.showGrid) return;
 
     final paint = Paint()
@@ -393,12 +507,10 @@ class NumericAxisRenderer extends FusionAxisRenderer {
 
       if (isVertical) {
         final y = plotArea.bottom - (position * plotArea.height);
-        // ✅ Snap to pixel boundary for crisp lines
         final snappedY = y.roundToDouble();
         canvas.drawLine(Offset(plotArea.left, snappedY), Offset(plotArea.right, snappedY), paint);
       } else {
         final x = plotArea.left + (position * plotArea.width);
-        // ✅ Snap to pixel boundary for crisp lines
         final snappedX = x.roundToDouble();
         canvas.drawLine(Offset(snappedX, plotArea.top), Offset(snappedX, plotArea.bottom), paint);
       }
@@ -419,6 +531,7 @@ class NumericAxisRenderer extends FusionAxisRenderer {
   String toString() {
     return 'NumericAxisRenderer('
         'isVertical: $isVertical, '
+        'visible: ${configuration.visible}, '
         'bounds: $_cachedBounds, '
         'labelCount: ${_cachedLabels?.length ?? 0}'
         ')';

@@ -1,5 +1,3 @@
-// lib/src/utils/axis_calculator.dart
-
 import 'dart:math' as math;
 import '../core/enums/chart_range_padding.dart';
 import '../core/models/axis_bounds.dart';
@@ -24,28 +22,26 @@ class AxisCalculator {
   static double log10(double x) => math.log(x) / math.ln10;
 
   // ==========================================================================
-  // ✅ ENHANCED NICE INTERVAL CALCULATION
+  // ENHANCED NICE INTERVAL CALCULATION
   // ==========================================================================
 
   /// Calculates "nice" interval with robust edge case handling.
-  ///
-  /// ✅ ENHANCEMENT: Now handles tiny/huge ranges intelligently.
   static double calculateNiceInterval(double min, double max, int desiredIntervals) {
     assert(desiredIntervals > 0, 'Desired intervals must be positive');
 
     final range = (max - min).abs();
 
-    // ✅ ENHANCED: Zero range handling
+    // Zero range handling
     if (range < _epsilon) {
       return _handleZeroRangeInterval(min, max);
     }
 
-    // ✅ NEW: Tiny range handling (< 0.001)
+    // Tiny range handling (< 0.001)
     if (range < 0.001) {
       return _handleTinyInterval(range, desiredIntervals);
     }
 
-    // ✅ NEW: Huge range handling (> 1e9)
+    // Huge range handling (> 1e9)
     if (range > 1e9) {
       return _handleLargeInterval(range, desiredIntervals);
     }
@@ -59,7 +55,7 @@ class AxisCalculator {
     return niceFraction * magnitude;
   }
 
-  /// ✅ ENHANCED: Handles zero or near-zero range intelligently.
+  /// Handles zero or near-zero range intelligently.
   static double _handleZeroRangeInterval(double min, double max) {
     // Both values are zero or very close
     if (min.abs() < _epsilon && max.abs() < _epsilon) {
@@ -77,7 +73,7 @@ class AxisCalculator {
     return magnitude;
   }
 
-  /// ✅ NEW: Handles very small ranges (< 0.001).
+  /// Handles very small ranges (< 0.001).
   static double _handleTinyInterval(double range, int desiredIntervals) {
     final roughInterval = range / desiredIntervals;
 
@@ -100,7 +96,7 @@ class AxisCalculator {
     return niceFraction * magnitude;
   }
 
-  /// ✅ NEW: Handles very large ranges (> 1e9).
+  /// Handles very large ranges (> 1e9).
   static double _handleLargeInterval(double range, int desiredIntervals) {
     final roughInterval = range / desiredIntervals;
 
@@ -137,7 +133,7 @@ class AxisCalculator {
   }
 
   // ==========================================================================
-  // ✅ ENHANCED NICE BOUNDS CALCULATION
+  // ENHANCED NICE BOUNDS CALCULATION
   // ==========================================================================
 
   static AxisBounds calculateNiceBounds(
@@ -150,7 +146,7 @@ class AxisCalculator {
     assert(desiredIntervals > 0, 'Desired intervals must be positive');
     assert(dataMin <= dataMax, 'Min must be <= Max');
 
-    // ✅ ENHANCED: Better zero-range handling
+    // Better zero-range handling
     if ((dataMax - dataMin).abs() < _epsilon) {
       return _handleZeroRange(dataMin, dataMax, padding);
     }
@@ -162,7 +158,7 @@ class AxisCalculator {
     return _applyPadding(dataMin, dataMax, effectiveInterval, padding);
   }
 
-  /// ✅ ENHANCED: Better zero-range handling with magnitude awareness.
+  /// Better zero-range handling with magnitude awareness.
   static AxisBounds _handleZeroRange(double value, double value2, ChartRangePadding padding) {
     // Check if both values are truly zero
     if (value.abs() < _epsilon && value2.abs() < _epsilon) {
@@ -274,12 +270,10 @@ class AxisCalculator {
   }
 
   // ==========================================================================
-  // ✅ ENHANCED LABEL GENERATION
+  // ENHANCED LABEL GENERATION
   // ==========================================================================
 
   /// Generates axis label values with clean floating-point handling.
-  ///
-  /// ✅ ENHANCEMENT: Now uses improved floating-point cleaning.
   static List<double> generateLabelValues(double min, double max, double interval) {
     assert(interval > 0, 'Interval must be positive');
     assert(min <= max, 'Min must be <= Max');
@@ -287,7 +281,7 @@ class AxisCalculator {
     final values = <double>[];
     final steps = ((max - min) / interval).round() + 1;
 
-    // ✅ ENHANCED: Index-based generation (no accumulation)
+    //  Index-based generation (no accumulation)
     for (int i = 0; i < steps; i++) {
       final value = min + (interval * i);
 
@@ -393,12 +387,10 @@ class AxisCalculator {
   }
 
   // ==========================================================================
-  // ✅ ENHANCED FLOATING POINT UTILITIES
+  //  ENHANCED FLOATING POINT UTILITIES
   // ==========================================================================
 
   /// Cleans floating point precision errors intelligently.
-  ///
-  /// ✅ ENHANCEMENT: Now uses interval-aware rounding instead of fixed 10 decimals.
   static double _cleanFloatingPoint(double value, [double? interval]) {
     if (value.abs() < _epsilon) return 0.0;
 
@@ -413,7 +405,7 @@ class AxisCalculator {
     return double.parse(value.toStringAsFixed(10));
   }
 
-  /// ✅ ENHANCED: Better decimal place calculation.
+  /// Better decimal place calculation.
   static int _calculateDecimalPlaces(double interval) {
     if (interval >= 1) return 0;
 

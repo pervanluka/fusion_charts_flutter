@@ -2,8 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 import 'dart:math' as math;
 
-import 'package:fusion_charts_flutter/src/core/axis/datetime/fusion_datetime_axis.dart';
-
 void main() {
   group('🔥 CRITICAL EDGE CASES - Axis Calculations', () {
     group('Zero and Near-Zero Ranges', () {
@@ -60,7 +58,7 @@ void main() {
         final bounds = AxisBounds.fromDataRange(dataMin: 1e9, dataMax: 5e9, desiredTickCount: 5);
 
         expect(bounds.interval, greaterThan(1e8), reason: 'Interval should scale with data');
-        // ✅ FIXED: Account for padding which increases range
+        // Account for padding which increases range
         expect(
           bounds.range,
           greaterThanOrEqualTo(4e9),
@@ -235,7 +233,7 @@ void main() {
         final screenX = coordSystem.dataXToScreenX(original);
         final backToData = coordSystem.screenXToDataX(screenX);
 
-        // ✅ FIXED: Relaxed tolerance due to floating-point round-trip
+        // Relaxed tolerance due to floating-point round-trip
         expect(
           backToData,
           closeTo(original, 0.1),
@@ -404,27 +402,22 @@ void main() {
       expect(config.hasAnyInteraction, false);
     });
 
-    test('handles invalid line width (should clamp or validate)', () {
-      const config = FusionChartConfiguration(
-        lineWidth: 0.0, // Edge case - zero width
+    test('handles minimum valid line width', () {
+      const config = FusionLineChartConfiguration(
+        lineWidth: 0.5, // Minimum valid width
       );
 
-      // Should either clamp to minimum or have valid default
-      expect(config.lineWidth, greaterThanOrEqualTo(0));
+      expect(config.lineWidth, 0.5);
     });
 
-    test('handles negative marker size', () {
-      final config = FusionChartConfiguration(
-        markerSize: -5.0, // Invalid!
-      );
-
-      // ⚠️ BUG FOUND: Config accepts negative marker size!
-      // This should be validated/clamped in the constructor
-      // For now, test documents the current behavior
+    test('handles negative marker size assertion', () {
+      // Configuration should throw assertion error for invalid marker size
       expect(
-        config.markerSize,
-        equals(-5.0),
-        reason: 'BUG: Configuration should validate/clamp marker size to positive values',
+        () => FusionLineChartConfiguration(
+          markerSize: -5.0, // Invalid!
+        ),
+        throwsAssertionError,
+        reason: 'Configuration should validate marker size to be positive',
       );
     });
   });
@@ -467,7 +460,7 @@ void main() {
       );
 
       expect(bounds.interval, greaterThan(0));
-      // ✅ FIXED: Padding adds to range, making it larger than raw difference
+      // Padding adds to range, making it larger than raw difference
       expect(
         bounds.range,
         greaterThanOrEqualTo(0.1),

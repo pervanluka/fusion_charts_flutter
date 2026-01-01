@@ -1,5 +1,3 @@
-// lib/src/rendering/painters/fusion_bar_chart_painter.dart
-
 import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 
@@ -133,8 +131,11 @@ class FusionBarChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Build render pipeline if not cached
-    _pipeline ??= _buildRenderPipeline(size);
+    // Dispose previous pipeline to prevent memory leaks from cached Picture objects
+    _pipeline?.dispose();
+
+    // Always rebuild pipeline to ensure config changes are reflected
+    _pipeline = _buildRenderPipeline(size);
 
     // Create render context
     final context = _createRenderContext(size);
@@ -151,6 +152,11 @@ class FusionBarChartPainter extends CustomPainter {
   FusionRenderPipeline _buildRenderPipeline(Size size) {
     final effectiveConfig = config ?? const FusionChartConfiguration();
 
+    // Get bar-specific config, use defaults if base config provided
+    final enableSideBySide = config is FusionBarChartConfiguration
+        ? (config as FusionBarChartConfiguration).enableSideBySideSeriesPlacement
+        : true;
+
     return FusionRenderPipeline(
       layers: [
         // Layer 0: Background
@@ -164,6 +170,7 @@ class FusionBarChartPainter extends CustomPainter {
           series: series.cast<SeriesWithDataPoints>(),
           enableAntiAliasing: true,
           clipToChartArea: true,
+          enableSideBySideSeriesPlacement: enableSideBySide,
         ),
 
         // Layer 70: Data Labels (if enabled)
@@ -172,6 +179,9 @@ class FusionBarChartPainter extends CustomPainter {
 
         // Layer 90: Axes (if enabled)
         if (effectiveConfig.enableAxis) FusionAxisLayer(showXAxis: true, showYAxis: true),
+
+        // Layer 95: Border (if enabled)
+        if (effectiveConfig.enableBorder) FusionBorderLayer(),
 
         // Layer 1000: Tooltip (if showing)
         if (tooltipData != null && effectiveConfig.enableTooltip)
@@ -185,7 +195,7 @@ class FusionBarChartPainter extends CustomPainter {
           FusionCrosshairLayer(
             position: crosshairPosition!,
             snappedPoint: crosshairPoint,
-            crosshairConfig: FusionCrosshairConfiguration(),
+            crosshairConfig: effectiveConfig.crosshairBehavior,
           ),
       ],
       enableProfiling: false,
@@ -198,8 +208,15 @@ class FusionBarChartPainter extends CustomPainter {
 
   /// Creates render context with all necessary information.
   FusionRenderContext _createRenderContext(Size size) {
+    // Calculate chart area (plot area excluding margins)
     final chartArea = _calculateChartArea(size);
+
+    // Calculate data bounds from all visible series
     final dataBounds = _calculateDataBounds();
+
+    // Determine axis types
+    final xAxisDefinition = _determineXAxisType(series);
+    final yAxisDefinition = _determineYAxisType(series);
 
     return FusionRenderContext(
       chartArea: chartArea,
@@ -209,36 +226,56 @@ class FusionBarChartPainter extends CustomPainter {
       shaderCache: shaderCache,
       xAxis: xAxis,
       yAxis: yAxis,
+      xAxisDefinition: xAxisDefinition,
+      yAxisDefinition: yAxisDefinition,
       animationProgress: animationProgress,
       enableAntiAliasing: true,
       devicePixelRatio: 1.0,
       dataBounds: dataBounds,
       viewportBounds: null,
+      useDiscreteBucketGridX: true,
     );
   }
 
-  /// Calculates chart area (plot area excluding margins for axes).
+  /// Determine X-axis type from configuration or auto-detect for bars.
+  FusionAxisBase _determineXAxisType(List<FusionBarSeries> series) {
+    // 1. User-provided axis type takes priority
+    if (xAxis?.axisType != null) {
+      return xAxis!.axisType!;
+    }
+
+    // 2. Auto-detect for bar charts
+    if (series.isEmpty) return const FusionNumericAxis();
+
+    // For bar charts, X-axis is always category-based
+    // Labels come from: point.label > point.x.toString()
+    final categories = series.first.dataPoints.map((p) {
+      if (p.label != null && p.label!.isNotEmpty) {
+        return p.label!;
+      }
+      // Use x value as label (format nicely)
+      return p.x == p.x.roundToDouble() ? p.x.round().toString() : p.x.toString();
+    }).toList();
+
+    return FusionCategoryAxis(categories: categories);
+  }
+
+  /// Determine Y-axis type from configuration or default to numeric.
+  FusionAxisBase _determineYAxisType(List<FusionBarSeries> series) {
+    // User-provided axis type takes priority
+    if (yAxis?.axisType != null) {
+      return yAxis!.axisType!;
+    }
+
+    // Default: numeric for bar values
+    return const FusionNumericAxis();
+  }
+
+  /// Calculates chart area from the coordinate system.
+  /// This ensures consistency between coordinate transformations and rendering.
   Rect _calculateChartArea(Size size) {
-    final effectiveConfig = config ?? const FusionChartConfiguration();
-
-    // Margins depend on whether we're vertical or horizontal
-    final isVertical = series.isEmpty || series.first.isVertical;
-
-    final leftMargin = effectiveConfig.enableAxis
-        ? (isVertical ? 60.0 : 80.0) // More space for value labels
-        : 10.0;
-    final rightMargin = 10.0;
-    final topMargin = 10.0;
-    final bottomMargin = effectiveConfig.enableAxis
-        ? (isVertical ? 40.0 : 60.0) // More space for category labels
-        : 10.0;
-
-    return Rect.fromLTRB(
-      leftMargin,
-      topMargin,
-      size.width - rightMargin,
-      size.height - bottomMargin,
-    );
+    // Use the chart area from the coordinate system for consistency
+    return coordSystem.chartArea;
   }
 
   /// Calculates data bounds from all visible series.
@@ -249,8 +286,11 @@ class FusionBarChartPainter extends CustomPainter {
       return Rect.fromLTRB(0, 0, 10, 100);
     }
 
-    final minX = allPoints.map((p) => p.x).reduce((a, b) => a < b ? a : b);
-    final maxX = allPoints.map((p) => p.x).reduce((a, b) => a > b ? a : b);
+    // For bar charts, X bounds should include half-bar padding
+    // This centers bars within their grid cells
+    final pointCount = series.first.dataPoints.length;
+    final minX = -0.5; // Half bar width before first bar
+    final maxX = pointCount - 0.5; // Half bar width after last bar
 
     // For bars, we want to start at 0 (baseline)
     final minY = 0.0;

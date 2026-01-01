@@ -1,7 +1,5 @@
-// lib/src/core/axis/types/fusion_datetime_axis.dart
-
 import 'package:flutter/material.dart';
-import '../../../utils/fusion_data_formatter.dart';
+import 'package:intl/intl.dart';
 import '../../enums/label_alignment.dart';
 import '../base/fusion_axis_base.dart';
 

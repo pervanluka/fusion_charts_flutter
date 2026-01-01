@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:fusion_charts_flutter/src/core/enums/fusion_data_label_display.dart';
 import 'package:fusion_charts_flutter/src/series/series_with_data_points.dart';
 import '../core/enums/marker_shape.dart';
 import '../data/fusion_data_point.dart';
@@ -8,10 +10,6 @@ import 'fusion_series.dart';
 ///
 /// Displays data as a series of points connected by straight or curved lines.
 /// Perfect for showing trends, patterns, and changes over time.
-///
-/// Replaces:
-/// - `LineChartBarData` from fl_chart
-/// - `LineSeries` from Syncfusion
 ///
 /// ## Example
 ///
@@ -50,12 +48,13 @@ class FusionLineSeries extends FusionSeries
   /// Creates a line series.
   const FusionLineSeries({
     required this.dataPoints,
-    required super.name,
     required super.color,
+    super.name,
     super.visible,
     this.lineWidth = 3.0,
     this.isCurved = true,
     this.smoothness = 0.35,
+    this.lineDashArray,
     this.gradient,
     this.showMarkers = false,
     this.markerSize = 6.0,
@@ -65,6 +64,7 @@ class FusionLineSeries extends FusionSeries
     this.showArea = false,
     this.areaOpacity = 0.3,
     this.showDataLabels = false,
+    this.dataLabelDisplay = FusionDataLabelDisplay.all,
     this.dataLabelStyle,
     this.dataLabelFormatter,
     this.animationDuration,
@@ -91,13 +91,13 @@ class FusionLineSeries extends FusionSeries
   /// Thicker lines are more prominent but can clutter dense data.
   ///
   /// Range: 1.0-10.0
-  /// Default: 3.0 (Syncfusion standard)
+  /// Default: 3.0
   final double lineWidth;
 
   /// Whether to draw curved lines between points.
   ///
-  /// When `true`, uses smooth Bezier curves (like Syncfusion's SplineSeries).
-  /// When `false`, uses straight lines (like Syncfusion's LineSeries).
+  /// When `true`, uses smooth Bezier curves
+  /// When `false`, uses straight lines
   ///
   /// Default: `true`
   final bool isCurved;
@@ -107,12 +107,33 @@ class FusionLineSeries extends FusionSeries
   /// Only applies when [isCurved] is `true`.
   ///
   /// - 0.0 = Almost straight lines
-  /// - 0.35 = Syncfusion default (balanced)
+  /// - 0.35 = Balanced
   /// - 1.0 = Very smooth, flowing curves
   ///
   /// Range: 0.0-1.0
   /// Default: 0.35
   final double smoothness;
+
+  /// Dash pattern for the line.
+  ///
+  /// ## Examples:
+  ///
+  /// ```dart
+  /// // Dashed line
+  /// lineDashArray: [10, 5]  // 10px dash, 5px gap
+  ///
+  /// // Dotted line
+  /// lineDashArray: [2, 3]   // 2px dot, 3px gap
+  ///
+  /// // Complex pattern
+  /// lineDashArray: [10, 5, 2, 5]  // Long dash, gap, dot, gap
+  ///
+  /// // Solid line (default)
+  /// lineDashArray: null
+  /// ```
+  ///
+  /// If null, line is solid.
+  final List<double>? lineDashArray;
 
   // ==========================================================================
   // GRADIENT
@@ -161,7 +182,7 @@ class FusionLineSeries extends FusionSeries
   /// Only applies when [showArea] is `true`.
   ///
   /// Range: 0.0 (transparent) - 1.0 (opaque)
-  /// Default: 0.3 (Syncfusion standard)
+  /// Default: 0.3
   final double areaOpacity;
 
   // ==========================================================================
@@ -170,6 +191,9 @@ class FusionLineSeries extends FusionSeries
 
   @override
   final bool showDataLabels;
+
+  @override
+  final FusionDataLabelDisplay dataLabelDisplay;
 
   @override
   final TextStyle? dataLabelStyle;
@@ -232,6 +256,7 @@ class FusionLineSeries extends FusionSeries
     double? lineWidth,
     bool? isCurved,
     double? smoothness,
+    List<double>? lineDashArray,
     LinearGradient? gradient,
     bool? showMarkers,
     double? markerSize,
@@ -241,6 +266,7 @@ class FusionLineSeries extends FusionSeries
     bool? showArea,
     double? areaOpacity,
     bool? showDataLabels,
+    FusionDataLabelDisplay? dataLabelDisplay,
     TextStyle? dataLabelStyle,
     String Function(double)? dataLabelFormatter,
     Duration? animationDuration,
@@ -255,6 +281,7 @@ class FusionLineSeries extends FusionSeries
       lineWidth: lineWidth ?? this.lineWidth,
       isCurved: isCurved ?? this.isCurved,
       smoothness: smoothness ?? this.smoothness,
+      lineDashArray: lineDashArray ?? this.lineDashArray,
       gradient: gradient ?? this.gradient,
       showMarkers: showMarkers ?? this.showMarkers,
       markerSize: markerSize ?? this.markerSize,
@@ -264,6 +291,7 @@ class FusionLineSeries extends FusionSeries
       showArea: showArea ?? this.showArea,
       areaOpacity: areaOpacity ?? this.areaOpacity,
       showDataLabels: showDataLabels ?? this.showDataLabels,
+      dataLabelDisplay: dataLabelDisplay ?? this.dataLabelDisplay,
       dataLabelStyle: dataLabelStyle ?? this.dataLabelStyle,
       dataLabelFormatter: dataLabelFormatter ?? this.dataLabelFormatter,
       animationDuration: animationDuration ?? this.animationDuration,
@@ -288,33 +316,59 @@ class FusionLineSeries extends FusionSeries
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-
     return other is FusionLineSeries &&
+        listEquals(other.dataPoints, dataPoints) &&
+        listEquals(other.lineDashArray, lineDashArray) &&
         other.name == name &&
         other.color == color &&
         other.visible == visible &&
         other.lineWidth == lineWidth &&
         other.isCurved == isCurved &&
         other.smoothness == smoothness &&
+        other.gradient == gradient &&
         other.showMarkers == showMarkers &&
         other.markerSize == markerSize &&
+        other.markerShape == markerShape &&
+        other.showShadow == showShadow &&
+        other.shadow == shadow &&
+        other.showDataLabels == showDataLabels &&
+        other.dataLabelDisplay == dataLabelDisplay &&
+        other.dataLabelStyle == dataLabelStyle &&
+        other.dataLabelFormatter == dataLabelFormatter &&
+        other.animationCurve == animationCurve &&
+        other.animationDuration == animationDuration &&
+        other.interaction == interaction &&
         other.showArea == showArea &&
         other.areaOpacity == areaOpacity;
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
+    Object.hashAll(dataPoints),
     name,
     color,
     visible,
     lineWidth,
     isCurved,
     smoothness,
+    Object.hashAll(lineDashArray ?? []),
     showMarkers,
     markerSize,
+    markerShape,
+    markerColor,
     showArea,
     areaOpacity,
-  );
+    gradient,
+    shadow,
+    showShadow,
+    showDataLabels,
+    dataLabelDisplay,
+    dataLabelStyle,
+    dataLabelFormatter,
+    animationDuration,
+    animationCurve,
+    interaction,
+  ]);
 
   @override
   String toString() {

@@ -4,7 +4,6 @@ import 'fusion_chart_theme.dart';
 /// Light theme for Fusion Charts.
 ///
 /// Professional light color scheme suitable for most applications.
-/// Based on Syncfusion's light theme with Material Design influences.
 ///
 /// ## Color Scheme
 ///
@@ -33,7 +32,7 @@ import 'fusion_chart_theme.dart';
 /// - WCAG 2.1 Level AA compliant
 /// - Minimum contrast ratio: 4.5:1
 /// - Color-blind friendly palette
-class FusionLightTheme with FusionThemeUtils implements FusionChartTheme {
+class FusionLightTheme extends FusionChartTheme with FusionThemeUtils {
   /// Creates a light theme with default colors.
   const FusionLightTheme();
 
@@ -112,12 +111,33 @@ class FusionLightTheme with FusionThemeUtils implements FusionChartTheme {
   );
 
   @override
+  double get tooltipBorderRadius => 8.0;
+
+  @override
+  EdgeInsets get tooltipPadding => const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+
+  @override
+  Color get tooltipBackgroundColor => const Color(0xDD000000);
+
+  @override
+  Color get markerBorderColor => Colors.white;
+
+  @override
   TextStyle get dataLabelStyle => const TextStyle(
     fontSize: 10,
     fontWeight: FontWeight.w600,
     color: Color(0xFF666666),
     letterSpacing: 0.3,
   );
+
+  @override
+  EdgeInsets get dataLabelPadding => const EdgeInsets.symmetric(horizontal: 4, vertical: 2);
+
+  @override
+  double get dataLabelBackgroundOpacity => 0.9;
+
+  @override
+  double get dataLabelBorderRadius => 3.0;
 
   @override
   TextStyle get subtitleStyle => TextStyle(
@@ -151,7 +171,7 @@ class FusionLightTheme with FusionThemeUtils implements FusionChartTheme {
   double get markerSize => 6.0;
 
   @override
-  EdgeInsets get chartPadding => const EdgeInsets.all(16.0);
+  EdgeInsets get chartPadding => const EdgeInsets.all(4);
 
   @override
   double get legendSpacing => 8.0;

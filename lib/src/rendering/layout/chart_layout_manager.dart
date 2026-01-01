@@ -39,7 +39,7 @@ class ChartLayoutManager {
     this.theme,
     this.title,
     this.legend,
-    this.padding = const EdgeInsets.all(16),
+    this.padding = const EdgeInsets.all(4),
     this.enableCaching = true,
   });
 

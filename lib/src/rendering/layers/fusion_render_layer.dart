@@ -1,44 +1,16 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import '../../configuration/fusion_axis_configuration.dart';
+import '../../core/axis/base/fusion_axis_renderer.dart';
+import '../../core/axis/fusion_axis_renderer_factory.dart';
+import '../../core/enums/axis_position.dart';
+import '../../core/enums/label_alignment.dart';
+import '../../core/models/axis_label.dart';
 import '../engine/fusion_render_context.dart';
 
 /// Abstract base class for render layers.
-///
-/// Each layer is responsible for rendering a specific aspect of the chart:
-/// - Background layer: solid color or gradient background
-/// - Grid layer: horizontal and vertical grid lines
-/// - Series layer: actual data visualization (lines, bars, etc.)
-/// - Marker layer: data point markers
-/// - Label layer: data labels
-/// - Axis layer: axis lines and labels
-/// - Overlay layer: tooltips, crosshair, selection
-///
-/// ## Layer System Benefits
-///
-/// 1. **Separation of Concerns**: Each layer handles one thing
-/// 2. **Independent Caching**: Can cache layers separately
-/// 3. **Conditional Rendering**: Enable/disable layers easily
-/// 4. **Performance**: Only repaint changed layers
-/// 5. **Debugging**: Can visualize individual layers
-///
-/// ## Example
-///
-/// ```dart
-/// class MyCustomLayer extends FusionRenderLayer {
-///   MyCustomLayer() : super(name: 'custom', zIndex: 100);
-///
-///   @override
-///   void paint(Canvas canvas, Size size, FusionRenderContext context) {
-///     // Custom rendering logic
-///   }
-///
-///   @override
-///   bool shouldRepaint(covariant FusionRenderLayer oldLayer) {
-///     return true; // Always repaint
-///   }
-/// }
-/// ```
 abstract class FusionRenderLayer {
   FusionRenderLayer({
     required this.name,
@@ -49,94 +21,55 @@ abstract class FusionRenderLayer {
     this.cacheable = false,
   });
 
-  /// Unique name for this layer.
   final String name;
-
-  /// Z-index for layer ordering (higher = rendered later).
   final int zIndex;
-
-  /// Whether this layer is enabled.
   bool enabled;
-
-  /// Optional clipping rectangle for this layer.
   final Rect? clipRect;
-
-  /// Optional transform matrix for this layer.
   final Matrix4? transform;
-
-  /// Whether this layer can be cached.
   final bool cacheable;
 
-  /// Cached rendering (if cacheable is true).
   Picture? _cachedPicture;
   bool _cacheInvalid = true;
 
-  // ==========================================================================
-  // MAIN RENDER METHOD
-  // ==========================================================================
-
-  /// Paints this layer to the canvas.
-  ///
-  /// Subclasses must implement this method to perform actual rendering.
   void paint(Canvas canvas, Size size, FusionRenderContext context);
 
-  /// Paints with caching support.
   void paintWithCache(Canvas canvas, Size size, FusionRenderContext context) {
     if (!cacheable || _cacheInvalid) {
       if (cacheable) {
-        // Record to picture for caching
         final recorder = PictureRecorder();
         final cacheCanvas = Canvas(recorder);
-
         paint(cacheCanvas, size, context);
-
         _cachedPicture?.dispose();
         _cachedPicture = recorder.endRecording();
         _cacheInvalid = false;
-
-        // Draw the recorded picture
         canvas.drawPicture(_cachedPicture!);
       } else {
-        // Direct rendering (no cache)
         paint(canvas, size, context);
       }
     } else {
-      // Use cached picture
       canvas.drawPicture(_cachedPicture!);
     }
   }
 
-  // ==========================================================================
-  // CACHE MANAGEMENT
-  // ==========================================================================
-
-  /// Invalidates the cache, forcing a repaint.
   void invalidateCache() {
     _cacheInvalid = true;
   }
 
-  /// Checks if this layer needs repainting.
   bool shouldRepaint(covariant FusionRenderLayer oldLayer);
 
-  /// Disposes resources.
   void dispose() {
     _cachedPicture?.dispose();
     _cachedPicture = null;
   }
-
-  // ==========================================================================
-  // HELPERS
-  // ==========================================================================
 
   @override
   String toString() => 'FusionRenderLayer($name, z=$zIndex, enabled=$enabled)';
 }
 
 // ==========================================================================
-// SPECIFIC LAYER IMPLEMENTATIONS
+// BACKGROUND LAYER
 // ==========================================================================
 
-/// Background layer - renders chart background.
 class FusionBackgroundLayer extends FusionRenderLayer {
   FusionBackgroundLayer({this.color, this.gradient})
     : super(name: 'background', zIndex: 0, cacheable: true);
@@ -163,70 +96,260 @@ class FusionBackgroundLayer extends FusionRenderLayer {
   }
 }
 
-/// Grid layer - renders grid lines.
+// ==========================================================================
+// BORDER LAYER - Draws a rectangle border around the chart area
+// ==========================================================================
+
+class FusionBorderLayer extends FusionRenderLayer {
+  FusionBorderLayer() : super(name: 'border', zIndex: 95, cacheable: false);
+
+  @override
+  void paint(Canvas canvas, Size size, FusionRenderContext context) {
+    final chartArea = context.chartArea;
+    
+    final paint = Paint()
+      ..color = context.theme.borderColor
+      ..strokeWidth = context.theme.axisLineWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.square;
+
+    canvas.drawRect(chartArea, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant FusionBorderLayer oldLayer) {
+    return false; // Border doesn't have internal state that changes
+  }
+}
+
+// ==========================================================================
+// GRID LAYER - Fixed to respect per-axis showGrid
+// ==========================================================================
+
 class FusionGridLayer extends FusionRenderLayer {
   FusionGridLayer({
     required this.showHorizontal,
     required this.showVertical,
     this.horizontalInterval,
     this.verticalInterval,
-  }) : super(
-         name: 'grid',
-         zIndex: 10,
-         cacheable: false, // Grid depends on axis intervals
-       );
+  }) : super(name: 'grid', zIndex: 10, cacheable: false);
 
   final bool showHorizontal;
   final bool showVertical;
   final double? horizontalInterval;
   final double? verticalInterval;
 
+  static const int _maxIterations = 100;
+
   @override
   void paint(Canvas canvas, Size size, FusionRenderContext context) {
-    final paint = context.getPaint(
-      color: context.theme.gridColor,
-      strokeWidth: context.theme.gridLineWidth,
-      strokeCap: StrokeCap.square,
-    );
+    final xAxisConfig = context.xAxis ?? const FusionAxisConfiguration();
+    final yAxisConfig = context.yAxis ?? const FusionAxisConfiguration();
 
     final chartArea = context.chartArea;
     final dataBounds = context.effectiveViewport;
+    final coordSystem = context.coordSystem;
+    final yAxisX = coordSystem.dataXToScreenX(coordSystem.dataXMin);
 
-    // Vertical grid lines
-    if (showVertical) {
-      final xInterval =
-          verticalInterval ??
-          context.xAxis?.getEffectiveInterval(dataBounds.left, dataBounds.right) ??
-          1.0;
+    // =========================================
+    // VERTICAL GRID LINES (X-axis controls)
+    // =========================================
+    // Only show if: layer enabled AND x-axis config allows grid
+    if (showVertical && xAxisConfig.showGrid) {
+      final paint = context.getPaint(
+        color: xAxisConfig.majorGridColor ?? context.theme.gridColor,
+        strokeWidth: xAxisConfig.majorGridWidth ?? context.theme.gridLineWidth,
+        strokeCap: StrokeCap.square,
+      );
 
-      double currentX = dataBounds.left;
-      while (currentX <= dataBounds.right) {
-        final screenX = context.dataXToScreenX(currentX).roundToDouble();
+      // Check if we should use discrete bucket grid (for bar/column charts)
+      // Discrete bucket grids draw lines at BOUNDARIES (between bars)
+      // not at bar centers. This works for Category, DateTime, and Numeric axes.
+      final useDiscreteBuckets = context.useDiscreteBucketGridX;
 
-        canvas.drawLine(Offset(screenX, chartArea.top), Offset(screenX, chartArea.bottom), paint);
+      if (useDiscreteBuckets) {
+        // DISCRETE BUCKET MODE: Draw grid lines at boundaries (-0.5, 0.5, 1.5, ...)
+        // This places lines BETWEEN bars, not through them
+        // Works for any axis type (category, datetime, numeric)
+        final bucketCount = (dataBounds.right - dataBounds.left).round() + 1;
 
-        currentX += xInterval;
+        // Draw boundary lines from -0.5 to bucketCount - 0.5
+        for (int i = 0; i <= bucketCount; i++) {
+          final boundaryX = i - 0.5;
+          // Only draw if within visible range
+          if (boundaryX >= dataBounds.left && boundaryX <= dataBounds.right) {
+            final screenX = context.dataXToScreenX(boundaryX).roundToDouble();
+            canvas.drawLine(
+              Offset(screenX, chartArea.top),
+              Offset(screenX, chartArea.bottom),
+              paint,
+            );
+          }
+        }
+      } else {
+        // NUMERIC AXIS: Standard behavior - lines at regular intervals
+        final xInterval =
+            verticalInterval ??
+            xAxisConfig.interval ??
+            _calculateNiceInterval(dataBounds.right - dataBounds.left, xAxisConfig.desiredIntervals);
+
+        if (xInterval > 0) {
+          // Start from nice number
+          double startX = (dataBounds.left / xInterval).floor() * xInterval;
+          if (startX < dataBounds.left) startX += xInterval;
+
+          double currentX = startX;
+          int iterations = 0;
+
+          while (currentX <= dataBounds.right && iterations < _maxIterations) {
+            final screenX = context.dataXToScreenX(currentX).roundToDouble();
+            canvas.drawLine(Offset(screenX, chartArea.top), Offset(screenX, chartArea.bottom), paint);
+            currentX += xInterval;
+            iterations++;
+          }
+        }
+
+        // Minor grid lines for X-axis (only for numeric axis)
+        if (xAxisConfig.showMinorGrid) {
+          final xInterval =
+              verticalInterval ??
+              xAxisConfig.interval ??
+              _calculateNiceInterval(dataBounds.right - dataBounds.left, xAxisConfig.desiredIntervals);
+          _renderMinorGridLines(
+            canvas,
+            context,
+            xAxisConfig,
+            dataBounds.left,
+            dataBounds.right,
+            xInterval,
+            isVertical: true,
+          );
+        }
       }
+
+      context.returnPaint(paint);
     }
 
-    // Horizontal grid lines
-    if (showHorizontal) {
+    // =========================================
+    // HORIZONTAL GRID LINES (Y-axis controls)
+    // =========================================
+    // Only show if: layer enabled AND y-axis config allows grid
+    if (showHorizontal && yAxisConfig.showGrid) {
+      final paint = context.getPaint(
+        color: yAxisConfig.majorGridColor ?? context.theme.gridColor,
+        strokeWidth: yAxisConfig.majorGridWidth ?? context.theme.gridLineWidth,
+        strokeCap: StrokeCap.square,
+      );
+
       final yInterval =
           horizontalInterval ??
-          context.yAxis?.getEffectiveInterval(dataBounds.top, dataBounds.bottom) ??
-          10.0;
+          yAxisConfig.interval ??
+          _calculateNiceInterval(dataBounds.bottom - dataBounds.top, yAxisConfig.desiredIntervals);
 
-      double currentY = dataBounds.top;
-      while (currentY <= dataBounds.bottom) {
-        final screenY = context.dataYToScreenY(currentY).roundToDouble();
+      if (yInterval > 0) {
+        // Start from nice number
+        double startY = (dataBounds.top / yInterval).floor() * yInterval;
+        if (startY < dataBounds.top) startY += yInterval;
 
-        canvas.drawLine(Offset(chartArea.left, screenY), Offset(chartArea.right, screenY), paint);
+        double currentY = startY;
+        int iterations = 0;
 
-        currentY += yInterval;
+        while (currentY <= dataBounds.bottom && iterations < _maxIterations) {
+          final screenY = context.dataYToScreenY(currentY).roundToDouble();
+          canvas.drawLine(Offset(yAxisX, screenY), Offset(chartArea.right, screenY), paint);
+          currentY += yInterval;
+          iterations++;
+        }
       }
+
+      // Minor grid lines for Y-axis
+      if (yAxisConfig.showMinorGrid) {
+        _renderMinorGridLines(
+          canvas,
+          context,
+          yAxisConfig,
+          dataBounds.top,
+          dataBounds.bottom,
+          yInterval,
+          isVertical: false,
+        );
+      }
+
+      context.returnPaint(paint);
+    }
+  }
+
+  /// Renders minor grid lines between major grid lines.
+  void _renderMinorGridLines(
+    Canvas canvas,
+    FusionRenderContext context,
+    FusionAxisConfiguration config,
+    double dataMin,
+    double dataMax,
+    double majorInterval, {
+    required bool isVertical,
+  }) {
+    final chartArea = context.chartArea;
+    final coordSystem = context.coordSystem;
+
+    final paint = context.getPaint(
+      color:
+          config.minorGridColor ??
+          (config.majorGridColor ?? context.theme.gridColor).withValues(alpha: 0.15),
+      strokeWidth: config.minorGridWidth ?? 0.5,
+      strokeCap: StrokeCap.square,
+    );
+
+    // 4 minor divisions between each major
+    final minorInterval = majorInterval / 5;
+    double startVal = (dataMin / majorInterval).floor() * majorInterval;
+    if (startVal < dataMin) startVal += minorInterval;
+
+    double current = startVal;
+    int iterations = 0;
+
+    while (current <= dataMax && iterations < _maxIterations * 5) {
+      // Skip if it's on a major line
+      final isOnMajor = (current / majorInterval - (current / majorInterval).round()).abs() < 0.01;
+
+      if (!isOnMajor) {
+        if (isVertical) {
+          final screenX = context.dataXToScreenX(current).roundToDouble();
+          canvas.drawLine(Offset(screenX, chartArea.top), Offset(screenX, chartArea.bottom), paint);
+        } else {
+          final screenY = context.dataYToScreenY(current).roundToDouble();
+          final yAxisX = coordSystem.dataXToScreenX(coordSystem.dataXMin);
+          canvas.drawLine(Offset(yAxisX, screenY), Offset(chartArea.right, screenY), paint);
+        }
+      }
+
+      current += minorInterval;
+      iterations++;
     }
 
     context.returnPaint(paint);
+  }
+
+  double _calculateNiceInterval(double range, int desiredIntervals) {
+    if (range <= 0 || desiredIntervals <= 0) return 1.0;
+
+    final roughInterval = range / desiredIntervals;
+    final exp = (roughInterval > 0) ? (log(roughInterval) / ln10).floor() : 0;
+    final magnitude = pow(10.0, exp).toDouble();
+    final normalized = roughInterval / magnitude;
+
+    double niceFraction;
+    if (normalized < 1.5) {
+      niceFraction = 1.0;
+    } else if (normalized < 3.0) {
+      niceFraction = 2.0;
+    } else if (normalized < 7.0) {
+      niceFraction = 5.0;
+    } else {
+      niceFraction = 10.0;
+    }
+
+    return niceFraction * magnitude;
   }
 
   @override
@@ -238,7 +361,10 @@ class FusionGridLayer extends FusionRenderLayer {
   }
 }
 
-/// Axis layer - renders axes and labels.
+// ==========================================================================
+// AXIS LAYER - Fixed with labelAlignment, title, minorTicks support
+// ==========================================================================
+
 class FusionAxisLayer extends FusionRenderLayer {
   FusionAxisLayer({required this.showXAxis, required this.showYAxis})
     : super(name: 'axes', zIndex: 90);
@@ -246,98 +372,439 @@ class FusionAxisLayer extends FusionRenderLayer {
   final bool showXAxis;
   final bool showYAxis;
 
+  FusionAxisRenderer? _xAxisRenderer;
+  FusionAxisRenderer? _yAxisRenderer;
+
   @override
   void paint(Canvas canvas, Size size, FusionRenderContext context) {
-    final paint = context.getPaint(
+    final chartArea = context.chartArea;
+    final coordSystem = context.coordSystem;
+
+    final xAxisConfig = context.xAxis ?? const FusionAxisConfiguration();
+    final yAxisConfig = context.yAxis ?? const FusionAxisConfiguration();
+
+    // ===============================
+    // X-AXIS RENDERING
+    // ===============================
+    if (showXAxis && xAxisConfig.visible && context.xAxisDefinition != null) {
+      _xAxisRenderer ??= FusionAxisRendererFactory.create(
+        axis: context.xAxisDefinition,
+        configuration: xAxisConfig,
+        isVertical: false,
+      );
+
+      if (xAxisConfig.showAxisLine) {
+        final yAxisX = coordSystem.dataXToScreenX(coordSystem.dataXMin);
+        final xAxisY = chartArea.bottom;
+
+        final paint = context.getPaint(
+          color: xAxisConfig.axisLineColor ?? context.theme.axisColor,
+          strokeWidth: xAxisConfig.axisLineWidth ?? context.theme.axisLineWidth,
+          strokeCap: StrokeCap.square,
+        );
+
+        canvas.drawLine(Offset(yAxisX, xAxisY), Offset(chartArea.right, xAxisY), paint);
+        context.returnPaint(paint);
+      }
+
+      _renderAxisWithRenderer(canvas, context, _xAxisRenderer!, xAxisConfig, isVertical: false);
+
+      // Render axis title
+      if (xAxisConfig.title != null && xAxisConfig.title!.isNotEmpty) {
+        _renderAxisTitle(canvas, context, xAxisConfig, isVertical: false);
+      }
+    }
+
+    // ===============================
+    // Y-AXIS RENDERING
+    // ===============================
+    if (showYAxis && yAxisConfig.visible && context.yAxisDefinition != null) {
+      _yAxisRenderer ??= FusionAxisRendererFactory.create(
+        axis: context.yAxisDefinition,
+        configuration: yAxisConfig,
+        isVertical: true,
+      );
+
+      if (yAxisConfig.showAxisLine) {
+        final yAxisX = coordSystem.dataXToScreenX(coordSystem.dataXMin);
+
+        final paint = context.getPaint(
+          color: yAxisConfig.axisLineColor ?? context.theme.axisColor,
+          strokeWidth: yAxisConfig.axisLineWidth ?? context.theme.axisLineWidth,
+          strokeCap: StrokeCap.square,
+        );
+
+        canvas.drawLine(Offset(yAxisX, chartArea.top), Offset(yAxisX, chartArea.bottom), paint);
+        context.returnPaint(paint);
+      }
+
+      _renderAxisWithRenderer(canvas, context, _yAxisRenderer!, yAxisConfig, isVertical: true);
+
+      // Render axis title
+      if (yAxisConfig.title != null && yAxisConfig.title!.isNotEmpty) {
+        _renderAxisTitle(canvas, context, yAxisConfig, isVertical: true);
+      }
+    }
+  }
+
+  void _renderAxisWithRenderer(
+    Canvas canvas,
+    FusionRenderContext context,
+    FusionAxisRenderer renderer,
+    FusionAxisConfiguration config, {
+    required bool isVertical,
+  }) {
+    final coordBounds = context.coordSystem.dataBounds;
+    final dataMin = isVertical ? coordBounds.top : coordBounds.left;
+    final dataMax = isVertical ? coordBounds.bottom : coordBounds.right;
+
+    final axisBounds = renderer.calculateBounds([dataMin, dataMax]);
+    final labels = renderer.generateLabels(axisBounds);
+
+    if (config.showTicks) {
+      _renderTicks(canvas, context, labels, config, isVertical: isVertical);
+    }
+
+    // Minor ticks
+    if (config.showMinorTicks) {
+      _renderMinorTicks(
+        canvas,
+        context,
+        labels,
+        config,
+        axisBounds.interval,
+        isVertical: isVertical,
+      );
+    }
+
+    if (config.showLabels) {
+      _renderLabels(canvas, context, labels, config, isVertical: isVertical);
+    }
+  }
+
+  /// Renders axis title.
+  void _renderAxisTitle(
+    Canvas canvas,
+    FusionRenderContext context,
+    FusionAxisConfiguration config, {
+    required bool isVertical,
+  }) {
+    final chartArea = context.chartArea;
+    final title = config.title!;
+
+    final textStyle = TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
       color: context.theme.axisColor,
-      strokeWidth: context.theme.axisLineWidth,
+    );
+
+    final textPainter = TextPainter(
+      text: TextSpan(text: title, style: textStyle),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    )..layout();
+
+    if (isVertical) {
+      // Y-axis title - rotated 90 degrees, positioned to the left
+      final position = config.getEffectivePosition(isVertical: true);
+      final centerY = chartArea.top + chartArea.height / 2;
+
+      canvas.save();
+
+      if (position == AxisPosition.right) {
+        canvas.translate(chartArea.right + 50, centerY);
+        canvas.rotate(pi / 2);
+      } else {
+        // Default: left
+        canvas.translate(chartArea.left - 50, centerY);
+        canvas.rotate(-pi / 2);
+      }
+
+      textPainter.paint(canvas, Offset(-textPainter.width / 2, -textPainter.height / 2));
+      canvas.restore();
+    } else {
+      // X-axis title - positioned below labels
+      final position = config.getEffectivePosition(isVertical: false);
+      final centerX = chartArea.left + chartArea.width / 2;
+
+      final Offset offset;
+      if (position == AxisPosition.top) {
+        offset = Offset(centerX - textPainter.width / 2, chartArea.top - 40);
+      } else {
+        offset = Offset(centerX - textPainter.width / 2, chartArea.bottom + 35);
+      }
+
+      textPainter.paint(canvas, offset);
+    }
+  }
+
+  void _renderTicks(
+    Canvas canvas,
+    FusionRenderContext context,
+    List<AxisLabel> labels,
+    FusionAxisConfiguration config, {
+    required bool isVertical,
+  }) {
+    final chartArea = context.chartArea;
+    final coordSystem = context.coordSystem;
+    final position = config.getEffectivePosition(isVertical: isVertical);
+
+    final paint = context.getPaint(
+      color: config.majorTickColor ?? context.theme.axisColor,
+      strokeWidth: config.majorTickWidth ?? 1.0,
       strokeCap: StrokeCap.square,
     );
 
-    final chartArea = context.chartArea;
+    final tickLength = config.majorTickLength ?? 6.0;
 
-    // X-axis line
-    if (showXAxis) {
-      canvas.drawLine(
-        Offset(chartArea.left, chartArea.bottom),
-        Offset(chartArea.right, chartArea.bottom),
-        paint,
-      );
+    for (final label in labels) {
+      if (isVertical) {
+        final screenY = coordSystem.dataYToScreenY(label.value).roundToDouble();
+        final yAxisX = coordSystem.dataXToScreenX(coordSystem.dataXMin);
 
-      _drawXAxisLabels(canvas, context);
-    }
+        if (screenY < chartArea.top - 1 || screenY > chartArea.bottom + 1) continue;
 
-    // Y-axis line
-    if (showYAxis) {
-      canvas.drawLine(
-        Offset(chartArea.left, chartArea.top),
-        Offset(chartArea.left, chartArea.bottom),
-        paint,
-      );
+        if (position == AxisPosition.right) {
+          canvas.drawLine(
+            Offset(chartArea.right, screenY),
+            Offset(chartArea.right + tickLength, screenY),
+            paint,
+          );
+        } else {
+          canvas.drawLine(Offset(yAxisX - tickLength, screenY), Offset(yAxisX, screenY), paint);
+        }
+      } else {
+        final screenX = coordSystem.dataXToScreenX(label.value).roundToDouble();
 
-      _drawYAxisLabels(canvas, context);
+        if (screenX < chartArea.left - 1 || screenX > chartArea.right + 1) continue;
+
+        if (position == AxisPosition.top) {
+          canvas.drawLine(
+            Offset(screenX, chartArea.top - tickLength),
+            Offset(screenX, chartArea.top),
+            paint,
+          );
+        } else {
+          canvas.drawLine(
+            Offset(screenX, chartArea.bottom),
+            Offset(screenX, chartArea.bottom + tickLength),
+            paint,
+          );
+        }
+      }
     }
 
     context.returnPaint(paint);
   }
 
-  void _drawXAxisLabels(Canvas canvas, FusionRenderContext context) {
-    if (context.xAxis == null) return;
+  /// Renders minor tick marks between major ticks.
+  void _renderMinorTicks(
+    Canvas canvas,
+    FusionRenderContext context,
+    List<AxisLabel> majorLabels,
+    FusionAxisConfiguration config,
+    double majorInterval, {
+    required bool isVertical,
+  }) {
+    if (majorLabels.length < 2) return;
 
-    final labelStyle = context.xAxis!.labelStyle ?? context.theme.axisLabelStyle;
-    final dataBounds = context.effectiveViewport;
-    final xInterval = context.xAxis!.getEffectiveInterval(dataBounds.left, dataBounds.right);
+    final chartArea = context.chartArea;
+    final coordSystem = context.coordSystem;
+    final position = config.getEffectivePosition(isVertical: isVertical);
 
-    double currentX = dataBounds.left;
-    while (currentX <= dataBounds.right) {
-      final screenX = context.dataXToScreenX(currentX);
-      final labelText =
-          context.xAxis!.labelFormatter?.call(currentX) ?? currentX.toStringAsFixed(0);
+    final paint = context.getPaint(
+      color: config.minorTickColor ?? (config.majorTickColor ?? context.theme.axisColor),
+      strokeWidth: config.minorTickWidth ?? 0.5,
+      strokeCap: StrokeCap.square,
+    );
 
-      final textPainter = TextPainter(
-        text: TextSpan(text: labelText, style: labelStyle),
-        textDirection: TextDirection.ltr,
-      )..layout();
+    final minorTickLength = config.minorTickLength ?? 3.0;
+    final minorInterval = majorInterval / 5; // 4 minor ticks between majors
 
-      final offset = Offset(screenX - (textPainter.width / 2), context.chartArea.bottom + 8);
+    final dataMin = majorLabels.first.value;
+    final dataMax = majorLabels.last.value;
 
-      textPainter.paint(canvas, offset);
+    double current = dataMin;
+    while (current <= dataMax) {
+      // Skip if on major tick
+      final isOnMajor = majorLabels.any((l) => (l.value - current).abs() < majorInterval * 0.01);
 
-      currentX += xInterval ?? 0;
+      if (!isOnMajor) {
+        if (isVertical) {
+          final screenY = coordSystem.dataYToScreenY(current).roundToDouble();
+          final yAxisX = coordSystem.dataXToScreenX(coordSystem.dataXMin);
+
+          if (screenY >= chartArea.top && screenY <= chartArea.bottom) {
+            if (position == AxisPosition.right) {
+              canvas.drawLine(
+                Offset(chartArea.right, screenY),
+                Offset(chartArea.right + minorTickLength, screenY),
+                paint,
+              );
+            } else {
+              canvas.drawLine(
+                Offset(yAxisX - minorTickLength, screenY),
+                Offset(yAxisX, screenY),
+                paint,
+              );
+            }
+          }
+        } else {
+          final screenX = coordSystem.dataXToScreenX(current).roundToDouble();
+
+          if (screenX >= chartArea.left && screenX <= chartArea.right) {
+            if (position == AxisPosition.top) {
+              canvas.drawLine(
+                Offset(screenX, chartArea.top - minorTickLength),
+                Offset(screenX, chartArea.top),
+                paint,
+              );
+            } else {
+              canvas.drawLine(
+                Offset(screenX, chartArea.bottom),
+                Offset(screenX, chartArea.bottom + minorTickLength),
+                paint,
+              );
+            }
+          }
+        }
+      }
+
+      current += minorInterval;
     }
+
+    context.returnPaint(paint);
   }
 
-  void _drawYAxisLabels(Canvas canvas, FusionRenderContext context) {
-    if (context.yAxis == null) return;
+  /// Renders labels with proper labelAlignment support.
+  void _renderLabels(
+    Canvas canvas,
+    FusionRenderContext context,
+    List<AxisLabel> labels,
+    FusionAxisConfiguration config, {
+    required bool isVertical,
+  }) {
+    final chartArea = context.chartArea;
+    final coordSystem = context.coordSystem;
+    final position = config.getEffectivePosition(isVertical: isVertical);
+    final alignment = config.labelAlignment;
 
-    final labelStyle = context.yAxis!.labelStyle ?? context.theme.axisLabelStyle;
-    final dataBounds = context.effectiveViewport;
-    final yInterval = context.yAxis!.getEffectiveInterval(dataBounds.top, dataBounds.bottom);
+    final textStyle = config.labelStyle ?? context.theme.axisLabelStyle;
+    final rotation = config.labelRotation ?? 0.0;
 
-    double currentY = dataBounds.top;
-    while (currentY <= dataBounds.bottom) {
-      final screenY = context.dataYToScreenY(currentY);
-      final labelText =
-          context.yAxis!.labelFormatter?.call(currentY) ?? currentY.toStringAsFixed(0);
+    final textPainter = TextPainter(textDirection: TextDirection.ltr, textAlign: TextAlign.center);
 
-      final textPainter = TextPainter(
-        text: TextSpan(text: labelText, style: labelStyle),
-        textDirection: TextDirection.ltr,
-      )..layout();
+    for (final label in labels) {
+      textPainter.text = TextSpan(text: label.text, style: textStyle);
+      textPainter.layout();
 
-      final offset = Offset(
-        context.chartArea.left - textPainter.width - 8,
-        screenY - (textPainter.height / 2),
-      );
+      if (isVertical) {
+        final screenY = coordSystem.dataYToScreenY(label.value).roundToDouble();
+        final yAxisX = coordSystem.dataXToScreenX(coordSystem.dataXMin);
 
-      textPainter.paint(canvas, offset);
+        if (screenY < chartArea.top - 1 || screenY > chartArea.bottom + 1) continue;
 
-      currentY += yInterval ?? 0;
+        // Apply labelAlignment for vertical axis
+        double yOffset;
+        switch (alignment) {
+          case LabelAlignment.start:
+            yOffset = screenY - textPainter.height; // Top aligned
+            break;
+          case LabelAlignment.end:
+            yOffset = screenY; // Bottom aligned
+            break;
+          case LabelAlignment.center:
+            yOffset = screenY - (textPainter.height / 2); // Center aligned
+            break;
+        }
+
+        final Offset labelOffset;
+        if (position == AxisPosition.right) {
+          labelOffset = Offset(chartArea.right + 8, yOffset);
+        } else {
+          labelOffset = Offset(yAxisX - textPainter.width - 8, yOffset);
+        }
+
+        textPainter.paint(canvas, labelOffset);
+      } else {
+        final screenX = coordSystem.dataXToScreenX(label.value).roundToDouble();
+
+        if (screenX < chartArea.left - 1 || screenX > chartArea.right + 1) continue;
+
+        // Apply labelAlignment for horizontal axis
+        double xOffset;
+        switch (alignment) {
+          case LabelAlignment.start:
+            xOffset = screenX; // Left aligned
+            break;
+          case LabelAlignment.end:
+            xOffset = screenX - textPainter.width; // Right aligned
+            break;
+          case LabelAlignment.center:
+            xOffset = screenX - (textPainter.width / 2); // Center aligned
+            break;
+        }
+
+        if (rotation != 0.0) {
+          canvas.save();
+
+          if (position == AxisPosition.top) {
+            canvas.translate(screenX, chartArea.top - 8);
+          } else {
+            canvas.translate(screenX, chartArea.bottom + 8);
+          }
+
+          canvas.rotate(rotation * (pi / 180));
+
+          // Adjusted offset for rotation with alignment
+          double rotatedXOffset;
+          switch (alignment) {
+            case LabelAlignment.start:
+              rotatedXOffset = 0;
+              break;
+            case LabelAlignment.end:
+              rotatedXOffset = -textPainter.width;
+              break;
+            case LabelAlignment.center:
+              rotatedXOffset = -textPainter.width / 2;
+              break;
+          }
+
+          textPainter.paint(canvas, Offset(rotatedXOffset, 0));
+          canvas.restore();
+        } else {
+          final Offset labelOffset;
+
+          if (position == AxisPosition.top) {
+            labelOffset = Offset(xOffset, chartArea.top - textPainter.height - 8);
+          } else {
+            labelOffset = Offset(xOffset, chartArea.bottom + 8);
+          }
+
+          textPainter.paint(canvas, labelOffset);
+        }
+      }
     }
   }
 
   @override
   bool shouldRepaint(covariant FusionAxisLayer oldLayer) {
     return oldLayer.showXAxis != showXAxis || oldLayer.showYAxis != showYAxis;
+  }
+
+  @override
+  void invalidateCache() {
+    super.invalidateCache();
+    _xAxisRenderer?.dispose();
+    _yAxisRenderer?.dispose();
+    _xAxisRenderer = null;
+    _yAxisRenderer = null;
+  }
+
+  @override
+  void dispose() {
+    _xAxisRenderer?.dispose();
+    _yAxisRenderer?.dispose();
+    super.dispose();
   }
 }

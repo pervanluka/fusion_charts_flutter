@@ -1,7 +1,7 @@
-// lib/src/rendering/painters/fusion_line_chart_painter.dart
-
 import 'package:flutter/material.dart';
-import 'package:fusion_charts_flutter/src/configuration/fusion_crosshair_configuration.dart';
+import 'package:fusion_charts_flutter/src/configuration/fusion_line_chart_configuration.dart';
+import '../../core/axis/base/fusion_axis_base.dart';
+import '../../core/axis/numeric/fusion_numeric_axis.dart';
 import '../../data/fusion_data_point.dart';
 import '../layers/fusion_render_layer.dart';
 import '../fusion_coordinate_system.dart';
@@ -53,25 +53,6 @@ import '../../configuration/fusion_tooltip_configuration.dart';
 /// - Shader caching for gradients
 /// - Layer-based selective repainting
 /// - Efficient coordinate transformations
-///
-/// ## Example
-///
-/// ```dart
-/// CustomPaint(
-///   painter: FusionLineChartPainter(
-///     series: [
-///       FusionLineSeries(
-///         name: 'Revenue',
-///         dataPoints: data,
-///         color: Colors.blue,
-///       ),
-///     ],
-///     coordSystem: coordSystem,
-///     theme: FusionLightTheme(),
-///     animationProgress: 1.0,
-///   ),
-/// )
-/// ```
 class FusionLineChartPainter extends CustomPainter {
   /// Creates a line chart painter.
   FusionLineChartPainter({
@@ -134,10 +115,13 @@ class FusionLineChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Build render pipeline if not cached
-    _pipeline ??= _buildRenderPipeline(size);
+    // Dispose previous pipeline to prevent memory leaks from cached Picture objects
+    _pipeline?.dispose();
+    
+    // Build render pipeline
+    _pipeline = _buildRenderPipeline(size);
 
-    // Create render context
+    // Create render context using coordSystem.chartArea
     final context = _createRenderContext(size);
 
     // Execute render pipeline
@@ -151,6 +135,11 @@ class FusionLineChartPainter extends CustomPainter {
   /// Builds the complete render pipeline with all layers.
   FusionRenderPipeline _buildRenderPipeline(Size size) {
     final effectiveConfig = config ?? const FusionChartConfiguration();
+
+    // Get line-specific config, use defaults if base config provided
+    final enableMarkers = config is FusionLineChartConfiguration
+        ? (config as FusionLineChartConfiguration).enableMarkers
+        : false;
 
     return FusionRenderPipeline(
       layers: [
@@ -168,8 +157,7 @@ class FusionLineChartPainter extends CustomPainter {
         ),
 
         // Layer 60: Markers (if enabled)
-        if (effectiveConfig.enableMarkers)
-          FusionMarkerLayer(series: series.cast<SeriesWithDataPoints>()),
+        if (enableMarkers) FusionMarkerLayer(series: series.cast<SeriesWithDataPoints>()),
 
         // Layer 70: Data Labels (if enabled)
         if (effectiveConfig.enableDataLabels)
@@ -178,6 +166,9 @@ class FusionLineChartPainter extends CustomPainter {
         // Layer 90: Axes (if enabled)
         if (effectiveConfig.enableAxis) FusionAxisLayer(showXAxis: true, showYAxis: true),
 
+        // Layer 95: Border (if enabled)
+        if (effectiveConfig.enableBorder) FusionBorderLayer(),
+
         // Layer 1000: Tooltip (if showing)
         if (tooltipData != null && effectiveConfig.enableTooltip)
           FusionTooltipLayer(
@@ -185,15 +176,17 @@ class FusionLineChartPainter extends CustomPainter {
             tooltipBehavior: effectiveConfig.tooltipBehavior,
           ),
 
-        // Layer 1001: Crosshair (if showing)
-        if (crosshairPosition != null && effectiveConfig.enableCrosshair)
+        // Layer 1001: Crosshair (if enabled and showing)
+        if (crosshairPosition != null &&
+            effectiveConfig.enableCrosshair &&
+            effectiveConfig.crosshairBehavior.enabled)
           FusionCrosshairLayer(
             position: crosshairPosition!,
             snappedPoint: crosshairPoint,
-            crosshairConfig: FusionCrosshairConfiguration(),
+            crosshairConfig: effectiveConfig.crosshairBehavior,
           ),
       ],
-      enableProfiling: false, // Set to true for performance debugging
+      enableProfiling: false,
     );
   }
 
@@ -203,11 +196,16 @@ class FusionLineChartPainter extends CustomPainter {
 
   /// Creates render context with all necessary information.
   FusionRenderContext _createRenderContext(Size size) {
-    // Calculate chart area (plot area excluding margins)
-    final chartArea = _calculateChartArea(size);
+    // CRITICAL: Use coordSystem.chartArea - it's already correctly calculated by the widget
+    // Don't recalculate here as it would cause mismatches
+    final chartArea = coordSystem.chartArea;
 
     // Calculate data bounds from all visible series
     final dataBounds = _calculateDataBounds();
+
+    // Determine axis types
+    final xAxisDefinition = _determineXAxisType(series);
+    final yAxisDefinition = _determineYAxisType(series);
 
     return FusionRenderContext(
       chartArea: chartArea,
@@ -217,42 +215,34 @@ class FusionLineChartPainter extends CustomPainter {
       shaderCache: shaderCache,
       xAxis: xAxis,
       yAxis: yAxis,
+      xAxisDefinition: xAxisDefinition,
+      yAxisDefinition: yAxisDefinition,
       animationProgress: animationProgress,
       enableAntiAliasing: true,
       devicePixelRatio: 1.0,
       dataBounds: dataBounds,
-      viewportBounds: null, // No zoom/pan yet
+      viewportBounds: null,
     );
   }
 
-  /// Calculates chart area (plot area excluding margins for axes).
-  Rect _calculateChartArea(Size size) {
-    final effectiveConfig = config ?? const FusionChartConfiguration();
+  /// Determine X-axis type from configuration or default to numeric.
+  FusionAxisBase _determineXAxisType(List<FusionLineSeries> series) {
+    return xAxis?.axisType ?? const FusionNumericAxis();
+  }
 
-    // Margins for axes and labels
-    final leftMargin = effectiveConfig.enableAxis ? 60.0 : 10.0;
-    final rightMargin = 10.0;
-    final topMargin = 10.0;
-    final bottomMargin = effectiveConfig.enableAxis ? 40.0 : 10.0;
-
-    return Rect.fromLTRB(
-      leftMargin,
-      topMargin,
-      size.width - rightMargin,
-      size.height - bottomMargin,
-    );
+  /// Determine Y-axis type from configuration or default to numeric.
+  FusionAxisBase _determineYAxisType(List<FusionLineSeries> series) {
+    return yAxis?.axisType ?? const FusionNumericAxis();
   }
 
   /// Calculates data bounds from all visible series.
   Rect _calculateDataBounds() {
-    // Get all points from visible series
     final allPoints = series.where((s) => s.visible).expand((s) => s.dataPoints).toList();
 
     if (allPoints.isEmpty) {
       return Rect.fromLTRB(0, 0, 10, 100);
     }
 
-    // Find min/max values
     final minX = allPoints.map((p) => p.x).reduce((a, b) => a < b ? a : b);
     final maxX = allPoints.map((p) => p.x).reduce((a, b) => a > b ? a : b);
     final minY = allPoints.map((p) => p.y).reduce((a, b) => a < b ? a : b);
@@ -267,7 +257,6 @@ class FusionLineChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant FusionLineChartPainter oldDelegate) {
-    // Repaint if any significant property changed
     return oldDelegate.series != series ||
         oldDelegate.animationProgress != animationProgress ||
         oldDelegate.theme != theme ||

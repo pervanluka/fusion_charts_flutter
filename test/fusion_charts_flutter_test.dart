@@ -180,17 +180,14 @@ void main() {
 
       expect(config.enableAnimation, true);
       expect(config.enableTooltip, true);
-      expect(config.enableCrosshair, true); // ✅ FIXED: Default is true
+      expect(config.enableCrosshair, true);
       expect(config.enableZoom, false);
       expect(config.enablePanning, false);
       expect(config.enableSelection, true);
       expect(config.enableLegend, true);
       expect(config.enableDataLabels, false);
-      expect(config.enableMarkers, false);
       expect(config.enableGrid, true);
       expect(config.enableAxis, true);
-      expect(config.lineWidth, 3.0);
-      expect(config.markerSize, 6.0);
     });
 
     test('copyWith creates modified configuration', () {
@@ -204,6 +201,30 @@ void main() {
       expect(modified.enableZoom, true);
       expect(modified.enablePanning, true);
       expect(modified.enableCrosshair, false); // Changed to false
+      expect(modified.enableAnimation, true); // Unchanged
+    });
+  });
+
+  group('FusionLineChartConfiguration', () {
+    test('creates default line chart configuration', () {
+      const config = FusionLineChartConfiguration();
+
+      expect(config.enableAnimation, true);
+      expect(config.enableMarkers, false);
+      expect(config.lineWidth, 2.0);
+      expect(config.markerSize, 6.0);
+      expect(config.enableAreaFill, false);
+    });
+
+    test('copyWith creates modified line chart configuration', () {
+      const config = FusionLineChartConfiguration();
+      final modified = config.copyWith(
+        enableMarkers: true,
+        lineWidth: 3.5,
+      );
+
+      expect(modified.enableMarkers, true);
+      expect(modified.lineWidth, 3.5);
       expect(modified.enableAnimation, true); // Unchanged
     });
   });

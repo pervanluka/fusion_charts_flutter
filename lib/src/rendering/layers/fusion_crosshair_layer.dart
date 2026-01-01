@@ -135,9 +135,12 @@ class FusionCrosshairLayer extends FusionRenderLayer {
     bool isVertical,
     FusionRenderContext context,
   ) {
-    final textStyle =
-        crosshairConfig.labelTextStyle ??
-        TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500);
+    // Use config style, or fall back to theme's axis label style
+    final textStyle = crosshairConfig.labelTextStyle ?? 
+        context.theme.axisLabelStyle.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w500,
+        );
 
     final textPainter = TextPainter(
       text: TextSpan(text: text, style: textStyle),

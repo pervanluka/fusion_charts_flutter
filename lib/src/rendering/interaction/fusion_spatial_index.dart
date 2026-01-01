@@ -67,7 +67,7 @@ class FusionSpatialIndex {
   // QUERY OPERATIONS
   // ==========================================================================
 
-  /// Finds the nearest point to a screen position.
+  /// Finds the nearest point to a screen position using Euclidean distance.
   ///
   /// Returns null if no point within maxDistance.
   FusionDataPoint? findNearest(Offset screenPosition, {double maxDistance = double.infinity}) {
@@ -86,6 +86,75 @@ class FusionSpatialIndex {
       final dist = (candidate.screenPosition - screenPosition).distance;
       if (dist < minDist) {
         minDist = dist;
+        nearest = candidate.dataPoint;
+      }
+    }
+
+    return nearest;
+  }
+
+  /// Finds the nearest point by X-coordinate only (ignoring Y distance).
+  ///
+  /// This is ideal for line charts and time series where you want the
+  /// tooltip to snap to points as you drag horizontally.
+  ///
+  /// Returns null if no points exist.
+  FusionDataPoint? findNearestByX(Offset screenPosition) {
+    if (_root == null) return null;
+
+    // Query entire vertical strip at this X position
+    final candidates = _root!.query(
+      Rect.fromLTRB(
+        screenPosition.dx - 1000, // Wide enough to catch all points
+        coordSystem.chartArea.top,
+        screenPosition.dx + 1000,
+        coordSystem.chartArea.bottom,
+      ),
+    );
+
+    if (candidates.isEmpty) return null;
+
+    FusionDataPoint? nearest;
+    double minXDist = double.infinity;
+
+    for (final candidate in candidates) {
+      final xDist = (candidate.screenPosition.dx - screenPosition.dx).abs();
+      if (xDist < minXDist) {
+        minXDist = xDist;
+        nearest = candidate.dataPoint;
+      }
+    }
+
+    return nearest;
+  }
+
+  /// Finds the nearest point by Y-coordinate only (ignoring X distance).
+  ///
+  /// Useful for horizontal bar charts or when comparing Y values.
+  ///
+  /// Returns null if no points exist.
+  FusionDataPoint? findNearestByY(Offset screenPosition) {
+    if (_root == null) return null;
+
+    // Query entire horizontal strip at this Y position
+    final candidates = _root!.query(
+      Rect.fromLTRB(
+        coordSystem.chartArea.left,
+        screenPosition.dy - 1000,
+        coordSystem.chartArea.right,
+        screenPosition.dy + 1000,
+      ),
+    );
+
+    if (candidates.isEmpty) return null;
+
+    FusionDataPoint? nearest;
+    double minYDist = double.infinity;
+
+    for (final candidate in candidates) {
+      final yDist = (candidate.screenPosition.dy - screenPosition.dy).abs();
+      if (yDist < minYDist) {
+        minYDist = yDist;
         nearest = candidate.dataPoint;
       }
     }

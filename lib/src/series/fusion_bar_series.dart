@@ -8,10 +8,6 @@ import 'series_with_data_points.dart';
 /// Displays data as vertical or horizontal bars.
 /// Perfect for comparing values across categories.
 ///
-/// Replaces:
-/// - `BarChartGroupData` from fl_chart
-/// - `ColumnSeries` / `BarSeries` from Syncfusion
-///
 /// ## Example
 ///
 /// ```dart
@@ -44,8 +40,8 @@ class FusionBarSeries extends FusionSeries
   /// Creates a bar series.
   const FusionBarSeries({
     required this.dataPoints,
-    required super.name,
     required super.color,
+    super.name,
     super.visible,
     this.barWidth = 0.6,
     this.borderRadius = 4.0,
@@ -61,11 +57,18 @@ class FusionBarSeries extends FusionSeries
     this.animationDuration,
     this.animationCurve,
     this.isVertical = true,
+    this.isTrackVisible = false,
+    this.trackColor,
+    this.trackBorderWidth = 0.0,
+    this.trackBorderColor,
+    this.trackPadding = 0.0,
     this.interaction = const FusionSeriesInteraction(),
   }) : assert(barWidth > 0 && barWidth <= 1.0, 'Bar width must be between 0 and 1'),
        assert(spacing >= 0 && spacing < 1.0, 'Spacing must be between 0 and 1'),
        assert(borderRadius >= 0, 'Border radius must be non-negative'),
-       assert(borderWidth >= 0, 'Border width must be non-negative');
+       assert(borderWidth >= 0, 'Border width must be non-negative'),
+       assert(trackBorderWidth >= 0, 'Track border width must be non-negative'),
+       assert(trackPadding >= 0, 'Track padding must be non-negative');
 
   /// The data points to be displayed in this series.
   @override
@@ -82,7 +85,7 @@ class FusionBarSeries extends FusionSeries
   /// - 0.4 = bars use 40% of space (60% gap)
   ///
   /// Range: 0.0-1.0
-  /// Default: 0.6 (Syncfusion standard)
+  /// Default: 0.6
   final double barWidth;
 
   /// Corner radius of the bars.
@@ -109,6 +112,42 @@ class FusionBarSeries extends FusionSeries
   ///
   /// Default: `true`
   final bool isVertical;
+
+  // ==========================================================================
+  // TRACK (BACKGROUND BAR)
+  // ==========================================================================
+
+  /// Whether to show a track (background bar) behind each bar.
+  ///
+  /// Tracks are rectangular bars rendered from the start to the end of the axis.
+  /// Useful for showing progress, capacity, or range.
+  ///
+  /// Default: `false`
+  final bool isTrackVisible;
+
+  /// Color of the track bar.
+  ///
+  /// Only visible when [isTrackVisible] is `true`.
+  ///
+  /// Default: `Colors.grey.withOpacity(0.2)`
+  final Color? trackColor;
+
+  /// Border width of the track bar.
+  ///
+  /// Default: `0.0` (no border)
+  final double trackBorderWidth;
+
+  /// Border color of the track bar.
+  ///
+  /// Only visible when [trackBorderWidth] > 0.
+  final Color? trackBorderColor;
+
+  /// Padding inside the track bar.
+  ///
+  /// Creates space between the track edges and the bar.
+  ///
+  /// Default: `0.0`
+  final double trackPadding;
 
   // ==========================================================================
   // GRADIENT
@@ -224,6 +263,11 @@ class FusionBarSeries extends FusionSeries
     Duration? animationDuration,
     Curve? animationCurve,
     bool? isVertical,
+    bool? isTrackVisible,
+    Color? trackColor,
+    double? trackBorderWidth,
+    Color? trackBorderColor,
+    double? trackPadding,
     FusionSeriesInteraction? interaction,
   }) {
     return FusionBarSeries(
@@ -245,6 +289,11 @@ class FusionBarSeries extends FusionSeries
       animationDuration: animationDuration ?? this.animationDuration,
       animationCurve: animationCurve ?? this.animationCurve,
       isVertical: isVertical ?? this.isVertical,
+      isTrackVisible: isTrackVisible ?? this.isTrackVisible,
+      trackColor: trackColor ?? this.trackColor,
+      trackBorderWidth: trackBorderWidth ?? this.trackBorderWidth,
+      trackBorderColor: trackBorderColor ?? this.trackBorderColor,
+      trackPadding: trackPadding ?? this.trackPadding,
       interaction: interaction ?? this.interaction,
     );
   }

@@ -1,5 +1,3 @@
-// ignore_for_file: unused_local_variable
-
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
@@ -11,39 +9,23 @@ import '../base/fusion_axis_renderer.dart';
 
 /// Renders category axes with string labels (for bar charts).
 ///
-/// This handles axes with discrete categories rather than continuous numbers.
-/// Perfect for bar charts, column charts, and other categorical data.
+/// ## Configuration Priority (Option A Architecture)
 ///
-/// ## Features
-///
-/// - String labels (e.g., "Jan", "Feb", "Mar")
-/// - Smart label rotation for long text
-/// - Label collision detection
-/// - Support for vertical and horizontal orientation
-/// - Caching for performance
+/// `FusionAxisConfiguration` is the **single source of truth** for all axis properties.
+/// The categories list is the only thing that must come from the axis definition.
 ///
 /// ## Example
 ///
 /// ```dart
-/// final categories = ['Q1', 'Q2', 'Q3', 'Q4'];
-///
 /// final config = FusionAxisConfiguration(
+///   visible: true,
 ///   showLabels: true,
 ///   showTicks: true,
 ///   showGrid: true,
+///   labelRotation: 45,
 /// );
-///
-/// final renderer = CategoryAxisRenderer(
-///   categories: categories,
-///   configuration: config,
-///   isVertical: false,
-/// );
-///
-/// final bounds = renderer.calculateBounds([]);
-/// renderer.renderAxis(canvas, axisArea, bounds);
 /// ```
 class CategoryAxisRenderer extends FusionAxisRenderer {
-  /// Creates a category axis renderer.
   CategoryAxisRenderer({
     required this.categories,
     required this.configuration,
@@ -54,16 +36,13 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
   /// Category labels to display.
   final List<String> categories;
 
-  /// Axis configuration (styling, visibility, etc.).
+  /// Axis configuration (PRIMARY source of truth).
   final FusionAxisConfiguration configuration;
 
   /// Theme for fallback styling.
   final FusionChartTheme? theme;
 
   /// Whether this is a vertical axis.
-  ///
-  /// - true = Vertical (categories on Y-axis)
-  /// - false = Horizontal (categories on X-axis) - most common for bar charts
   final bool isVertical;
 
   // ==========================================================================
@@ -80,11 +59,10 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
   @override
   AxisBounds calculateBounds(List<double> dataValues) {
     // For categories, bounds are index-based
-    // Each category occupies one unit
     _cachedBounds = AxisBounds(
-      min: -0.5, // Half category width before first
-      max: categories.length - 0.5, // Half category width after last
-      interval: 1.0, // One unit per category
+      min: -0.5,
+      max: categories.length - 0.5,
+      interval: 1.0,
       decimalPlaces: 0,
     );
 
@@ -100,12 +78,13 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
     final labels = <AxisLabel>[];
 
     for (int i = 0; i < categories.length; i++) {
-      // Position is normalized 0.0 to 1.0
-      final position = categories.length > 1
-          ? i / (categories.length - 1)
-          : 0.5; // Center if only one category
+      final position = categories.length > 1 ? i / (categories.length - 1) : 0.5;
 
-      labels.add(AxisLabel(value: i.toDouble(), text: categories[i], position: position));
+      labels.add(AxisLabel(
+        value: i.toDouble(),
+        text: categories[i],
+        position: position,
+      ));
     }
 
     _cachedLabels = labels;
@@ -118,18 +97,21 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
 
   @override
   Size measureAxisLabels(List<AxisLabel> labels, Size availableSize) {
+    // If axis is not visible, return zero size
+    if (!configuration.visible) {
+      return Size.zero;
+    }
+
     if (labels.isEmpty) return Size.zero;
 
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
     double maxWidth = 0;
     double maxHeight = 0;
-    bool needsRotation = false;
 
     final labelStyle =
         configuration.labelStyle ?? theme?.axisLabelStyle ?? const TextStyle(fontSize: 12);
 
-    // Measure all labels
     for (final label in labels) {
       textPainter.text = TextSpan(text: label.text, style: labelStyle);
       textPainter.layout();
@@ -142,10 +124,7 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
     if (!isVertical && labels.length > 1) {
       final availableWidthPerLabel = availableSize.width / labels.length;
       if (maxWidth > availableWidthPerLabel * 0.9) {
-        // Labels will collide, need rotation
-        needsRotation = true;
-
-        // When rotated, height increases
+        // Labels will collide - calculate rotated height
         if (configuration.labelRotation != null) {
           final rotation = configuration.labelRotation!.abs();
           final rotatedHeight =
@@ -162,10 +141,8 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
     const padding = 8.0;
 
     if (isVertical) {
-      // Vertical axis - labels on the side
       return Size(maxWidth + padding, availableSize.height);
     } else {
-      // Horizontal axis - labels below
       return Size(availableSize.width, maxHeight + padding);
     }
   }
@@ -176,23 +153,24 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
 
   @override
   void renderAxis(Canvas canvas, Rect axisArea, AxisBounds bounds) {
-    // Draw axis line
+    // CRITICAL: Check visibility first
+    if (!configuration.visible) {
+      return;
+    }
+
     if (configuration.showAxisLine) {
       _drawAxisLine(canvas, axisArea);
     }
 
-    // Draw ticks (optional for categories)
     if (configuration.showTicks) {
       _drawTicks(canvas, axisArea);
     }
 
-    // Draw labels
     if (configuration.showLabels) {
       _drawLabels(canvas, axisArea);
     }
   }
 
-  /// Draws the main axis line.
   void _drawAxisLine(Canvas canvas, Rect axisArea) {
     final paint = Paint()
       ..color = configuration.axisLineColor ?? theme?.axisColor ?? Colors.grey
@@ -201,14 +179,12 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
       ..strokeCap = StrokeCap.square;
 
     if (isVertical) {
-      // Vertical line on the right side
       canvas.drawLine(
         Offset(axisArea.right, axisArea.top),
         Offset(axisArea.right, axisArea.bottom),
         paint,
       );
     } else {
-      // Horizontal line on the top
       canvas.drawLine(
         Offset(axisArea.left, axisArea.top),
         Offset(axisArea.right, axisArea.top),
@@ -217,7 +193,6 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
     }
   }
 
-  /// Draws tick marks for categories.
   void _drawTicks(Canvas canvas, Rect axisArea) {
     final paint = Paint()
       ..color = configuration.majorTickColor ?? theme?.axisColor ?? Colors.grey
@@ -230,27 +205,34 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
       final position = _getCategoryPosition(i, categories.length);
 
       if (isVertical) {
-        // Vertical axis - ticks extend right
         final y = axisArea.bottom - (position * axisArea.height);
-        canvas.drawLine(Offset(axisArea.right, y), Offset(axisArea.right + tickLength, y), paint);
+        canvas.drawLine(
+          Offset(axisArea.right, y),
+          Offset(axisArea.right + tickLength, y),
+          paint,
+        );
       } else {
-        // Horizontal axis - ticks extend down
         final x = axisArea.left + (position * axisArea.width);
-        canvas.drawLine(Offset(x, axisArea.top), Offset(x, axisArea.top + tickLength), paint);
+        canvas.drawLine(
+          Offset(x, axisArea.top),
+          Offset(x, axisArea.top + tickLength),
+          paint,
+        );
       }
     }
   }
 
-  /// Draws category labels.
   void _drawLabels(Canvas canvas, Rect axisArea) {
     final labels = _cachedLabels ?? generateLabels(_cachedBounds!);
 
-    final textPainter = TextPainter(textDirection: TextDirection.ltr, textAlign: TextAlign.center);
+    final textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
 
     final labelStyle =
         configuration.labelStyle ?? theme?.axisLabelStyle ?? const TextStyle(fontSize: 12);
 
-    // Detect if rotation is needed
     final needsRotation = _shouldRotateLabels(labels, axisArea, labelStyle);
     final rotation = needsRotation ? (configuration.labelRotation ?? 45.0) : 0.0;
 
@@ -264,33 +246,33 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
 
       Offset labelPosition;
       if (isVertical) {
-        // Vertical axis - labels to the left
         final y = axisArea.bottom - (position * axisArea.height);
-        labelPosition = Offset(axisArea.left - textPainter.width - 8, y - (textPainter.height / 2));
+        labelPosition = Offset(
+          axisArea.left - textPainter.width - 8,
+          y - (textPainter.height / 2),
+        );
       } else {
-        // Horizontal axis - labels below
         final x = axisArea.left + (position * axisArea.width);
 
         if (rotation != 0) {
-          // Rotated label positioning
           labelPosition = Offset(x, axisArea.top + 8);
         } else {
-          // Centered label
           labelPosition = Offset(x - (textPainter.width / 2), axisArea.top + 8);
         }
       }
 
-      // Apply rotation if needed
       if (rotation != 0) {
         canvas.save();
         canvas.translate(labelPosition.dx, labelPosition.dy);
         canvas.rotate(rotation * (math.pi / 180));
 
-        // Adjust for rotation origin
         if (!isVertical) {
           textPainter.paint(canvas, const Offset(0, 0));
         } else {
-          textPainter.paint(canvas, Offset(-textPainter.width / 2, -textPainter.height / 2));
+          textPainter.paint(
+            canvas,
+            Offset(-textPainter.width / 2, -textPainter.height / 2),
+          );
         }
 
         canvas.restore();
@@ -305,8 +287,9 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
     if (!configuration.showGrid) return;
 
     final paint = Paint()
-      ..color =
-          configuration.majorGridColor ?? theme?.gridColor ?? Colors.grey.withValues(alpha: 0.3)
+      ..color = configuration.majorGridColor ??
+          theme?.gridColor ??
+          Colors.grey.withValues(alpha: 0.3)
       ..strokeWidth = configuration.majorGridWidth ?? 0.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.square;
@@ -316,17 +299,21 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
       final position = i / categories.length;
 
       if (isVertical) {
-        // Horizontal grid lines
         final y = plotArea.bottom - (position * plotArea.height);
         final snappedY = y.roundToDouble();
-
-        canvas.drawLine(Offset(plotArea.left, snappedY), Offset(plotArea.right, snappedY), paint);
+        canvas.drawLine(
+          Offset(plotArea.left, snappedY),
+          Offset(plotArea.right, snappedY),
+          paint,
+        );
       } else {
-        // Vertical grid lines between categories
         final x = plotArea.left + (position * plotArea.width);
         final snappedX = x.roundToDouble();
-
-        canvas.drawLine(Offset(snappedX, plotArea.top), Offset(snappedX, plotArea.bottom), paint);
+        canvas.drawLine(
+          Offset(snappedX, plotArea.top),
+          Offset(snappedX, plotArea.bottom),
+          paint,
+        );
       }
     }
   }
@@ -335,13 +322,11 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
   // HELPER METHODS
   // ==========================================================================
 
-  /// Gets the normalized position for a category index.
   double _getCategoryPosition(int index, int total) {
     if (total <= 1) return 0.5;
     return index / (total - 1);
   }
 
-  /// Determines if labels should be rotated to avoid collision.
   bool _shouldRotateLabels(List<AxisLabel> labels, Rect axisArea, TextStyle style) {
     if (isVertical || labels.length <= 1) return false;
 
@@ -354,20 +339,16 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
       totalWidth += textPainter.width;
     }
 
-    // Add spacing between labels
     totalWidth += (labels.length - 1) * 8;
 
-    // Check if total width exceeds available space
     return totalWidth > axisArea.width * 0.9;
   }
 
-  /// Maps a category name to its index.
   int? getCategoryIndex(String category) {
     final index = categories.indexOf(category);
     return index >= 0 ? index : null;
   }
 
-  /// Maps an index to its category name.
   String? getCategoryName(int index) {
     if (index >= 0 && index < categories.length) {
       return categories[index];
@@ -385,14 +366,11 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
     _cachedLabels = null;
   }
 
-  // ==========================================================================
-  // DEBUG
-  // ==========================================================================
-
   @override
   String toString() {
     return 'CategoryAxisRenderer('
         'categories: ${categories.length}, '
+        'visible: ${configuration.visible}, '
         'isVertical: $isVertical'
         ')';
   }

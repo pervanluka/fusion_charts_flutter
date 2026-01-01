@@ -7,10 +7,6 @@ import 'dart:math' show Random, sqrt;
 /// in fusion_charts_flutter. Each point contains x and y coordinates,
 /// and optional metadata.
 ///
-/// Replaces:
-/// - `FlSpot` from fl_chart
-/// - `ChartData` from Syncfusion
-///
 /// ## Example
 ///
 /// ```dart
