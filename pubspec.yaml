@@ -12,15 +12,19 @@ topics:
   - widgets
   - ui
 
-# TODO: Uncomment after adding screenshot images to /screenshots folder
-# Screenshots significantly improve pub.dev visibility!
-# screenshots:
-#   - description: 'Line chart with smooth curves and gradient area fill'
-#     path: screenshots/line_chart.png
-#   - description: 'Bar chart with rounded corners and tooltips'
-#     path: screenshots/bar_chart.png
-#   - description: 'Pie and Donut charts with center labels'
-#     path: screenshots/pie_chart.png
+screenshots:
+  - description: 'Line chart with smooth curves and gradient area fill'
+    path: screenshots/line_chart.png
+  - description: 'Bar chart with rounded corners and tooltips'
+    path: screenshots/bar_chart.png
+  - description: 'Pie and Donut charts with center labels'
+    path: screenshots/pie_chart.png
+  - description: 'Donut charts with center labels'
+    path: screenshots/donut_chart.png
+  - description: 'Stacked bar charts with tooltips'
+    path: screenshots/stacked_bar_chart.png
+  - description: 'Stacked bar charts with 100% values'
+    path: screenshots/stacked_100_bar_chart.png
 
 environment:
   sdk: ^3.9.0

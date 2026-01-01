@@ -13,6 +13,7 @@ import '../rendering/fusion_coordinate_system.dart';
 import '../rendering/engine/fusion_paint_pool.dart';
 import '../rendering/engine/fusion_shader_cache.dart';
 import '../utils/fusion_margin_calculator.dart';
+import '../utils/axis_calculator.dart';
 import 'fusion_bar_interactive_state.dart';
 import 'base/fusion_chart_header.dart';
 
@@ -190,12 +191,17 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
   }
 
   FusionCoordinateSystem _createPlaceholderCoordSystem() {
+    final maxY = _getMaxYValue();
+    final yAxisConfig = widget.yAxis ?? const FusionAxisConfiguration();
+    final yInterval = AxisCalculator.calculateNiceInterval(0, maxY, yAxisConfig.desiredIntervals);
+    final niceMaxY = (maxY / yInterval).ceil() * yInterval;
+    
     return FusionCoordinateSystem(
       chartArea: const Rect.fromLTWH(60, 10, 300, 200),
       dataXMin: -0.5,
       dataXMax: _getMaxPointCount() - 0.5,
       dataYMin: 0,
-      dataYMax: _getMaxYValue() * 1.1,
+      dataYMax: niceMaxY,
     );
   }
 
@@ -349,10 +355,10 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
     final marginMinX = firstPoint.label != null ? 0.0 : firstPoint.x;
     final marginMaxX = lastPoint.label != null ? (pointCount - 1).toDouble() : lastPoint.x;
 
-    double minY = 0.0;
-    double maxY = allPoints.map((p) => p.y).reduce((a, b) => a > b ? a : b);
-    final yPadding = maxY * 0.1;
-    maxY += yPadding;
+    // Calculate nice Y-axis bounds (aligned with axis labels)
+    final niceBounds = _calculateNiceYBounds(
+      dataMaxY: allPoints.map((p) => p.y).reduce((a, b) => a > b ? a : b),
+    );
 
     // Calculate dynamic margins based on axis labels
     final margins = FusionMarginCalculator.calculate(
@@ -361,8 +367,8 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
       yAxis: widget.yAxis,
       minX: marginMinX,
       maxX: marginMaxX,
-      minY: minY,
-      maxY: maxY,
+      minY: niceBounds.minY,
+      maxY: niceBounds.maxY,
     );
 
     final chartArea = Rect.fromLTRB(
@@ -377,13 +383,65 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
       chartArea: chartArea,
       dataXMin: minX,
       dataXMax: maxX,
-      dataYMin: minY,
-      dataYMax: maxY,
+      dataYMin: niceBounds.minY,
+      dataYMax: niceBounds.maxY,
     );
 
     _cachedSize = size;
     _cachedSeriesHash = seriesHash;
     _cachedCoordSystem = _coordSystem;
+  }
+
+  /// Calculates nice Y-axis bounds that align with axis labels.
+  /// 
+  /// For bar charts, Y-axis always starts from 0 (unless negative values exist)
+  /// and extends to a nice round number with headroom.
+  ({double minY, double maxY}) _calculateNiceYBounds({
+    required double dataMaxY,
+  }) {
+    final yAxisConfig = widget.yAxis ?? const FusionAxisConfiguration();
+
+    // Use explicit bounds from configuration if provided
+    if (yAxisConfig.min != null && yAxisConfig.max != null) {
+      return (minY: yAxisConfig.min!, maxY: yAxisConfig.max!);
+    }
+
+    // Bar charts typically start from 0
+    final effectiveMinY = yAxisConfig.min ?? 0.0;
+    final effectiveMaxY = dataMaxY;
+
+    // Calculate nice interval
+    final yInterval = yAxisConfig.interval ??
+        AxisCalculator.calculateNiceInterval(
+          effectiveMinY,
+          effectiveMaxY,
+          yAxisConfig.desiredIntervals,
+        );
+
+    // Round to nice bounds
+    final minY = yAxisConfig.min ?? _roundDownToInterval(effectiveMinY, yInterval);
+    var maxY = yAxisConfig.max ?? _roundUpToInterval(effectiveMaxY, yInterval);
+
+    // Ensure adequate headroom: if data max is too close to axis max,
+    // add one more interval to prevent cramped appearance
+    final headroom = maxY - dataMaxY;
+    if (headroom < yInterval * 0.15 && yAxisConfig.max == null) {
+      maxY += yInterval;
+    }
+
+    return (minY: minY, maxY: maxY);
+  }
+
+  /// Rounds value down to nearest interval multiple.
+  double _roundDownToInterval(double value, double interval) {
+    if (interval <= 0) return value;
+    return (value / interval).floor() * interval;
+  }
+
+  /// Rounds value up to nearest interval multiple.
+  double _roundUpToInterval(double value, double interval) {
+    if (interval <= 0) return value;
+    return (value / interval).ceil() * interval;
   }
 
   int _calculateSeriesHash(List<FusionBarSeries> series) {

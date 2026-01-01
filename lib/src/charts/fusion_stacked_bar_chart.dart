@@ -14,6 +14,7 @@ import '../rendering/painters/fusion_stacked_bar_chart_painter.dart';
 import '../rendering/engine/fusion_paint_pool.dart';
 import '../rendering/engine/fusion_shader_cache.dart';
 import '../utils/fusion_margin_calculator.dart';
+import '../utils/axis_calculator.dart';
 import 'fusion_stacked_bar_interactive_state.dart';
 import 'base/fusion_chart_header.dart';
 
@@ -207,12 +208,23 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
 
   FusionCoordinateSystem _createPlaceholderCoordSystem() {
     final config = _stackedConfig;
+    final stackedMaxY = _getStackedMaxY();
+    
+    double niceMaxY;
+    if (config.isStacked100) {
+      niceMaxY = 100.0;
+    } else {
+      final yAxisConfig = widget.yAxis ?? const FusionAxisConfiguration();
+      final yInterval = AxisCalculator.calculateNiceInterval(0, stackedMaxY, yAxisConfig.desiredIntervals);
+      niceMaxY = (stackedMaxY / yInterval).ceil() * yInterval;
+    }
+    
     return FusionCoordinateSystem(
       chartArea: const Rect.fromLTWH(60, 10, 300, 200),
       dataXMin: -0.5,
       dataXMax: _getMaxPointCount() - 0.5,
       dataYMin: 0,
-      dataYMax: config.isStacked100 ? 100 : _getStackedMaxY() * 1.1,
+      dataYMax: niceMaxY,
     );
   }
 
@@ -412,7 +424,15 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
     final minX = -0.5;
     final maxX = pointCount - 0.5;
     final minY = 0.0;
-    final maxY = config.isStacked100 ? 100.0 : _getStackedMaxY() * 1.1;
+    
+    // Calculate nice Y-axis bounds
+    double maxY;
+    if (config.isStacked100) {
+      maxY = 100.0;
+    } else {
+      final niceBounds = _calculateNiceYBounds(dataMaxY: _getStackedMaxY());
+      maxY = niceBounds.maxY;
+    }
 
     // For margin calculation, use actual label positions (0 to pointCount-1)
     // This ensures correct label width calculations
@@ -447,6 +467,58 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
 
     _cachedSize = size;
     _cachedSeriesHash = seriesHash;
+  }
+
+  /// Calculates nice Y-axis bounds that align with axis labels.
+  /// 
+  /// For stacked bar charts, Y-axis always starts from 0
+  /// and extends to a nice round number with headroom.
+  ({double minY, double maxY}) _calculateNiceYBounds({
+    required double dataMaxY,
+  }) {
+    final yAxisConfig = widget.yAxis ?? const FusionAxisConfiguration();
+
+    // Use explicit bounds from configuration if provided
+    if (yAxisConfig.min != null && yAxisConfig.max != null) {
+      return (minY: yAxisConfig.min!, maxY: yAxisConfig.max!);
+    }
+
+    // Stacked bar charts always start from 0
+    final effectiveMinY = yAxisConfig.min ?? 0.0;
+    final effectiveMaxY = dataMaxY;
+
+    // Calculate nice interval
+    final yInterval = yAxisConfig.interval ??
+        AxisCalculator.calculateNiceInterval(
+          effectiveMinY,
+          effectiveMaxY,
+          yAxisConfig.desiredIntervals,
+        );
+
+    // Round to nice bounds
+    final minY = yAxisConfig.min ?? _roundDownToInterval(effectiveMinY, yInterval);
+    var maxY = yAxisConfig.max ?? _roundUpToInterval(effectiveMaxY, yInterval);
+
+    // Ensure adequate headroom: if data max is too close to axis max,
+    // add one more interval to prevent cramped appearance
+    final headroom = maxY - dataMaxY;
+    if (headroom < yInterval * 0.15 && yAxisConfig.max == null) {
+      maxY += yInterval;
+    }
+
+    return (minY: minY, maxY: maxY);
+  }
+
+  /// Rounds value down to nearest interval multiple.
+  double _roundDownToInterval(double value, double interval) {
+    if (interval <= 0) return value;
+    return (value / interval).floor() * interval;
+  }
+
+  /// Rounds value up to nearest interval multiple.
+  double _roundUpToInterval(double value, double interval) {
+    if (interval <= 0) return value;
+    return (value / interval).ceil() * interval;
   }
 
   int _calculateSeriesHash() {

@@ -33,8 +33,8 @@ class FusionPieChartConfiguration extends FusionChartConfiguration {
     this.outerRadiusPercent = 0.85,
     this.startAngle = -90.0,
     this.direction = PieDirection.clockwise,
-    this.chartPadding = const EdgeInsets.all(16),
-    
+    this.chartPadding = const EdgeInsets.all(4),
+
     // === LABELS ===
     this.labelPosition = PieLabelPosition.auto,
     this.showLabels = true,
@@ -46,7 +46,7 @@ class FusionPieChartConfiguration extends FusionChartConfiguration {
     this.labelConnectorColor,
     this.labelStyle,
     this.labelFormatter,
-    
+
     // === CENTER ===
     this.showCenterLabel = false,
     this.centerLabelText,
@@ -54,25 +54,25 @@ class FusionPieChartConfiguration extends FusionChartConfiguration {
     this.centerSubLabelText,
     this.centerSubLabelStyle,
     this.centerWidget,
-    
+
     // === ANIMATION ===
     this.animationType = PieAnimationType.sweep,
-    
+
     // === SELECTION ===
     this.selectionMode = PieSelectionMode.single,
     this.selectedOpacity = 1.0,
     this.unselectedOpacity = 0.4,
     this.selectedScale = 1.02,
-    
+
     // === HOVER ===
     this.enableHover = true,
     this.hoverScale = 1.03,
-    
+
     // === EXPLODE ===
     this.explodeOffset = 10.0,
     this.explodeOnSelection = false,
     this.explodeOnHover = false,
-    
+
     // === LEGEND ===
     this.legendPosition = LegendPosition.right,
     this.legendSpacing = 16.0,
@@ -84,30 +84,30 @@ class FusionPieChartConfiguration extends FusionChartConfiguration {
     this.showLegendValues = false,
     this.showLegendPercentages = true,
     this.legendScrollable = true,
-    
+
     // === STROKE ===
     this.strokeWidth = 1.0,
     this.strokeColor,
-    
+
     // === SHADOW ===
     this.enableShadow = false,
     this.shadowColor,
     this.shadowBlurRadius = 8.0,
     this.shadowOffset = const Offset(2, 2),
-    
+
     // === CORNER RADIUS ===
     this.cornerRadius = 0.0,
-    
+
     // === GAP ===
     this.gapBetweenSlices = 0.0,
-    
+
     // === SORTING / GROUPING ===
     this.sortMode = PieSortMode.none,
     this.groupSmallSegments = false,
     this.groupThreshold = 3.0,
     this.groupLabel = 'Other',
     this.groupColor,
-    
+
     // === BASE CONFIGURATION ===
     super.theme,
     super.tooltipBehavior = const FusionTooltipBehavior(),
@@ -115,7 +115,7 @@ class FusionPieChartConfiguration extends FusionChartConfiguration {
     super.enableTooltip = true,
     super.enableLegend = true,
     super.enableSelection = true,
-    super.padding = const EdgeInsets.all(16),
+    super.padding = const EdgeInsets.all(4),
     super.animationDuration,
     super.animationCurve,
   });
@@ -281,7 +281,7 @@ class FusionPieChartConfiguration extends FusionChartConfiguration {
 
   /// Width of segment border stroke.
   final double strokeWidth;
-  
+
   /// Stroke color (falls back to theme.pieStrokeColor).
   final Color? strokeColor;
 
@@ -291,7 +291,7 @@ class FusionPieChartConfiguration extends FusionChartConfiguration {
 
   /// Whether to render shadows behind segments.
   final bool enableShadow;
-  
+
   /// Shadow color (falls back to theme.pieShadowColor).
   final Color? shadowColor;
 
@@ -342,24 +342,19 @@ class FusionPieChartConfiguration extends FusionChartConfiguration {
   bool get isDonut => innerRadiusPercent > 0;
 
   /// Effective stroke color (falls back to theme).
-  Color effectiveStrokeColor(FusionChartTheme themeRef) => 
-      strokeColor ?? themeRef.pieStrokeColor;
+  Color effectiveStrokeColor(FusionChartTheme themeRef) => strokeColor ?? themeRef.pieStrokeColor;
 
   /// Effective shadow color (falls back to theme).
-  Color effectiveShadowColor(FusionChartTheme themeRef) => 
-      shadowColor ?? themeRef.pieShadowColor;
+  Color effectiveShadowColor(FusionChartTheme themeRef) => shadowColor ?? themeRef.pieShadowColor;
 
   /// Effective legend width (from theme).
-  double effectiveLegendWidth(FusionChartTheme themeRef) => 
-      themeRef.legendWidth;
+  double effectiveLegendWidth(FusionChartTheme themeRef) => themeRef.legendWidth;
 
   /// Effective legend height (from theme).
-  double effectiveLegendHeight(FusionChartTheme themeRef) => 
-      themeRef.legendHeight;
+  double effectiveLegendHeight(FusionChartTheme themeRef) => themeRef.legendHeight;
 
   /// Effective group color (falls back to theme.gridColor).
-  Color effectiveGroupColor(FusionChartTheme themeRef) =>
-      groupColor ?? themeRef.gridColor;
+  Color effectiveGroupColor(FusionChartTheme themeRef) => groupColor ?? themeRef.gridColor;
 
   // ===========================================================================
   // RESOLVED VALUES (Config overrides Series defaults)

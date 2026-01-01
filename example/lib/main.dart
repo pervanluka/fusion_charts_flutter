@@ -91,9 +91,7 @@ class ShowcaseGalleryHome extends StatelessWidget {
         actions: [
           IconButton(
             icon: Icon(
-              Theme.of(context).brightness == Brightness.dark 
-                ? Icons.light_mode 
-                : Icons.dark_mode,
+              Theme.of(context).brightness == Brightness.dark ? Icons.light_mode : Icons.dark_mode,
             ),
             onPressed: onThemeToggle,
             tooltip: 'Toggle theme',
@@ -126,9 +124,7 @@ class ShowcaseGalleryHome extends StatelessWidget {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                    ),
+                    gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(Icons.auto_graph, color: Colors.white, size: 32),
@@ -176,10 +172,7 @@ class ShowcaseGalleryHome extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
       ),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-      ),
+      child: Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
     );
   }
 
@@ -310,10 +303,7 @@ class ShowcaseGalleryHome extends StatelessWidget {
             Expanded(
               child: Container(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: example.builder(context),
-                ),
+                child: Padding(padding: const EdgeInsets.all(8), child: example.builder(context)),
               ),
             ),
             Padding(
@@ -386,10 +376,7 @@ class _ShowcaseCard extends StatelessWidget {
                 Container(
                   width: 44,
                   height: 44,
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(11),
-                  ),
+                  decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(11)),
                   child: Icon(icon, color: Colors.white, size: 22),
                 ),
                 const SizedBox(height: 10),
@@ -411,10 +398,7 @@ class _ShowcaseCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(10)),
                   child: Text(
                     examples,
                     style: const TextStyle(
@@ -461,10 +445,7 @@ class ExampleDetailPage extends StatelessWidget {
             Card(
               child: SizedBox(
                 height: 400,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: example.builder(context),
-                ),
+                child: Padding(padding: const EdgeInsets.all(16), child: example.builder(context)),
               ),
             ),
           ],
@@ -605,6 +586,16 @@ final List<ShowcaseCategory> categories = [
         description: 'Depth effects',
         builder: (context) => const ShadowBarsExample(),
       ),
+      ShowcaseExample(
+        title: 'Track Background',
+        description: 'Progress indicator style',
+        builder: (context) => const TrackBarsExample(),
+      ),
+      ShowcaseExample(
+        title: 'Stacked 100%',
+        description: 'Normalized to 100%',
+        builder: (context) => const Stacked100BarsExample(),
+      ),
     ],
   ),
   ShowcaseCategory(
@@ -670,6 +661,8 @@ class BasicPieExample extends StatelessWidget {
         config: const FusionPieChartConfiguration(
           enableLegend: false,
           labelPosition: PieLabelPosition.none,
+          padding: EdgeInsets.zero,
+          chartPadding: EdgeInsets.all(4),
         ),
       ),
     );
@@ -691,6 +684,8 @@ class DonutExample extends StatelessWidget {
           centerSubLabelText: 'Total',
           enableLegend: false,
           labelPosition: PieLabelPosition.none,
+          padding: EdgeInsets.zero,
+          chartPadding: EdgeInsets.all(4),
         ),
       ),
     );
@@ -704,17 +699,15 @@ class RoundedCornersPieExample extends StatelessWidget {
   Widget build(BuildContext context) {
     return _PieContainer(
       child: FusionPieChart(
-        series: FusionPieSeries(
-          dataPoints: _pieData,
-          strokeWidth: 2,
-          strokeColor: Colors.white,
-        ),
+        series: FusionPieSeries(dataPoints: _pieData, strokeWidth: 2, strokeColor: Colors.white),
         config: const FusionPieChartConfiguration(
           innerRadiusPercent: 0.5,
           cornerRadius: 10.0,
           gapBetweenSlices: 2.0,
           enableLegend: false,
           labelPosition: PieLabelPosition.none,
+          padding: EdgeInsets.zero,
+          chartPadding: EdgeInsets.all(4),
         ),
       ),
     );
@@ -740,6 +733,8 @@ class SmartLabelsPieExample extends StatelessWidget {
           labelPosition: PieLabelPosition.inside,
           showPercentages: true,
           enableLegend: false,
+          padding: EdgeInsets.zero,
+          chartPadding: EdgeInsets.all(4),
         ),
       ),
     );
@@ -760,6 +755,8 @@ class SelectablePieExample extends StatelessWidget {
           explodeOnSelection: true,
           enableLegend: false,
           labelPosition: PieLabelPosition.none,
+          padding: EdgeInsets.zero,
+          chartPadding: EdgeInsets.all(4),
         ),
       ),
     );
@@ -791,6 +788,8 @@ class DarkThemePieExample extends StatelessWidget {
           centerLabelStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           enableLegend: false,
           labelPosition: PieLabelPosition.none,
+          padding: EdgeInsets.zero,
+          chartPadding: EdgeInsets.all(4),
         ),
       ),
     );
@@ -933,9 +932,7 @@ class GradientLineExample extends StatelessWidget {
           ],
           color: const Color(0xFF8B5CF6),
           lineWidth: 3.0,
-          gradient: const LinearGradient(
-            colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
-          ),
+          gradient: const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)]),
           showArea: true,
           areaOpacity: 0.2,
           isCurved: true,
@@ -957,11 +954,7 @@ class LargeDatasetExample extends StatelessWidget {
 
     return FusionLineChart(
       series: [
-        FusionLineSeries(
-          dataPoints: dataPoints,
-          color: const Color(0xFF6366F1),
-          lineWidth: 1.5,
-        ),
+        FusionLineSeries(dataPoints: dataPoints, color: const Color(0xFF6366F1), lineWidth: 1.5),
       ],
       config: const FusionChartConfiguration(enableAnimation: false),
     );
@@ -1143,11 +1136,7 @@ class ShadowBarsExample extends StatelessWidget {
           barWidth: 0.6,
           borderRadius: 8.0,
           showShadow: true,
-          shadow: const BoxShadow(
-            color: Color(0x40000000),
-            blurRadius: 8,
-            offset: Offset(2, 4),
-          ),
+          shadow: const BoxShadow(color: Color(0x40000000), blurRadius: 8, offset: Offset(2, 4)),
         ),
       ],
     );
@@ -1208,10 +1197,7 @@ class CrosshairExample extends StatelessWidget {
           lineWidth: 2.5,
         ),
       ],
-      config: const FusionChartConfiguration(
-        enableCrosshair: true,
-        enableTooltip: true,
-      ),
+      config: const FusionChartConfiguration(enableCrosshair: true, enableTooltip: true),
     );
   }
 }
@@ -1228,11 +1214,7 @@ class ZoomPanExample extends StatelessWidget {
 
     return FusionLineChart(
       series: [
-        FusionLineSeries(
-          dataPoints: dataPoints,
-          color: const Color(0xFF3B82F6),
-          lineWidth: 2.0,
-        ),
+        FusionLineSeries(dataPoints: dataPoints, color: const Color(0xFF3B82F6), lineWidth: 2.0),
       ],
       config: const FusionChartConfiguration(
         enableAnimation: false,
@@ -1246,6 +1228,82 @@ class ZoomPanExample extends StatelessWidget {
         ),
         panBehavior: FusionPanConfiguration(enabled: true),
       ),
+    );
+  }
+}
+
+// =============================================================================
+// EXAMPLE WIDGETS - BAR (TRACK & STACKED 100%)
+// =============================================================================
+
+/// Bar chart with track (background bar) - progress indicator style
+class TrackBarsExample extends StatelessWidget {
+  const TrackBarsExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FusionBarChart(
+      series: [
+        FusionBarSeries(
+          name: 'Progress',
+          dataPoints: [
+            FusionDataPoint(0, 65, label: 'A'),
+            FusionDataPoint(1, 85, label: 'B'),
+            FusionDataPoint(2, 45, label: 'C'),
+            FusionDataPoint(3, 92, label: 'D'),
+          ],
+          color: const Color(0xFF10B981),
+          barWidth: 0.5,
+          borderRadius: 8.0,
+          isTrackVisible: true,
+          trackColor: const Color(0xFFE5E7EB),
+        ),
+      ],
+      yAxis: const FusionAxisConfiguration(min: 0, max: 100),
+    );
+  }
+}
+
+/// Stacked bar chart normalized to 100%
+class Stacked100BarsExample extends StatelessWidget {
+  const Stacked100BarsExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FusionStackedBarChart(
+      series: [
+        FusionStackedBarSeries(
+          name: 'Desktop',
+          dataPoints: [
+            FusionDataPoint(0, 45, label: 'Q1'),
+            FusionDataPoint(1, 38, label: 'Q2'),
+            FusionDataPoint(2, 32, label: 'Q3'),
+            FusionDataPoint(3, 28, label: 'Q4'),
+          ],
+          color: const Color(0xFF6366F1),
+        ),
+        FusionStackedBarSeries(
+          name: 'Mobile',
+          dataPoints: [
+            FusionDataPoint(0, 35, label: 'Q1'),
+            FusionDataPoint(1, 42, label: 'Q2'),
+            FusionDataPoint(2, 48, label: 'Q3'),
+            FusionDataPoint(3, 52, label: 'Q4'),
+          ],
+          color: const Color(0xFF22C55E),
+        ),
+        FusionStackedBarSeries(
+          name: 'Tablet',
+          dataPoints: [
+            FusionDataPoint(0, 20, label: 'Q1'),
+            FusionDataPoint(1, 20, label: 'Q2'),
+            FusionDataPoint(2, 20, label: 'Q3'),
+            FusionDataPoint(3, 20, label: 'Q4'),
+          ],
+          color: const Color(0xFFF59E0B),
+        ),
+      ],
+      config: const FusionStackedBarChartConfiguration(isStacked100: true, enableLegend: true),
     );
   }
 }
