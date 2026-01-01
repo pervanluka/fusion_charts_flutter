@@ -171,7 +171,7 @@ class FusionLightTheme extends FusionChartTheme with FusionThemeUtils {
   double get markerSize => 6.0;
 
   @override
-  EdgeInsets get chartPadding => const EdgeInsets.all(16.0);
+  EdgeInsets get chartPadding => const EdgeInsets.all(4);
 
   @override
   double get legendSpacing => 8.0;

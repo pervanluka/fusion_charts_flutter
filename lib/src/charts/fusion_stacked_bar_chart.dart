@@ -159,7 +159,7 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
       enableDataLabels: config?.enableDataLabels ?? false,
       enableGrid: config?.enableGrid ?? true,
       enableAxis: config?.enableAxis ?? true,
-      padding: config?.padding ?? const EdgeInsets.all(16.0),
+      padding: config?.padding ?? const EdgeInsets.all(4),
       animationDuration: config?.animationDuration,
       animationCurve: config?.animationCurve,
     );
@@ -209,16 +209,20 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
   FusionCoordinateSystem _createPlaceholderCoordSystem() {
     final config = _stackedConfig;
     final stackedMaxY = _getStackedMaxY();
-    
+
     double niceMaxY;
     if (config.isStacked100) {
       niceMaxY = 100.0;
     } else {
       final yAxisConfig = widget.yAxis ?? const FusionAxisConfiguration();
-      final yInterval = AxisCalculator.calculateNiceInterval(0, stackedMaxY, yAxisConfig.desiredIntervals);
+      final yInterval = AxisCalculator.calculateNiceInterval(
+        0,
+        stackedMaxY,
+        yAxisConfig.desiredIntervals,
+      );
       niceMaxY = (stackedMaxY / yInterval).ceil() * yInterval;
     }
-    
+
     return FusionCoordinateSystem(
       chartArea: const Rect.fromLTWH(60, 10, 300, 200),
       dataXMin: -0.5,
@@ -332,7 +336,9 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
                             yAxis: widget.yAxis,
                             animationProgress: _animation.value,
                             // Only pass tooltip data if NOT using custom builder
-                            stackedTooltipData: hasCustomBuilder ? null : _interactiveState.tooltipData,
+                            stackedTooltipData: hasCustomBuilder
+                                ? null
+                                : _interactiveState.tooltipData,
                             crosshairPosition: null,
                             crosshairPoint: null,
                             config: config,
@@ -402,10 +408,7 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
     return Positioned(
       left: data.screenPosition.dx,
       top: data.screenPosition.dy,
-      child: FractionalTranslation(
-        translation: const Offset(-0.5, -1.1),
-        child: customWidget,
-      ),
+      child: FractionalTranslation(translation: const Offset(-0.5, -1.1), child: customWidget),
     );
   }
 
@@ -424,7 +427,7 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
     final minX = -0.5;
     final maxX = pointCount - 0.5;
     final minY = 0.0;
-    
+
     // Calculate nice Y-axis bounds
     double maxY;
     if (config.isStacked100) {
@@ -470,12 +473,10 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
   }
 
   /// Calculates nice Y-axis bounds that align with axis labels.
-  /// 
+  ///
   /// For stacked bar charts, Y-axis always starts from 0
   /// and extends to a nice round number with headroom.
-  ({double minY, double maxY}) _calculateNiceYBounds({
-    required double dataMaxY,
-  }) {
+  ({double minY, double maxY}) _calculateNiceYBounds({required double dataMaxY}) {
     final yAxisConfig = widget.yAxis ?? const FusionAxisConfiguration();
 
     // Use explicit bounds from configuration if provided
@@ -488,7 +489,8 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
     final effectiveMaxY = dataMaxY;
 
     // Calculate nice interval
-    final yInterval = yAxisConfig.interval ??
+    final yInterval =
+        yAxisConfig.interval ??
         AxisCalculator.calculateNiceInterval(
           effectiveMinY,
           effectiveMaxY,

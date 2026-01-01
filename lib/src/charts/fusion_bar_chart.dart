@@ -143,7 +143,7 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
       enableDataLabels: config?.enableDataLabels ?? false,
       enableGrid: config?.enableGrid ?? true,
       enableAxis: config?.enableAxis ?? true,
-      padding: config?.padding ?? const EdgeInsets.all(16.0),
+      padding: config?.padding ?? const EdgeInsets.all(4),
       animationDuration: config?.animationDuration,
       animationCurve: config?.animationCurve,
     );
@@ -195,7 +195,7 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
     final yAxisConfig = widget.yAxis ?? const FusionAxisConfiguration();
     final yInterval = AxisCalculator.calculateNiceInterval(0, maxY, yAxisConfig.desiredIntervals);
     final niceMaxY = (maxY / yInterval).ceil() * yInterval;
-    
+
     return FusionCoordinateSystem(
       chartArea: const Rect.fromLTWH(60, 10, 300, 200),
       dataXMin: -0.5,
@@ -343,11 +343,11 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
     // For bar charts, ALWAYS use index-based positioning (category axis)
     // X values are used for labels, not for positioning
     final pointCount = widget.series.first.dataPoints.length;
-    
+
     // Coordinate system: bars centered at 0, 1, 2, 3...
     final minX = -0.5;
     final maxX = pointCount - 0.5;
-    
+
     // For margin calculation, use the actual label values (first and last x values)
     // This ensures proper overflow calculation for first/last labels
     final firstPoint = widget.series.first.dataPoints.first;
@@ -393,12 +393,10 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
   }
 
   /// Calculates nice Y-axis bounds that align with axis labels.
-  /// 
+  ///
   /// For bar charts, Y-axis always starts from 0 (unless negative values exist)
   /// and extends to a nice round number with headroom.
-  ({double minY, double maxY}) _calculateNiceYBounds({
-    required double dataMaxY,
-  }) {
+  ({double minY, double maxY}) _calculateNiceYBounds({required double dataMaxY}) {
     final yAxisConfig = widget.yAxis ?? const FusionAxisConfiguration();
 
     // Use explicit bounds from configuration if provided
@@ -411,7 +409,8 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
     final effectiveMaxY = dataMaxY;
 
     // Calculate nice interval
-    final yInterval = yAxisConfig.interval ??
+    final yInterval =
+        yAxisConfig.interval ??
         AxisCalculator.calculateNiceInterval(
           effectiveMinY,
           effectiveMaxY,

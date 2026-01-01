@@ -64,7 +64,7 @@ class FusionChartConfiguration {
     this.enableBorder = false,
     this.enableGrid = true,
     this.enableAxis = true,
-    this.padding = const EdgeInsets.all(16.0),
+    this.padding = const EdgeInsets.all(4),
     this.animationDuration,
     this.animationCurve,
   }) : theme = theme ?? const FusionLightTheme();
@@ -216,19 +216,14 @@ class FusionChartConfiguration {
   // ==========================================================================
 
   /// Gets the effective animation duration.
-  Duration get effectiveAnimationDuration =>
-      animationDuration ?? theme.animationDuration;
+  Duration get effectiveAnimationDuration => animationDuration ?? theme.animationDuration;
 
   /// Gets the effective animation curve.
   Curve get effectiveAnimationCurve => animationCurve ?? theme.animationCurve;
 
   /// Whether any interaction is enabled.
   bool get hasAnyInteraction =>
-      enableTooltip ||
-      enableCrosshair ||
-      enableZoom ||
-      enablePanning ||
-      enableSelection;
+      enableTooltip || enableCrosshair || enableZoom || enablePanning || enableSelection;
 
   // ==========================================================================
   // COPY WITH

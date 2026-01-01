@@ -199,7 +199,7 @@ class FusionResponsiveSize {
 
   /// Gets recommended chart padding based on screen size.
   EdgeInsets getChartPadding({EdgeInsets? basePadding}) {
-    final base = basePadding ?? const EdgeInsets.all(16.0);
+    final base = basePadding ?? const EdgeInsets.all(4);
     final scale = isPhone ? 1.0 : (isTablet ? 1.25 : 1.5);
 
     return EdgeInsets.fromLTRB(

@@ -205,7 +205,7 @@ abstract class FusionChartTheme {
   double get markerSize => 6.0;
 
   /// Padding inside the chart container.
-  EdgeInsets get chartPadding => const EdgeInsets.all(16.0);
+  EdgeInsets get chartPadding => const EdgeInsets.all(4);
 
   /// Spacing between legend items.
   double get legendSpacing => 8.0;
