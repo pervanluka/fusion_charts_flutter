@@ -7,26 +7,11 @@ import '../configuration/fusion_axis_configuration.dart';
 import '../data/fusion_data_point.dart';
 import '../rendering/fusion_coordinate_system.dart';
 import '../utils/fusion_margin_calculator.dart';
-import '../utils/axis_calculator.dart';
+import '../utils/chart_bounds_calculator.dart';
 import 'fusion_interactive_chart.dart';
 import '../rendering/engine/fusion_paint_pool.dart';
 import '../rendering/engine/fusion_shader_cache.dart';
 import 'base/fusion_chart_header.dart';
-
-/// Helper class to hold calculated nice axis bounds.
-class _NiceAxisBounds {
-  const _NiceAxisBounds({
-    required this.minX,
-    required this.maxX,
-    required this.minY,
-    required this.maxY,
-  });
-
-  final double minX;
-  final double maxX;
-  final double minY;
-  final double maxY;
-}
 
 class FusionLineChart extends StatefulWidget {
   const FusionLineChart({
@@ -103,18 +88,22 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
       final dataMinY = allPoints.map((p) => p.y).reduce((a, b) => a < b ? a : b);
       final dataMaxY = allPoints.map((p) => p.y).reduce((a, b) => a > b ? a : b);
 
-      // Use nice bounds - consistent with _updateCoordinateSystem
-      final niceBounds = _calculateNiceAxisBounds(
+      // Use ChartBoundsCalculator for consistent bounds calculation
+      final xBounds = ChartBoundsCalculator.calculateNiceXBounds(
         dataMinX: dataMinX,
         dataMaxX: dataMaxX,
+        xAxisConfig: widget.xAxis,
+      );
+      final yBounds = ChartBoundsCalculator.calculateNiceYBounds(
         dataMinY: dataMinY,
         dataMaxY: dataMaxY,
+        yAxisConfig: widget.yAxis,
       );
       
-      minX = niceBounds.minX;
-      maxX = niceBounds.maxX;
-      minY = niceBounds.minY;
-      maxY = niceBounds.maxY;
+      minX = xBounds.minX;
+      maxX = xBounds.maxX;
+      minY = yBounds.minY;
+      maxY = yBounds.maxY;
     }
 
     _coordSystem = FusionCoordinateSystem(
@@ -255,12 +244,16 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
     final dataMinY = allPoints.map((p) => p.y).reduce((a, b) => a < b ? a : b);
     final dataMaxY = allPoints.map((p) => p.y).reduce((a, b) => a > b ? a : b);
 
-    // Calculate nice axis bounds using AxisCalculator (single source of truth)
-    final niceBounds = _calculateNiceAxisBounds(
+    // Use ChartBoundsCalculator for consistent bounds calculation
+    final xBounds = ChartBoundsCalculator.calculateNiceXBounds(
       dataMinX: dataMinX,
       dataMaxX: dataMaxX,
+      xAxisConfig: widget.xAxis,
+    );
+    final yBounds = ChartBoundsCalculator.calculateNiceYBounds(
       dataMinY: dataMinY,
       dataMaxY: dataMaxY,
+      yAxisConfig: widget.yAxis,
     );
 
     // Calculate chart area margins using shared utility
@@ -269,10 +262,10 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
       enableAxis: config.enableAxis,
       xAxis: widget.xAxis,
       yAxis: widget.yAxis,
-      minX: niceBounds.minX,
-      maxX: niceBounds.maxX,
-      minY: niceBounds.minY,
-      maxY: niceBounds.maxY,
+      minX: xBounds.minX,
+      maxX: xBounds.maxX,
+      minY: yBounds.minY,
+      maxY: yBounds.maxY,
     );
 
     final chartArea = Rect.fromLTRB(
@@ -288,94 +281,14 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
     // Create coordinate system with NICE bounds (aligned with axis labels)
     _coordSystem = FusionCoordinateSystem(
       chartArea: chartArea,
-      dataXMin: niceBounds.minX,
-      dataXMax: niceBounds.maxX,
-      dataYMin: niceBounds.minY,
-      dataYMax: niceBounds.maxY,
+      dataXMin: xBounds.minX,
+      dataXMax: xBounds.maxX,
+      dataYMin: yBounds.minY,
+      dataYMax: yBounds.maxY,
       devicePixelRatio: dpr,
     );
 
     // ALWAYS update interactive state - this is critical for responsiveness
     _interactiveState.updateCoordinateSystem(_coordSystem!);
-  }
-
-  /// Calculates nice axis bounds that align with axis labels.
-  /// 
-  /// This ensures the coordinate system uses the same bounds as the axis renderer,
-  /// preventing misalignment between data rendering and axis labels.
-  /// 
-  /// **Y-Axis (value axis):** Uses nice round bounds with headroom for visual breathing room.
-  /// **X-Axis (domain axis):** Uses exact data bounds - no extra padding.
-  _NiceAxisBounds _calculateNiceAxisBounds({
-    required double dataMinX,
-    required double dataMaxX,
-    required double dataMinY,
-    required double dataMaxY,
-  }) {
-    final xAxisConfig = widget.xAxis ?? const FusionAxisConfiguration();
-    final yAxisConfig = widget.yAxis ?? const FusionAxisConfiguration();
-
-    // === X-AXIS BOUNDS (Domain Axis) ===
-    // Use exact data bounds - no rounding, no headroom
-    // Users expect data points to span the full horizontal width
-    double minX, maxX;
-    
-    if (xAxisConfig.min != null && xAxisConfig.max != null) {
-      // Use explicit bounds from configuration
-      minX = xAxisConfig.min!;
-      maxX = xAxisConfig.max!;
-    } else {
-      // Use exact data range
-      minX = xAxisConfig.min ?? dataMinX;
-      maxX = xAxisConfig.max ?? dataMaxX;
-    }
-
-    // === Y-AXIS BOUNDS (Value Axis) ===
-    // Use nice round bounds with headroom for visual breathing room
-    double minY, maxY;
-    
-    if (yAxisConfig.min != null && yAxisConfig.max != null) {
-      // Use explicit bounds from configuration
-      minY = yAxisConfig.min!;
-      maxY = yAxisConfig.max!;
-    } else {
-      // Auto-calculate nice bounds
-      // Start from 0 if all data is positive (common UX pattern)
-      final effectiveMinY = dataMinY >= 0 ? 0.0 : dataMinY;
-      final effectiveMaxY = dataMaxY;
-      
-      // Calculate nice interval
-      final yInterval = yAxisConfig.interval ?? 
-          AxisCalculator.calculateNiceInterval(
-            effectiveMinY, 
-            effectiveMaxY, 
-            yAxisConfig.desiredIntervals,
-          );
-      
-      // Round to nice bounds
-      minY = yAxisConfig.min ?? _roundDownToInterval(effectiveMinY, yInterval);
-      maxY = yAxisConfig.max ?? _roundUpToInterval(effectiveMaxY, yInterval);
-      
-      // Ensure adequate headroom: if data max is too close to axis max,
-      // add one more interval to prevent cramped appearance
-      final headroom = maxY - dataMaxY;
-      if (headroom < yInterval * 0.15 && yAxisConfig.max == null) {
-        maxY += yInterval;
-      }
-    }
-
-    return _NiceAxisBounds(minX: minX, maxX: maxX, minY: minY, maxY: maxY);
-  }
-
-  /// Rounds value down to nearest interval multiple.
-  double _roundDownToInterval(double value, double interval) {
-    if (interval <= 0) return value;
-    return (value / interval).floor() * interval;
-  }
-
-  /// Rounds value up to nearest interval multiple.
-  double _roundUpToInterval(double value, double interval) {
-    if (interval <= 0) return value;
-    return (value / interval).ceil() * interval;
   }
 }

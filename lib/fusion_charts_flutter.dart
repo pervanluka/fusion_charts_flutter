@@ -331,6 +331,9 @@ export 'src/utils/lttb_downsampler.dart';
 /// DateTime utilities for time-based charts.
 export 'src/utils/fusion_datetime_utils.dart';
 
+/// Chart bounds calculator for consistent axis bounds across all chart types.
+export 'src/utils/chart_bounds_calculator.dart';
+
 // ============================================================================
 // RENDERING (Advanced Usage)
 // ============================================================================
