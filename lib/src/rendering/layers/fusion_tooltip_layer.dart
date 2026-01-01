@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../../configuration/fusion_tooltip_configuration.dart';
 import '../../core/enums/fusion_tooltip_position.dart';
 import '../../data/fusion_data_point.dart';
-import '../../utils/fusion_data_formatter.dart';
 import '../../series/fusion_series.dart';
 import '../../series/series_with_data_points.dart';
+import '../../utils/fusion_data_formatter.dart';
 import '../engine/fusion_render_context.dart';
 import 'fusion_render_layer.dart';
 
@@ -169,7 +170,7 @@ class FusionTooltipLayer extends FusionRenderLayer {
     List<SharedTooltipPoint> sharedPoints,
   ) {
     final theme = context.theme;
-    
+
     // Use theme background color as fallback
     final bgColor = tooltipBehavior.color ?? theme.tooltipBackgroundColor;
     final effectiveTextColor = _getContrastingTextColor(bgColor);
@@ -496,7 +497,8 @@ class FusionTooltipLayer extends FusionRenderLayer {
         (entries.length * (lineHeight + rowSpacing)) - rowSpacing + padding.vertical;
 
     // Use average X position for tooltip placement
-    double avgX = entries.map((e) => e.screenPosition.dx).reduce((a, b) => a + b) / entries.length;
+    final double avgX =
+        entries.map((e) => e.screenPosition.dx).reduce((a, b) => a + b) / entries.length;
 
     final tooltipPosition = _calculateAnchoredPosition(
       dataPointScreenX: avgX,
@@ -589,7 +591,7 @@ class FusionTooltipLayer extends FusionRenderLayer {
 
     // Horizontal position: centered on data point X
     double tooltipX = dataPointScreenX - tooltipWidth / 2;
-    
+
     // Only clamp to stay within chart bounds, no extra padding
     final minX = chartArea.left;
     final maxX = chartArea.right - tooltipWidth;
@@ -902,22 +904,18 @@ class FusionTooltipLayer extends FusionRenderLayer {
         path.moveTo(corner.dx, corner.dy - size);
         path.lineTo(corner.dx - diagOffset, corner.dy + diagOffset);
         path.lineTo(corner.dx + size, corner.dy);
-        break;
       case ArrowDirection.bottomRight:
         path.moveTo(corner.dx - size, corner.dy);
         path.lineTo(corner.dx + diagOffset, corner.dy + diagOffset);
         path.lineTo(corner.dx, corner.dy - size);
-        break;
       case ArrowDirection.topLeft:
         path.moveTo(corner.dx + size, corner.dy);
         path.lineTo(corner.dx - diagOffset, corner.dy - diagOffset);
         path.lineTo(corner.dx, corner.dy + size);
-        break;
       case ArrowDirection.topRight:
         path.moveTo(corner.dx, corner.dy + size);
         path.lineTo(corner.dx + diagOffset, corner.dy - diagOffset);
         path.lineTo(corner.dx - size, corner.dy);
-        break;
     }
   }
 

@@ -18,15 +18,13 @@ import '../base/fusion_axis_base.dart';
 class FusionCategoryAxis extends FusionAxisBase {
   /// Creates a category axis.
   const FusionCategoryAxis({
-    // Base properties
+    // Category-specific
+    required this.categories, // Base properties
     super.name,
     super.title,
     super.titleStyle,
     super.opposedPosition,
     super.isInversed,
-
-    // Category-specific
-    required this.categories,
     this.labelAlignment = LabelAlignment.center,
   }) : assert(categories.length > 0, 'Categories cannot be empty');
 

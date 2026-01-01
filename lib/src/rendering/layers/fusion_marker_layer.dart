@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
 import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+
 import '../../core/enums/marker_shape.dart';
 import '../../series/fusion_series.dart';
-import '../engine/fusion_render_context.dart';
 import '../../series/series_with_data_points.dart';
+import '../engine/fusion_render_context.dart';
 import 'fusion_render_layer.dart';
 
 /// Renders data point markers on charts.
@@ -194,28 +196,22 @@ class FusionMarkerLayer extends FusionRenderLayer {
     switch (shape) {
       case MarkerShape.circle:
         canvas.drawCircle(position, radius, paint);
-        break;
 
       case MarkerShape.square:
         final rect = Rect.fromCenter(center: position, width: size, height: size);
         canvas.drawRect(rect, paint);
-        break;
 
       case MarkerShape.triangle:
         _drawTriangle(canvas, position, radius, paint);
-        break;
 
       case MarkerShape.diamond:
         _drawDiamond(canvas, position, radius, paint);
-        break;
 
       case MarkerShape.cross:
         _drawCross(canvas, position, radius, paint);
-        break;
 
       case MarkerShape.x:
         _drawStar(canvas, position, radius, paint);
-        break;
     }
   }
 

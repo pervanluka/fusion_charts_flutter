@@ -1,13 +1,12 @@
-// lib/src/configuration/fusion_stacked_bar_chart_configuration.dart
-
 import 'package:flutter/material.dart';
+
 import '../themes/fusion_chart_theme.dart';
 import 'fusion_chart_configuration.dart';
-import 'fusion_tooltip_configuration.dart';
 import 'fusion_crosshair_configuration.dart';
 import 'fusion_pan_configuration.dart';
-import 'fusion_zoom_configuration.dart';
 import 'fusion_stacked_tooltip_builder.dart';
+import 'fusion_tooltip_configuration.dart';
+import 'fusion_zoom_configuration.dart';
 
 /// Configuration specifically for stacked bar charts.
 ///
@@ -25,7 +24,7 @@ import 'fusion_stacked_tooltip_builder.dart';
 ///     // Base settings
 ///     theme: FusionDarkTheme(),
 ///     enableAnimation: true,
-///     
+///
 ///     // Stacked bar-specific settings
 ///     isStacked100: true,  // 100% stacked mode
 ///     barWidthRatio: 0.7,
@@ -48,7 +47,7 @@ import 'fusion_stacked_tooltip_builder.dart';
 ///       total: info.totalValue,
 ///     );
 ///   },
-///   
+///
 ///   // Or just customize formatting
 ///   tooltipValueFormatter: (value, segment, info) {
 ///     return '${segment.percentage.toStringAsFixed(1)}%';
@@ -90,8 +89,8 @@ class FusionStackedBarChartConfiguration extends FusionChartConfiguration {
     this.tooltipBuilder,
     this.tooltipValueFormatter,
     this.tooltipTotalFormatter,
-  })  : assert(barWidthRatio > 0 && barWidthRatio <= 1, 'barWidthRatio must be between 0 and 1'),
-        assert(borderRadius >= 0, 'borderRadius must be non-negative');
+  }) : assert(barWidthRatio > 0 && barWidthRatio <= 1, 'barWidthRatio must be between 0 and 1'),
+       assert(borderRadius >= 0, 'borderRadius must be non-negative');
 
   // ==========================================================================
   // STACKED BAR-SPECIFIC SETTINGS

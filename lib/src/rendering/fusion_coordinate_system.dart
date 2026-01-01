@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' show immutable, Rect, Offset;
+import 'package:flutter/material.dart' show Offset, Rect, immutable;
 
 import '../data/fusion_data_point.dart';
 
@@ -298,7 +298,7 @@ class FusionCoordinateSystem {
         'dataX: [$dataXMin, $dataXMax], '
         'dataY: [$dataYMin, $dataYMax], '
         'scale: ${scaleX.toStringAsFixed(2)}x${scaleY.toStringAsFixed(2)}, '
-        'dpi: ${devicePixelRatio}x'
+        'dpi: ${devicePixelRatio}x '
         ')';
   }
 }

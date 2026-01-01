@@ -372,10 +372,8 @@ class FusionPieSeries {
     switch (sortMode) {
       case PieSortMode.ascending:
         sorted.sort((a, b) => a.value.compareTo(b.value));
-        break;
       case PieSortMode.descending:
         sorted.sort((a, b) => b.value.compareTo(a.value));
-        break;
       case PieSortMode.none:
         break;
     }
@@ -403,11 +401,7 @@ class FusionPieSeries {
     }
 
     if (otherValue > 0) {
-      main.add(FusionPieDataPoint(
-        otherValue,
-        label: groupLabel,
-        color: groupColor,
-      ));
+      main.add(FusionPieDataPoint(otherValue, label: groupLabel, color: groupColor));
     }
 
     return main;

@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/src/rendering/painters/fusion_bar_chart_painter.dart';
-import '../series/fusion_bar_series.dart';
-import '../configuration/fusion_chart_configuration.dart';
-import '../configuration/fusion_bar_chart_configuration.dart';
+
 import '../configuration/fusion_axis_configuration.dart';
-import '../configuration/fusion_tooltip_configuration.dart';
+import '../configuration/fusion_bar_chart_configuration.dart';
+import '../configuration/fusion_chart_configuration.dart';
 import '../configuration/fusion_crosshair_configuration.dart';
 import '../configuration/fusion_pan_configuration.dart';
+import '../configuration/fusion_tooltip_configuration.dart';
 import '../configuration/fusion_zoom_configuration.dart';
 import '../data/fusion_data_point.dart';
-import '../rendering/fusion_coordinate_system.dart';
 import '../rendering/engine/fusion_paint_pool.dart';
 import '../rendering/engine/fusion_shader_cache.dart';
-import '../utils/fusion_margin_calculator.dart';
+import '../rendering/fusion_coordinate_system.dart';
+import '../series/fusion_bar_series.dart';
 import '../utils/chart_bounds_calculator.dart';
-import 'fusion_bar_interactive_state.dart';
+import '../utils/fusion_margin_calculator.dart';
 import 'base/fusion_chart_header.dart';
+import 'fusion_bar_interactive_state.dart';
 
 /// A professional bar chart widget with Syncfusion-style features.
 ///
@@ -59,8 +60,8 @@ import 'base/fusion_chart_header.dart';
 /// ```
 class FusionBarChart extends StatefulWidget {
   const FusionBarChart({
-    super.key,
     required this.series,
+    super.key,
     this.config,
     this.xAxis,
     this.yAxis,
@@ -198,7 +199,7 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
       yAxisConfig: widget.yAxis,
       startFromZero: true,
     );
-    
+
     return FusionCoordinateSystem(
       chartArea: const Rect.fromLTWH(60, 10, 300, 200),
       dataXMin: -0.5,
@@ -348,7 +349,7 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
     final pointCount = widget.series.first.dataPoints.length;
 
     // Coordinate system: bars centered at 0, 1, 2, 3...
-    final minX = -0.5;
+    const minX = -0.5;
     final maxX = pointCount - 0.5;
 
     // For margin calculation, use the actual label values (first and last x values)

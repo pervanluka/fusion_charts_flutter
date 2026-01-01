@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../themes/fusion_chart_theme.dart';
+
 import '../configuration/fusion_axis_configuration.dart';
 import '../data/fusion_data_point.dart';
+import '../themes/fusion_chart_theme.dart';
 
 /// Base class for all Fusion chart painters.
 ///
@@ -193,8 +194,8 @@ abstract class FusionChartPainterBase extends CustomPainter {
   void _calculateLayout(Size size) {
     // Calculate margins for axes and labels
     final leftMargin = enableAxis ? 60.0 : 10.0;
-    final rightMargin = 10.0;
-    final topMargin = 10.0;
+    const rightMargin = 10.0;
+    const topMargin = 10.0;
     final bottomMargin = enableAxis ? 40.0 : 10.0;
 
     // Chart area is the drawing area minus margins

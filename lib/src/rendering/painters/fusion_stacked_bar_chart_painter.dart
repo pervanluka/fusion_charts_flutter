@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 
 import '../../charts/fusion_stacked_bar_interactive_state.dart';
-import '../engine/fusion_render_pipeline.dart';
-import '../engine/fusion_render_context.dart';
 import '../engine/fusion_paint_pool.dart';
+import '../engine/fusion_render_context.dart';
+import '../engine/fusion_render_pipeline.dart';
 import '../engine/fusion_shader_cache.dart';
+import '../layers/fusion_crosshair_layer.dart';
 import '../layers/fusion_render_layer.dart';
 import '../layers/fusion_stacked_bar_series_renderer.dart';
 import '../layers/fusion_stacked_tooltip_layer.dart';
-import '../layers/fusion_crosshair_layer.dart';
 
 /// Painter for stacked bar charts.
 ///
@@ -101,7 +101,7 @@ class FusionStackedBarChartPainter extends CustomPainter {
         // Crosshair
         if (crosshairPosition != null && effectiveConfig.enableCrosshair)
           FusionCrosshairLayer(
-            position: crosshairPosition!,
+            position: crosshairPosition,
             snappedPoint: crosshairPoint,
             crosshairConfig: effectiveConfig.crosshairBehavior,
           ),
@@ -182,9 +182,9 @@ class FusionStackedBarChartPainter extends CustomPainter {
     }
 
     final pointCount = series.first.dataPoints.length;
-    final minX = -0.5;
+    const minX = -0.5;
     final maxX = pointCount - 0.5;
-    final minY = 0.0;
+    const minY = 0.0;
     final maxY = isStacked100 ? 100.0 : _calculateStackedMaxY();
 
     return Rect.fromLTRB(minX, minY, maxX, maxY);

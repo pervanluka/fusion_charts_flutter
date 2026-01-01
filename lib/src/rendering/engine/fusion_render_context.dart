@@ -286,7 +286,7 @@ class FusionRenderContext {
   String toString() {
     return 'FusionRenderContext('
         'chartArea: $chartArea, '
-        'animation: ${(animationProgress * 100).toStringAsFixed(0)}%'
+        'animation: ${(animationProgress * 100).toStringAsFixed(0)}% '
         ')';
   }
 }

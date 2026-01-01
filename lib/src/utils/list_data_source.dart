@@ -299,7 +299,7 @@ class ListDataSource {
     for (final point in _processedData) {
       varianceSum += (point.y - meanY) * (point.y - meanY);
     }
-    final stdDevY = (varianceSum / _processedData.length);
+    final stdDevY = varianceSum / _processedData.length;
 
     return DataStatistics(
       count: _processedData.length,

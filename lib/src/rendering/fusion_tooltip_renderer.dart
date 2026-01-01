@@ -1,15 +1,17 @@
-import 'package:flutter/material.dart';
-import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 import 'dart:async';
+
+import 'package:flutter/material.dart';
+
+import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 
 /// Internal tooltip renderer widget
 /// Handles animation, positioning, and rendering
 class FusionTooltipRenderer extends StatefulWidget {
   const FusionTooltipRenderer({
-    super.key,
     required this.behavior,
     required this.renderData,
     required this.chartSize,
+    super.key,
   });
 
   final FusionTooltipBehavior behavior;

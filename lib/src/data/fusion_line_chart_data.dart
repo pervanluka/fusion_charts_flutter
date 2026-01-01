@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Color;
-import '../series/fusion_line_series.dart';
+
 import '../configuration/fusion_axis_configuration.dart';
+import '../series/fusion_line_series.dart';
 
 /// Data model for line charts.
 ///

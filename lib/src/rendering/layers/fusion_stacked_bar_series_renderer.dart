@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../engine/fusion_render_context.dart';
+
 import '../../series/fusion_stacked_bar_series.dart';
+import '../engine/fusion_render_context.dart';
 
 /// Renderer for stacked bar series.
 ///
@@ -421,7 +422,7 @@ class FusionStackedBarSeriesRenderer {
     double borderRadius,
   ) {
     final borderPaint = context.getPaint(
-      color: series.borderColor!,
+      color: series.borderColor,
       strokeWidth: series.borderWidth,
       style: PaintingStyle.stroke,
     );

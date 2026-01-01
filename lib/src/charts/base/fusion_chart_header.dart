@@ -16,9 +16,9 @@ import '../../themes/fusion_chart_theme.dart';
 /// ```
 class FusionChartTitle extends StatelessWidget {
   const FusionChartTitle({
-    super.key,
     required this.title,
     required this.theme,
+    super.key,
     this.style,
     this.padding = const EdgeInsets.only(bottom: 8),
     this.textAlign = TextAlign.center,
@@ -43,11 +43,7 @@ class FusionChartTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: padding,
-      child: Text(
-        title,
-        style: style ?? theme.titleStyle,
-        textAlign: textAlign,
-      ),
+      child: Text(title, style: style ?? theme.titleStyle, textAlign: textAlign),
     );
   }
 }
@@ -67,9 +63,9 @@ class FusionChartTitle extends StatelessWidget {
 /// ```
 class FusionChartSubtitle extends StatelessWidget {
   const FusionChartSubtitle({
-    super.key,
     required this.subtitle,
     required this.theme,
+    super.key,
     this.style,
     this.padding = const EdgeInsets.only(bottom: 16),
     this.textAlign = TextAlign.center,
@@ -94,11 +90,7 @@ class FusionChartSubtitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: padding,
-      child: Text(
-        subtitle,
-        style: style ?? theme.subtitleStyle,
-        textAlign: textAlign,
-      ),
+      child: Text(subtitle, style: style ?? theme.subtitleStyle, textAlign: textAlign),
     );
   }
 }

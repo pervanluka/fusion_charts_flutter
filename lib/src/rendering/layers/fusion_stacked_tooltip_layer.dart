@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../../charts/fusion_stacked_bar_interactive_state.dart';
-import '../../configuration/fusion_tooltip_configuration.dart' show FusionTooltipBehavior;
 import '../../configuration/fusion_stacked_tooltip_builder.dart';
+import '../../configuration/fusion_tooltip_configuration.dart' show FusionTooltipBehavior;
 import '../../themes/fusion_chart_theme.dart';
 import '../engine/fusion_render_context.dart';
 

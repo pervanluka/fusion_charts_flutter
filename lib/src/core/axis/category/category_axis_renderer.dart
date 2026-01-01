@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
 
 import '../../../configuration/fusion_axis_configuration.dart';
 import '../../../themes/fusion_chart_theme.dart';
@@ -80,11 +81,7 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
     for (int i = 0; i < categories.length; i++) {
       final position = categories.length > 1 ? i / (categories.length - 1) : 0.5;
 
-      labels.add(AxisLabel(
-        value: i.toDouble(),
-        text: categories[i],
-        position: position,
-      ));
+      labels.add(AxisLabel(value: i.toDouble(), text: categories[i], position: position));
     }
 
     _cachedLabels = labels;
@@ -206,18 +203,10 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
 
       if (isVertical) {
         final y = axisArea.bottom - (position * axisArea.height);
-        canvas.drawLine(
-          Offset(axisArea.right, y),
-          Offset(axisArea.right + tickLength, y),
-          paint,
-        );
+        canvas.drawLine(Offset(axisArea.right, y), Offset(axisArea.right + tickLength, y), paint);
       } else {
         final x = axisArea.left + (position * axisArea.width);
-        canvas.drawLine(
-          Offset(x, axisArea.top),
-          Offset(x, axisArea.top + tickLength),
-          paint,
-        );
+        canvas.drawLine(Offset(x, axisArea.top), Offset(x, axisArea.top + tickLength), paint);
       }
     }
   }
@@ -225,10 +214,7 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
   void _drawLabels(Canvas canvas, Rect axisArea) {
     final labels = _cachedLabels ?? generateLabels(_cachedBounds!);
 
-    final textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-      textAlign: TextAlign.center,
-    );
+    final textPainter = TextPainter(textDirection: TextDirection.ltr, textAlign: TextAlign.center);
 
     final labelStyle =
         configuration.labelStyle ?? theme?.axisLabelStyle ?? const TextStyle(fontSize: 12);
@@ -247,10 +233,7 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
       Offset labelPosition;
       if (isVertical) {
         final y = axisArea.bottom - (position * axisArea.height);
-        labelPosition = Offset(
-          axisArea.left - textPainter.width - 8,
-          y - (textPainter.height / 2),
-        );
+        labelPosition = Offset(axisArea.left - textPainter.width - 8, y - (textPainter.height / 2));
       } else {
         final x = axisArea.left + (position * axisArea.width);
 
@@ -267,12 +250,9 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
         canvas.rotate(rotation * (math.pi / 180));
 
         if (!isVertical) {
-          textPainter.paint(canvas, const Offset(0, 0));
+          textPainter.paint(canvas, Offset.zero);
         } else {
-          textPainter.paint(
-            canvas,
-            Offset(-textPainter.width / 2, -textPainter.height / 2),
-          );
+          textPainter.paint(canvas, Offset(-textPainter.width / 2, -textPainter.height / 2));
         }
 
         canvas.restore();
@@ -287,9 +267,8 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
     if (!configuration.showGrid) return;
 
     final paint = Paint()
-      ..color = configuration.majorGridColor ??
-          theme?.gridColor ??
-          Colors.grey.withValues(alpha: 0.3)
+      ..color =
+          configuration.majorGridColor ?? theme?.gridColor ?? Colors.grey.withValues(alpha: 0.3)
       ..strokeWidth = configuration.majorGridWidth ?? 0.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.square;
@@ -301,19 +280,11 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
       if (isVertical) {
         final y = plotArea.bottom - (position * plotArea.height);
         final snappedY = y.roundToDouble();
-        canvas.drawLine(
-          Offset(plotArea.left, snappedY),
-          Offset(plotArea.right, snappedY),
-          paint,
-        );
+        canvas.drawLine(Offset(plotArea.left, snappedY), Offset(plotArea.right, snappedY), paint);
       } else {
         final x = plotArea.left + (position * plotArea.width);
         final snappedX = x.roundToDouble();
-        canvas.drawLine(
-          Offset(snappedX, plotArea.top),
-          Offset(snappedX, plotArea.bottom),
-          paint,
-        );
+        canvas.drawLine(Offset(snappedX, plotArea.top), Offset(snappedX, plotArea.bottom), paint);
       }
     }
   }

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'fusion_render_layer.dart';
-import 'fusion_bar_series_renderer.dart';
-import '../engine/fusion_render_context.dart';
-import '../../series/series_with_data_points.dart';
-import '../../series/fusion_line_series.dart';
-import '../../series/fusion_bar_series.dart';
-import '../fusion_path_builder.dart';
+
 import '../../data/fusion_data_point.dart';
+import '../../series/fusion_bar_series.dart';
+import '../../series/fusion_line_series.dart';
+import '../../series/series_with_data_points.dart';
+import '../engine/fusion_render_context.dart';
+import '../fusion_path_builder.dart';
+import 'fusion_bar_series_renderer.dart';
+import 'fusion_render_layer.dart';
 
 /// Renders all chart series (lines, bars, areas, etc.).
 ///

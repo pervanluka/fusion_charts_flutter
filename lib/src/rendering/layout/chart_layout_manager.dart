@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+
 import '../../configuration/fusion_legend_configuration.dart';
 import '../../core/axis/base/fusion_axis_renderer.dart';
-import '../../themes/fusion_chart_theme.dart';
 import '../../data/fusion_data_point.dart';
+import '../../themes/fusion_chart_theme.dart';
 import 'chart_layout.dart';
 
 /// Manages chart layout calculation.
@@ -213,8 +214,8 @@ class ChartLayoutManager {
     if (legend == null || series.isEmpty) return null;
 
     // Calculate based on series count and legend style
-    final itemHeight = 24.0;
-    final itemWidth = 120.0;
+    const itemHeight = 24.0;
+    const itemWidth = 120.0;
 
     switch (legend!.position) {
       case FusionLegendPosition.right:

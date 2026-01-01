@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
 import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
+
 import '../../../configuration/fusion_axis_configuration.dart';
 import '../../../themes/fusion_chart_theme.dart';
 import '../../models/axis_bounds.dart';
@@ -621,8 +623,7 @@ enum _IntervalUnit {
 
 /// Result of interval calculation with detected unit.
 class _IntervalResult {
+  const _IntervalResult(this.intervalMs, this.unit);
   final double intervalMs;
   final _IntervalUnit unit;
-
-  const _IntervalResult(this.intervalMs, this.unit);
 }

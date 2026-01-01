@@ -64,7 +64,7 @@ class FusionDateTimeUtils {
     if (value <= 15) return 15;
     if (value <= 30) return 30;
     if (value <= 60) return 60;
-    return ((value / 60).ceil() * 60); // Round to next hour
+    return (value / 60).ceil() * 60; // Round to next hour
   }
 
   /// Generates a list of DateTime values at regular intervals.

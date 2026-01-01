@@ -402,10 +402,7 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
     }
 
     // Position tooltip at the top center of the stack
-    final tooltipPosition = Offset(
-      hitResult.stackRect.center.dx,
-      hitResult.stackRect.top,
-    );
+    final tooltipPosition = Offset(hitResult.stackRect.center.dx, hitResult.stackRect.top);
 
     _tooltipData = StackedTooltipData(
       categoryLabel: hitResult.categoryLabel,
@@ -447,24 +444,24 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
     _crosshairPosition = position;
     notifyListeners();
   }
-  
+
   /// Updates crosshair position during drag, with coordinate system clamping.
   void _updateCrosshairPosition(Offset position) {
     _crosshairHideTimer?.cancel();
-    
+
     // CRITICAL FIX: Clamp in data space using coordinate system
     // This is more natural than clamping to pixel bounds
     final dataX = _currentCoordSystem.screenXToDataX(position.dx);
     final dataY = _currentCoordSystem.screenYToDataY(position.dy);
-    
+
     final clampedDataX = dataX.clamp(_currentCoordSystem.dataXMin, _currentCoordSystem.dataXMax);
     final clampedDataY = dataY.clamp(_currentCoordSystem.dataYMin, _currentCoordSystem.dataYMax);
-    
+
     final clampedPosition = Offset(
       _currentCoordSystem.dataXToScreenX(clampedDataX),
       _currentCoordSystem.dataYToScreenY(clampedDataY),
     );
-    
+
     _crosshairPosition = clampedPosition;
     notifyListeners();
   }
@@ -476,12 +473,10 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
       notifyListeners();
     }
   }
-  
+
   void _startCrosshairHideTimer(Duration delay) {
     _crosshairHideTimer?.cancel();
-    _crosshairHideTimer = Timer(delay, () {
-      _hideCrosshair();
-    });
+    _crosshairHideTimer = Timer(delay, _hideCrosshair);
   }
 
   // ========================================================================
@@ -494,29 +489,28 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
 
     if (config.enableTooltip || config.enableSelection) {
       recognizers[TapGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
-            () => TapGestureRecognizer(),
-            (recognizer) {
-              recognizer.onTapDown = (details) {
-                final hitResult = _hitTester.hitTest(
-                  screenPosition: details.localPosition,
-                  allSeries: series,
-                  coordSystem: _currentCoordSystem,
-                  isStacked100: isStacked100,
-                );
+          GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(TapGestureRecognizer.new, (
+            recognizer,
+          ) {
+            recognizer.onTapDown = (details) {
+              final hitResult = _hitTester.hitTest(
+                screenPosition: details.localPosition,
+                allSeries: series,
+                coordSystem: _currentCoordSystem,
+                isStacked100: isStacked100,
+              );
 
-                if (hitResult != null && config.enableTooltip) {
-                  _showTooltip(hitResult);
-                }
-              };
-            },
-          );
+              if (hitResult != null && config.enableTooltip) {
+                _showTooltip(hitResult);
+              }
+            };
+          });
     }
 
     if (config.enableCrosshair) {
       recognizers[LongPressGestureRecognizer] =
           GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
-            () => LongPressGestureRecognizer(),
+            LongPressGestureRecognizer.new,
             (recognizer) {
               recognizer
                 ..onLongPressStart = (details) {
@@ -549,76 +543,73 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
     // Use ScaleGestureRecognizer when both zoom and pan are enabled
     if (config.enableZoom && config.enablePanning) {
       recognizers[ScaleGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
-            () => ScaleGestureRecognizer(),
-            (recognizer) {
-              recognizer
-                ..onStart = (details) {
-                  _handleScaleStart(details.localFocalPoint);
+          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(ScaleGestureRecognizer.new, (
+            recognizer,
+          ) {
+            recognizer
+              ..onStart = (details) {
+                _handleScaleStart(details.localFocalPoint);
+              }
+              ..onUpdate = (details) {
+                if (details.scale == 1.0) {
+                  // Pan gesture
+                  if (!_isPanning) {
+                    _handlePanStart(details.localFocalPoint);
+                  }
+                  if (_lastPointerPosition != null) {
+                    final delta = details.localFocalPoint - _lastPointerPosition!;
+                    _handlePanUpdate(delta);
+                  }
+                  _lastPointerPosition = details.localFocalPoint;
+                } else {
+                  // Pinch zoom
+                  _handleScaleUpdate(details.scale, details.localFocalPoint);
                 }
-                ..onUpdate = (details) {
-                  if (details.scale == 1.0) {
-                    // Pan gesture
-                    if (!_isPanning) {
-                      _handlePanStart(details.localFocalPoint);
-                    }
-                    if (_lastPointerPosition != null) {
-                      final delta = details.localFocalPoint - _lastPointerPosition!;
-                      _handlePanUpdate(delta);
-                    }
-                    _lastPointerPosition = details.localFocalPoint;
-                  } else {
-                    // Pinch zoom
-                    _handleScaleUpdate(details.scale, details.localFocalPoint);
-                  }
+              }
+              ..onEnd = (details) {
+                if (_isPanning) {
+                  _handlePanEnd();
                 }
-                ..onEnd = (details) {
-                  if (_isPanning) {
-                    _handlePanEnd();
-                  }
-                  if (_isZooming) {
-                    _handleScaleEnd();
-                  }
-                  _lastPointerPosition = null;
-                };
-            },
-          );
+                if (_isZooming) {
+                  _handleScaleEnd();
+                }
+                _lastPointerPosition = null;
+              };
+          });
     } else if (config.enablePanning) {
       recognizers[PanGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(
-            () => PanGestureRecognizer(),
-            (recognizer) {
-              recognizer
-                ..onStart = (details) {
-                  _handlePanStart(details.localPosition);
-                }
-                ..onUpdate = (details) {
-                  _handlePanUpdate(details.delta);
-                }
-                ..onEnd = (details) {
-                  _handlePanEnd();
-                };
-            },
-          );
+          GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(PanGestureRecognizer.new, (
+            recognizer,
+          ) {
+            recognizer
+              ..onStart = (details) {
+                _handlePanStart(details.localPosition);
+              }
+              ..onUpdate = (details) {
+                _handlePanUpdate(details.delta);
+              }
+              ..onEnd = (details) {
+                _handlePanEnd();
+              };
+          });
     } else if (config.enableZoom) {
       recognizers[ScaleGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
-            () => ScaleGestureRecognizer(),
-            (recognizer) {
-              recognizer
-                ..onStart = (details) {
-                  _handleScaleStart(details.localFocalPoint);
+          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(ScaleGestureRecognizer.new, (
+            recognizer,
+          ) {
+            recognizer
+              ..onStart = (details) {
+                _handleScaleStart(details.localFocalPoint);
+              }
+              ..onUpdate = (details) {
+                if (details.scale != 1.0) {
+                  _handleScaleUpdate(details.scale, details.localFocalPoint);
                 }
-                ..onUpdate = (details) {
-                  if (details.scale != 1.0) {
-                    _handleScaleUpdate(details.scale, details.localFocalPoint);
-                  }
-                }
-                ..onEnd = (details) {
-                  _handleScaleEnd();
-                };
-            },
-          );
+              }
+              ..onEnd = (details) {
+                _handleScaleEnd();
+              };
+          });
     }
 
     return recognizers;

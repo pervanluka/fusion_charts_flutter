@@ -6,24 +6,18 @@ void main() {
     group('calculateNiceInterval', () {
       test('returns nice interval for typical range', () {
         // Import the internal utility via ChartBoundsCalculator
-        final bounds = ChartBoundsCalculator.calculateNiceYBounds(
-          dataMinY: 0,
-          dataMaxY: 100,
-        );
-        
+        final bounds = ChartBoundsCalculator.calculateNiceYBounds(dataMinY: 0, dataMaxY: 100);
+
         // Should produce nice intervals like 20, 25, etc.
         final interval = bounds.maxY / 5; // Rough estimate
         expect(interval, greaterThan(0));
       });
 
       test('handles very small ranges', () {
-        final bounds = ChartBoundsCalculator.calculateNiceYBounds(
-          dataMinY: 0.001,
-          dataMaxY: 0.005,
-        );
-        
+        final bounds = ChartBoundsCalculator.calculateNiceYBounds(dataMinY: 0.001, dataMaxY: 0.005);
+
         expect(bounds.maxY, greaterThan(bounds.minY));
-        expect((bounds.maxY - bounds.minY), greaterThan(0));
+        expect(bounds.maxY - bounds.minY, greaterThan(0));
       });
 
       test('handles very large ranges', () {
@@ -31,7 +25,7 @@ void main() {
           dataMinY: 0,
           dataMaxY: 1000000000,
         );
-        
+
         expect(bounds.maxY.isFinite, true);
         expect(bounds.maxY, greaterThanOrEqualTo(1000000000));
       });
@@ -41,44 +35,29 @@ void main() {
   group('FusionAxisConfiguration', () {
     group('validation', () {
       test('validates correct configuration', () {
-        const config = FusionAxisConfiguration(
-          min: 0,
-          max: 100,
-          interval: 20,
-        );
-        
+        const config = FusionAxisConfiguration(min: 0, max: 100, interval: 20);
+
         expect(config.validate(), true);
         expect(config.getValidationError(), isNull);
       });
 
       test('rejects min >= max', () {
-        const config = FusionAxisConfiguration(
-          min: 100,
-          max: 50,
-        );
-        
+        const config = FusionAxisConfiguration(min: 100, max: 50);
+
         expect(config.validate(), false);
         expect(config.getValidationError(), contains('min'));
       });
 
       test('rejects zero interval', () {
-        const config = FusionAxisConfiguration(
-          min: 0,
-          max: 100,
-          interval: 0,
-        );
-        
+        const config = FusionAxisConfiguration(min: 0, max: 100, interval: 0);
+
         expect(config.validate(), false);
         expect(config.getValidationError(), contains('interval'));
       });
 
       test('rejects negative interval', () {
-        const config = FusionAxisConfiguration(
-          min: 0,
-          max: 100,
-          interval: -10,
-        );
-        
+        const config = FusionAxisConfiguration(min: 0, max: 100, interval: -10);
+
         expect(config.validate(), false);
       });
 
@@ -86,16 +65,14 @@ void main() {
         const config = FusionAxisConfiguration(
           rangePadding: 1.5, // > 1.0
         );
-        
+
         expect(config.validate(), false);
         expect(config.getValidationError(), contains('rangePadding'));
       });
 
       test('rejects negative range padding', () {
-        const config = FusionAxisConfiguration(
-          rangePadding: -0.1,
-        );
-        
+        const config = FusionAxisConfiguration(rangePadding: -0.1);
+
         expect(config.validate(), false);
       });
     });
@@ -154,14 +131,10 @@ void main() {
 
     group('copyWith', () {
       test('creates copy with modified values', () {
-        const original = FusionAxisConfiguration(
-          min: 0,
-          max: 100,
-          interval: 20,
-        );
-        
+        const original = FusionAxisConfiguration(min: 0, max: 100, interval: 20);
+
         final copy = original.copyWith(max: 200);
-        
+
         expect(copy.min, 0);
         expect(copy.max, 200);
         expect(copy.interval, 20);
@@ -174,9 +147,9 @@ void main() {
           showGrid: false,
           showLabels: true,
         );
-        
+
         final copy = original.copyWith(min: 0);
-        
+
         expect(copy.min, 0);
         expect(copy.max, 90);
         expect(copy.showGrid, false);
@@ -188,7 +161,7 @@ void main() {
       test('equal configurations are equal', () {
         const config1 = FusionAxisConfiguration(min: 0, max: 100);
         const config2 = FusionAxisConfiguration(min: 0, max: 100);
-        
+
         expect(config1, equals(config2));
         expect(config1.hashCode, equals(config2.hashCode));
       });
@@ -196,7 +169,7 @@ void main() {
       test('different configurations are not equal', () {
         const config1 = FusionAxisConfiguration(min: 0, max: 100);
         const config2 = FusionAxisConfiguration(min: 0, max: 200);
-        
+
         expect(config1, isNot(equals(config2)));
       });
     });
@@ -205,10 +178,8 @@ void main() {
   group('FusionTooltipBehavior', () {
     group('dismiss strategy helpers', () {
       test('shouldDismissOnRelease returns true for onRelease', () {
-        const behavior = FusionTooltipBehavior(
-          dismissStrategy: FusionDismissStrategy.onRelease,
-        );
-        
+        const behavior = FusionTooltipBehavior(dismissStrategy: FusionDismissStrategy.onRelease);
+
         expect(behavior.shouldDismissOnRelease(), true);
       });
 
@@ -216,41 +187,33 @@ void main() {
         const behavior = FusionTooltipBehavior(
           dismissStrategy: FusionDismissStrategy.onReleaseDelayed,
         );
-        
+
         expect(behavior.shouldDismissOnRelease(), true);
       });
 
       test('shouldDismissOnRelease returns false for never', () {
-        const behavior = FusionTooltipBehavior(
-          dismissStrategy: FusionDismissStrategy.never,
-        );
-        
+        const behavior = FusionTooltipBehavior(dismissStrategy: FusionDismissStrategy.never);
+
         expect(behavior.shouldDismissOnRelease(), false);
       });
 
       test('shouldUseTimer returns true for onTimer', () {
-        const behavior = FusionTooltipBehavior(
-          dismissStrategy: FusionDismissStrategy.onTimer,
-        );
-        
+        const behavior = FusionTooltipBehavior(dismissStrategy: FusionDismissStrategy.onTimer);
+
         expect(behavior.shouldUseTimer(), true);
       });
 
       test('shouldUseTimer returns false for onRelease', () {
-        const behavior = FusionTooltipBehavior(
-          dismissStrategy: FusionDismissStrategy.onRelease,
-        );
-        
+        const behavior = FusionTooltipBehavior(dismissStrategy: FusionDismissStrategy.onRelease);
+
         expect(behavior.shouldUseTimer(), false);
       });
     });
 
     group('getDismissDelay', () {
       test('returns zero for onRelease strategy', () {
-        const behavior = FusionTooltipBehavior(
-          dismissStrategy: FusionDismissStrategy.onRelease,
-        );
-        
+        const behavior = FusionTooltipBehavior(dismissStrategy: FusionDismissStrategy.onRelease);
+
         expect(behavior.getDismissDelay(false), Duration.zero);
       });
 
@@ -259,7 +222,7 @@ void main() {
           dismissStrategy: FusionDismissStrategy.onReleaseDelayed,
           dismissDelay: Duration(milliseconds: 500),
         );
-        
+
         expect(behavior.getDismissDelay(false), const Duration(milliseconds: 500));
       });
 
@@ -268,15 +231,13 @@ void main() {
           dismissStrategy: FusionDismissStrategy.onTimer,
           duration: Duration(seconds: 3),
         );
-        
+
         expect(behavior.getDismissDelay(false), const Duration(seconds: 3));
       });
 
       test('returns long duration for never strategy', () {
-        const behavior = FusionTooltipBehavior(
-          dismissStrategy: FusionDismissStrategy.never,
-        );
-        
+        const behavior = FusionTooltipBehavior(dismissStrategy: FusionDismissStrategy.never);
+
         final delay = behavior.getDismissDelay(false);
         expect(delay.inDays, greaterThanOrEqualTo(365));
       });
@@ -287,7 +248,7 @@ void main() {
           duration: Duration(seconds: 3),
           dismissDelay: Duration(milliseconds: 300),
         );
-        
+
         expect(behavior.getDismissDelay(true), const Duration(seconds: 3));
       });
 
@@ -297,7 +258,7 @@ void main() {
           duration: Duration(seconds: 3),
           dismissDelay: Duration(milliseconds: 300),
         );
-        
+
         expect(behavior.getDismissDelay(false), const Duration(milliseconds: 300));
       });
     });
@@ -308,11 +269,9 @@ void main() {
           enable: true,
           dismissStrategy: FusionDismissStrategy.onRelease,
         );
-        
-        final copy = original.copyWith(
-          dismissStrategy: FusionDismissStrategy.never,
-        );
-        
+
+        final copy = original.copyWith(dismissStrategy: FusionDismissStrategy.never);
+
         expect(copy.enable, true);
         expect(copy.dismissStrategy, FusionDismissStrategy.never);
       });
@@ -329,7 +288,7 @@ void main() {
           enablePanning: false,
           enableSelection: false,
         );
-        
+
         expect(config.hasAnyInteraction, true);
       });
 
@@ -341,7 +300,7 @@ void main() {
           enablePanning: false,
           enableSelection: false,
         );
-        
+
         expect(config.hasAnyInteraction, true);
       });
 
@@ -353,7 +312,7 @@ void main() {
           enablePanning: false,
           enableSelection: false,
         );
-        
+
         expect(config.hasAnyInteraction, true);
       });
 
@@ -365,23 +324,21 @@ void main() {
           enablePanning: false,
           enableSelection: false,
         );
-        
+
         expect(config.hasAnyInteraction, false);
       });
     });
 
     group('effectiveAnimationDuration', () {
       test('returns custom duration when set', () {
-        const config = FusionChartConfiguration(
-          animationDuration: Duration(seconds: 2),
-        );
-        
+        const config = FusionChartConfiguration(animationDuration: Duration(seconds: 2));
+
         expect(config.effectiveAnimationDuration, const Duration(seconds: 2));
       });
 
       test('returns default when not set', () {
         const config = FusionChartConfiguration();
-        
+
         // Default from FusionLightTheme is 1500ms
         expect(config.effectiveAnimationDuration, const Duration(milliseconds: 1500));
       });
@@ -389,16 +346,14 @@ void main() {
 
     group('effectiveAnimationCurve', () {
       test('returns custom curve when set', () {
-        const config = FusionChartConfiguration(
-          animationCurve: Curves.linear,
-        );
-        
+        const config = FusionChartConfiguration(animationCurve: Curves.linear);
+
         expect(config.effectiveAnimationCurve, Curves.linear);
       });
 
       test('returns default when not set', () {
         const config = FusionChartConfiguration();
-        
+
         // Default from FusionLightTheme is Curves.easeInOutCubic
         expect(config.effectiveAnimationCurve, Curves.easeInOutCubic);
       });
@@ -408,7 +363,7 @@ void main() {
   group('FusionDataPoint', () {
     test('creates point with x and y', () {
       final point = FusionDataPoint(10, 20);
-      
+
       expect(point.x, 10);
       expect(point.y, 20);
       expect(point.label, isNull);
@@ -416,7 +371,7 @@ void main() {
 
     test('creates point with label', () {
       final point = FusionDataPoint(10, 20, label: 'Test');
-      
+
       expect(point.x, 10);
       expect(point.y, 20);
       expect(point.label, 'Test');
@@ -426,7 +381,7 @@ void main() {
       final point1 = FusionDataPoint(10, 20);
       final point2 = FusionDataPoint(10, 20);
       final point3 = FusionDataPoint(10, 30);
-      
+
       expect(point1, equals(point2));
       expect(point1, isNot(equals(point3)));
     });
@@ -434,14 +389,14 @@ void main() {
     test('hashCode is consistent', () {
       final point1 = FusionDataPoint(10, 20);
       final point2 = FusionDataPoint(10, 20);
-      
+
       expect(point1.hashCode, equals(point2.hashCode));
     });
 
     test('toString returns readable string', () {
       final point = FusionDataPoint(10, 20, label: 'A');
       final str = point.toString();
-      
+
       expect(str, contains('10'));
       expect(str, contains('20'));
     });
@@ -454,19 +409,15 @@ void main() {
         dataPoints: [FusionDataPoint(0, 10)],
         color: const Color(0xFF0000FF),
       );
-      
+
       expect(series.name, 'Test');
       expect(series.dataPoints.length, 1);
       expect(series.visible, true);
     });
 
     test('defaults to visible true', () {
-      final series = FusionLineSeries(
-        name: 'Test',
-        dataPoints: [],
-        color: const Color(0xFF0000FF),
-      );
-      
+      final series = FusionLineSeries(name: 'Test', dataPoints: [], color: const Color(0xFF0000FF));
+
       expect(series.visible, true);
     });
 
@@ -477,7 +428,7 @@ void main() {
         color: const Color(0xFF0000FF),
         visible: false,
       );
-      
+
       expect(series.visible, false);
     });
 
@@ -489,7 +440,7 @@ void main() {
         isCurved: true,
         smoothness: 0.5,
       );
-      
+
       expect(series.isCurved, true);
       expect(series.smoothness, 0.5);
     });
@@ -502,7 +453,7 @@ void main() {
         showArea: true,
         areaOpacity: 0.3,
       );
-      
+
       expect(series.showArea, true);
       expect(series.areaOpacity, 0.3);
     });
@@ -515,7 +466,7 @@ void main() {
         dataPoints: [FusionDataPoint(0, 30, label: 'A')],
         color: const Color(0xFF0000FF),
       );
-      
+
       expect(series.name, 'Test');
       expect(series.dataPoints.length, 1);
     });
@@ -527,7 +478,7 @@ void main() {
         color: const Color(0xFF0000FF),
         borderRadius: 8.0,
       );
-      
+
       expect(series.borderRadius, 8.0);
     });
 
@@ -536,23 +487,17 @@ void main() {
         name: 'Gradient',
         dataPoints: [FusionDataPoint(0, 30)],
         color: const Color(0xFF0000FF),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0000FF), Color(0xFFFF0000)],
-        ),
+        gradient: const LinearGradient(colors: [Color(0xFF0000FF), Color(0xFFFF0000)]),
       );
-      
+
       expect(series.gradient, isNotNull);
     });
   });
 
   group('FusionPieDataPoint', () {
     test('creates point with value and label', () {
-      final point = FusionPieDataPoint(
-        30,
-        label: 'Slice A',
-        color: const Color(0xFF0000FF),
-      );
-      
+      final point = FusionPieDataPoint(30, label: 'Slice A', color: const Color(0xFF0000FF));
+
       expect(point.value, 30);
       expect(point.label, 'Slice A');
     });
@@ -564,7 +509,7 @@ void main() {
         color: const Color(0xFF0000FF),
         explode: true,
       );
-      
+
       expect(point.explode, true);
     });
   });

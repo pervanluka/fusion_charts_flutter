@@ -22,12 +22,12 @@ class FusionMarginCalculator {
   /// [minY], [maxY] - Y-axis data bounds
   static EdgeInsets calculate({
     required bool enableAxis,
-    FusionAxisConfiguration? xAxis,
-    FusionAxisConfiguration? yAxis,
     required double minX,
     required double maxX,
     required double minY,
     required double maxY,
+    FusionAxisConfiguration? xAxis,
+    FusionAxisConfiguration? yAxis,
   }) {
     // If axes are disabled, use minimal margins
     if (!enableAxis) {
@@ -268,8 +268,8 @@ class FusionMarginCalculator {
   static String _formatLabelValue({
     required double value,
     required int decimalPlaces,
-    String Function(double)? formatter,
     required bool useAbbreviation,
+    String Function(double)? formatter,
   }) {
     // Custom formatter takes priority
     if (formatter != null) {

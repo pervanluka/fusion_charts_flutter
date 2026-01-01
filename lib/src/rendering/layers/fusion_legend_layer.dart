@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../engine/fusion_render_context.dart';
-import '../../series/series_with_data_points.dart';
+
 import '../../configuration/fusion_legend_configuration.dart';
+import '../../series/series_with_data_points.dart';
+import '../engine/fusion_render_context.dart';
 import 'fusion_render_layer.dart';
 
 /// Renders chart legend showing all series.
@@ -109,7 +110,7 @@ class FusionLegendLayer extends FusionRenderLayer {
           padding.top +
           padding.bottom;
 
-      final legendWidth = 150.0; // Fixed width for vertical legends
+      const legendWidth = 150.0; // Fixed width for vertical legends
 
       switch (configuration.position) {
         case FusionLegendPosition.left:

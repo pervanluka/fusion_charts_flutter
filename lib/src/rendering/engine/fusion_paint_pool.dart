@@ -200,7 +200,7 @@ class FusionPaintPool {
     debugPrint('Acquire Count: $_acquireCount');
     debugPrint('Cache Hits: $_cacheHits');
     debugPrint('Hit Rate: ${(statistics.hitRate * 100).toStringAsFixed(1)}%');
-    debugPrint('Memory Saved: ~${(_cacheHits * 100)} bytes (estimated)');
+    debugPrint('Memory Saved: ~${_cacheHits * 100} bytes (estimated)');
   }
 
   /// Checks pool health.
@@ -270,7 +270,7 @@ class PoolStatistics {
         'created: $totalCreated, '
         'pooled: $inPool, '
         'inUse: $inUse, '
-        'hitRate: ${(hitRate * 100).toStringAsFixed(1)}%'
+        'hitRate: ${(hitRate * 100).toStringAsFixed(1)}% '
         ')';
   }
 }

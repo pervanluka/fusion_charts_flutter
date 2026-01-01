@@ -390,17 +390,14 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
       case FusionTooltipTrackballMode.follow:
         // Follow mode: always show nearest point by Euclidean distance
         targetPoint = _interactionHandler?.findNearestPoint(_allDataPoints, position);
-        break;
 
       case FusionTooltipTrackballMode.snapToX:
         // Snap to X: find point with closest X coordinate (ideal for line charts)
         targetPoint = _interactionHandler?.findNearestPointByX(_allDataPoints, position);
-        break;
 
       case FusionTooltipTrackballMode.snapToY:
         // Snap to Y: find point with closest Y coordinate
         targetPoint = _interactionHandler?.findNearestPointByY(_allDataPoints, position);
-        break;
 
       case FusionTooltipTrackballMode.snap:
         // Snap mode: only update if within snap radius, otherwise keep last point
@@ -419,14 +416,12 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
             targetPoint = nearest;
           }
         }
-        break;
 
       case FusionTooltipTrackballMode.magnetic:
         // Magnetic mode: smooth interpolation toward nearest point
         final result = _findMagneticTarget(position);
         targetPoint = result.point;
         magneticOffset = result.magneticOffset;
-        break;
     }
 
     if (targetPoint != null) {
@@ -577,9 +572,7 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
 
     // Auto-hide based on dismiss strategy
     if (config.tooltipBehavior.dismissStrategy != FusionDismissStrategy.never) {
-      Future.delayed(config.tooltipBehavior.duration, () {
-        _hideTooltip();
-      });
+      Future.delayed(config.tooltipBehavior.duration, _hideTooltip);
     }
   }
 
@@ -655,9 +648,7 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
 
   void _startCrosshairHideTimer(Duration delay) {
     _crosshairHideTimer?.cancel();
-    _crosshairHideTimer = Timer(delay, () {
-      _hideCrosshairAnimated();
-    });
+    _crosshairHideTimer = Timer(delay, _hideCrosshairAnimated);
   }
 
   void _hideCrosshairAnimated() {
@@ -796,7 +787,7 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
 
     if (config.enableTooltip || config.enableSelection) {
       recognizers[TapGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(() => TapGestureRecognizer(), (
+          GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(TapGestureRecognizer.new, (
             recognizer,
           ) {
             recognizer.onTapDown = (details) {
@@ -808,7 +799,7 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
     if (config.enableCrosshair) {
       recognizers[LongPressGestureRecognizer] =
           GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
-            () => LongPressGestureRecognizer(),
+            LongPressGestureRecognizer.new,
             (recognizer) {
               recognizer
                 ..onLongPressStart = (details) {
@@ -841,46 +832,45 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
     // Use ScaleGestureRecognizer when both zoom and pan are enabled (handles pinch + drag)
     if (config.enableZoom && config.enablePanning) {
       recognizers[ScaleGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
-            () => ScaleGestureRecognizer(),
-            (recognizer) {
-              recognizer
-                ..onStart = (details) {
-                  _interactionHandler?.handleScaleStart(details.localFocalPoint);
+          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(ScaleGestureRecognizer.new, (
+            recognizer,
+          ) {
+            recognizer
+              ..onStart = (details) {
+                _interactionHandler?.handleScaleStart(details.localFocalPoint);
+              }
+              ..onUpdate = (details) {
+                // Scale == 1.0 means no pinch, just pan
+                if (details.scale == 1.0) {
+                  // This is a pan gesture disguised as scale
+                  if (!_isPanning) {
+                    _handlePanStart(details.localFocalPoint);
+                  }
+                  // Calculate delta from focal point movement
+                  if (_lastPointerPosition != null) {
+                    final delta = details.localFocalPoint - _lastPointerPosition!;
+                    _handlePanUpdate(delta);
+                  }
+                  _lastPointerPosition = details.localFocalPoint;
+                } else {
+                  // Actual pinch zoom
+                  _interactionHandler?.handleScaleUpdate(details.scale, details.localFocalPoint);
                 }
-                ..onUpdate = (details) {
-                  // Scale == 1.0 means no pinch, just pan
-                  if (details.scale == 1.0) {
-                    // This is a pan gesture disguised as scale
-                    if (!_isPanning) {
-                      _handlePanStart(details.localFocalPoint);
-                    }
-                    // Calculate delta from focal point movement
-                    if (_lastPointerPosition != null) {
-                      final delta = details.localFocalPoint - _lastPointerPosition!;
-                      _handlePanUpdate(delta);
-                    }
-                    _lastPointerPosition = details.localFocalPoint;
-                  } else {
-                    // Actual pinch zoom
-                    _interactionHandler?.handleScaleUpdate(details.scale, details.localFocalPoint);
-                  }
+              }
+              ..onEnd = (details) {
+                if (_isPanning) {
+                  _handlePanEnd();
                 }
-                ..onEnd = (details) {
-                  if (_isPanning) {
-                    _handlePanEnd();
-                  }
-                  if (_isZooming) {
-                    _interactionHandler?.handleScaleEnd();
-                  }
-                  _lastPointerPosition = null;
-                };
-            },
-          );
+                if (_isZooming) {
+                  _interactionHandler?.handleScaleEnd();
+                }
+                _lastPointerPosition = null;
+              };
+          });
     } else if (config.enablePanning) {
       // Pan only - use PanGestureRecognizer
       recognizers[PanGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(() => PanGestureRecognizer(), (
+          GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(PanGestureRecognizer.new, (
             recognizer,
           ) {
             recognizer
@@ -897,23 +887,22 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
     } else if (config.enableZoom) {
       // Zoom only - use ScaleGestureRecognizer for pinch
       recognizers[ScaleGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
-            () => ScaleGestureRecognizer(),
-            (recognizer) {
-              recognizer
-                ..onStart = (details) {
-                  _interactionHandler?.handleScaleStart(details.localFocalPoint);
+          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(ScaleGestureRecognizer.new, (
+            recognizer,
+          ) {
+            recognizer
+              ..onStart = (details) {
+                _interactionHandler?.handleScaleStart(details.localFocalPoint);
+              }
+              ..onUpdate = (details) {
+                if (details.scale != 1.0) {
+                  _interactionHandler?.handleScaleUpdate(details.scale, details.localFocalPoint);
                 }
-                ..onUpdate = (details) {
-                  if (details.scale != 1.0) {
-                    _interactionHandler?.handleScaleUpdate(details.scale, details.localFocalPoint);
-                  }
-                }
-                ..onEnd = (details) {
-                  _interactionHandler?.handleScaleEnd();
-                };
-            },
-          );
+              }
+              ..onEnd = (details) {
+                _interactionHandler?.handleScaleEnd();
+              };
+          });
     }
 
     return recognizers;

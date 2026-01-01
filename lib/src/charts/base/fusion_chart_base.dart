@@ -43,8 +43,8 @@ typedef FusionPointCallback = void Function(FusionDataPoint point, String series
 /// ```
 abstract class FusionChartBase<S extends SeriesWithDataPoints> extends StatefulWidget {
   const FusionChartBase({
-    super.key,
     required this.series,
+    super.key,
     this.config,
     this.xAxis,
     this.yAxis,

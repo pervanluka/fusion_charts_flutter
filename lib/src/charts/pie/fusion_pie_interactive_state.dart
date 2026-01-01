@@ -1,11 +1,13 @@
+// ignore_for_file: unnecessary_lambdas
+
 import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
-import '../base/fusion_interactive_state_base.dart';
+
 import '../../configuration/fusion_pie_chart_configuration.dart';
 import '../../configuration/fusion_tooltip_configuration.dart';
-
 import '../../core/enums/fusion_tooltip_activation_mode.dart';
 import '../../data/fusion_data_point.dart';
 import '../../data/fusion_pie_data_point.dart';
@@ -13,6 +15,7 @@ import '../../rendering/fusion_coordinate_system.dart';
 import '../../rendering/polar/fusion_pie_segment.dart';
 import '../../series/fusion_pie_series.dart';
 import '../../utils/fusion_color_palette.dart';
+import '../base/fusion_interactive_state_base.dart';
 import 'pie_tooltip_data.dart';
 
 /// Interactive state manager for pie charts.
@@ -239,20 +242,20 @@ class FusionPieInteractiveState extends ChangeNotifier implements FusionInteract
 
     if (hitIndex != null) {
       final currentIndex = _tooltipData?.index;
-      
+
       // Segment changed - update selection highlight
       if (hitIndex != currentIndex) {
         // Update selection to current segment (scrubbing behavior)
         if (config.enableSelection && config.selectionMode == PieSelectionMode.single) {
           _selectedIndices.clear();
           _selectedIndices.add(hitIndex);
-          
+
           // Handle explode on selection during drag
           if (config.explodeOnSelection) {
             // Collapse previous
             if (currentIndex != null) {
-              final prevDataPoint = currentIndex < series.dataPoints.length 
-                  ? series.dataPoints[currentIndex] 
+              final prevDataPoint = currentIndex < series.dataPoints.length
+                  ? series.dataPoints[currentIndex]
                   : null;
               if (!series.explodeAll && (prevDataPoint == null || !prevDataPoint.explode)) {
                 _explodedIndices.remove(currentIndex);
@@ -261,11 +264,11 @@ class FusionPieInteractiveState extends ChangeNotifier implements FusionInteract
             // Explode current
             _explodedIndices.add(hitIndex);
           }
-          
+
           _recomputeSegments();
         }
       }
-      
+
       // Always update tooltip position to follow finger
       if (config.enableTooltip) {
         _updateTooltipForSegment(hitIndex, event.localPosition);
@@ -332,7 +335,8 @@ class FusionPieInteractiveState extends ChangeNotifier implements FusionInteract
         TargetPlatform.macOS, // Desktop platform for hover
       );
 
-      final showTooltip = effectiveMode == FusionTooltipActivationMode.hover ||
+      final showTooltip =
+          effectiveMode == FusionTooltipActivationMode.hover ||
           effectiveMode == FusionTooltipActivationMode.auto;
 
       if (hitIndex != previousIndex) {
@@ -425,7 +429,7 @@ class FusionPieInteractiveState extends ChangeNotifier implements FusionInteract
     // 4. Handle selection if enabled
     if (config.enableSelection) {
       _handleSelection(index, dataPoint);
-      
+
       // If tooltip is disabled, start auto-clear timer for selection
       if (!config.enableTooltip) {
         _startSelectionClearTimer();
@@ -464,7 +468,6 @@ class FusionPieInteractiveState extends ChangeNotifier implements FusionInteract
       case PieSelectionMode.single:
         _selectedIndices.clear();
         _selectedIndices.add(index);
-        break;
 
       case PieSelectionMode.multiple:
         if (_selectedIndices.contains(index)) {
@@ -472,7 +475,6 @@ class FusionPieInteractiveState extends ChangeNotifier implements FusionInteract
         } else {
           _selectedIndices.add(index);
         }
-        break;
     }
 
     // Handle explode on selection
@@ -564,7 +566,7 @@ class FusionPieInteractiveState extends ChangeNotifier implements FusionInteract
       isExploded: segment.isExploded,
       isSelected: _selectedIndices.contains(index),
     );
-    
+
     // Ensure tooltip is visible (handles drag-into-segment case)
     _tooltipOpacity = 1.0;
 
@@ -578,12 +580,12 @@ class FusionPieInteractiveState extends ChangeNotifier implements FusionInteract
     if (_tooltipData != null) {
       _tooltipData = null;
       _tooltipOpacity = 0.0;
-      
+
       // Clear selection when tooltip dismisses (unified lifecycle)
       if (_selectedIndices.isNotEmpty) {
         _clearSelectionInternal();
       }
-      
+
       notifyListeners();
     }
   }
@@ -591,17 +593,17 @@ class FusionPieInteractiveState extends ChangeNotifier implements FusionInteract
   /// Clears selection without notifying listeners (internal use).
   void _clearSelectionInternal() {
     if (_selectedIndices.isEmpty) return;
-    
+
     // Remove exploded state for selected segments (unless permanently exploded)
     if (config.explodeOnSelection) {
       for (final index in _selectedIndices) {
-        if (!series.explodeAll && 
+        if (!series.explodeAll &&
             (index >= series.dataPoints.length || !series.dataPoints[index].explode)) {
           _explodedIndices.remove(index);
         }
       }
     }
-    
+
     _selectedIndices.clear();
     _notifySelectionChanged();
     _recomputeSegments();
@@ -675,10 +677,8 @@ class FusionPieInteractiveState extends ChangeNotifier implements FusionInteract
       case PieSelectionMode.single:
         _selectedIndices.clear();
         _selectedIndices.add(index);
-        break;
       case PieSelectionMode.multiple:
         _selectedIndices.add(index);
-        break;
     }
 
     _notifySelectionChanged();

@@ -1,25 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/src/configuration/fusion_line_chart_configuration.dart';
-import '../../core/axis/base/fusion_axis_base.dart';
-import '../../core/axis/numeric/fusion_numeric_axis.dart';
-import '../../data/fusion_data_point.dart';
-import '../layers/fusion_render_layer.dart';
-import '../fusion_coordinate_system.dart';
-import '../engine/fusion_render_pipeline.dart';
-import '../engine/fusion_render_context.dart';
-import '../engine/fusion_paint_pool.dart';
-import '../engine/fusion_shader_cache.dart';
-import '../layers/fusion_series_layer.dart';
-import '../layers/fusion_marker_layer.dart';
-import '../layers/fusion_data_label_layer.dart';
-import '../layers/fusion_tooltip_layer.dart';
-import '../layers/fusion_crosshair_layer.dart';
-import '../../series/fusion_line_series.dart';
-import '../../series/series_with_data_points.dart';
-import '../../themes/fusion_chart_theme.dart';
+
 import '../../configuration/fusion_axis_configuration.dart';
 import '../../configuration/fusion_chart_configuration.dart';
 import '../../configuration/fusion_tooltip_configuration.dart';
+import '../../core/axis/base/fusion_axis_base.dart';
+import '../../core/axis/numeric/fusion_numeric_axis.dart';
+import '../../data/fusion_data_point.dart';
+import '../../series/fusion_line_series.dart';
+import '../../series/series_with_data_points.dart';
+import '../../themes/fusion_chart_theme.dart';
+import '../engine/fusion_paint_pool.dart';
+import '../engine/fusion_render_context.dart';
+import '../engine/fusion_render_pipeline.dart';
+import '../engine/fusion_shader_cache.dart';
+import '../fusion_coordinate_system.dart';
+import '../layers/fusion_crosshair_layer.dart';
+import '../layers/fusion_data_label_layer.dart';
+import '../layers/fusion_marker_layer.dart';
+import '../layers/fusion_render_layer.dart';
+import '../layers/fusion_series_layer.dart';
+import '../layers/fusion_tooltip_layer.dart';
 
 /// Professional painter for line charts using modern render pipeline.
 ///
@@ -117,7 +118,7 @@ class FusionLineChartPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Dispose previous pipeline to prevent memory leaks from cached Picture objects
     _pipeline?.dispose();
-    
+
     // Build render pipeline
     _pipeline = _buildRenderPipeline(size);
 
@@ -137,9 +138,9 @@ class FusionLineChartPainter extends CustomPainter {
     final effectiveConfig = config ?? const FusionChartConfiguration();
 
     // Get line-specific config, use defaults if base config provided
-    final enableMarkers = config is FusionLineChartConfiguration
-        ? (config as FusionLineChartConfiguration).enableMarkers
-        : false;
+    final enableMarkers =
+        config is FusionLineChartConfiguration &&
+        (config! as FusionLineChartConfiguration).enableMarkers;
 
     return FusionRenderPipeline(
       layers: [
@@ -181,7 +182,7 @@ class FusionLineChartPainter extends CustomPainter {
             effectiveConfig.enableCrosshair &&
             effectiveConfig.crosshairBehavior.enabled)
           FusionCrosshairLayer(
-            position: crosshairPosition!,
+            position: crosshairPosition,
             snappedPoint: crosshairPoint,
             crosshairConfig: effectiveConfig.crosshairBehavior,
           ),

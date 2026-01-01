@@ -48,7 +48,7 @@ class AxisCalculator {
 
     // Standard Wilkinson's algorithm (already good)
     final roughInterval = range / desiredIntervals;
-    final magnitude = math.pow(10, (log10(roughInterval)).floor()).toDouble();
+    final magnitude = math.pow(10, log10(roughInterval).floor()).toDouble();
     final normalized = roughInterval / magnitude;
     final niceFraction = _getNiceFraction(normalized);
 
@@ -69,7 +69,7 @@ class AxisCalculator {
     }
 
     // Create interval based on the magnitude of the value
-    final magnitude = math.pow(10, (log10(avgValue)).floor() - 1).toDouble();
+    final magnitude = math.pow(10, log10(avgValue).floor() - 1).toDouble();
     return magnitude;
   }
 
@@ -78,7 +78,7 @@ class AxisCalculator {
     final roughInterval = range / desiredIntervals;
 
     // Find magnitude (will be very small, like 1e-5)
-    final magnitude = math.pow(10, (log10(roughInterval)).floor()).toDouble();
+    final magnitude = math.pow(10, log10(roughInterval).floor()).toDouble();
     final normalized = roughInterval / magnitude;
 
     // Use finer fractions for tiny ranges
@@ -101,7 +101,7 @@ class AxisCalculator {
     final roughInterval = range / desiredIntervals;
 
     // Find magnitude (will be very large, like 1e11)
-    final magnitude = math.pow(10, (log10(roughInterval)).floor()).toDouble();
+    final magnitude = math.pow(10, log10(roughInterval).floor()).toDouble();
     final normalized = roughInterval / magnitude;
 
     // Prefer round numbers for large ranges
@@ -177,7 +177,7 @@ class AxisCalculator {
       scale = 10.0;
     } else {
       // Large numbers: magnitude-based scale
-      final magnitude = math.pow(10, (log10(absValue)).floor()).toDouble();
+      final magnitude = math.pow(10, log10(absValue).floor()).toDouble();
       scale = magnitude * 0.5;
     }
 
@@ -205,22 +205,18 @@ class AxisCalculator {
       case ChartRangePadding.none:
         min = dataMin;
         max = dataMax;
-        break;
 
       case ChartRangePadding.normal:
         min = _roundDown(dataMin, interval);
         max = _roundUp(dataMax, interval);
-        break;
 
       case ChartRangePadding.round:
         min = _roundToNiceNumber(dataMin, interval, roundDown: true);
         max = _roundToNiceNumber(dataMax, interval, roundDown: false);
-        break;
 
       case ChartRangePadding.additional:
         min = _roundDown(dataMin, interval) - interval;
         max = _roundUp(dataMax, interval) + interval;
-        break;
 
       case ChartRangePadding.auto:
         final range = dataMax - dataMin;
@@ -235,7 +231,6 @@ class AxisCalculator {
           min = _roundDown(dataMin, interval);
           max = _roundUp(dataMax, interval);
         }
-        break;
     }
 
     return AxisBounds(
@@ -259,7 +254,7 @@ class AxisCalculator {
   }
 
   static double _roundToNiceNumber(double value, double interval, {required bool roundDown}) {
-    final magnitude = math.pow(10, (log10(interval)).floor()).toDouble();
+    final magnitude = math.pow(10, log10(interval).floor()).toDouble();
     final normalized = value / magnitude;
 
     final rounded = roundDown
@@ -341,7 +336,7 @@ class AxisCalculator {
       return 1.0;
     }
 
-    final magnitude = math.pow(10, (log10(value.abs())).floor()).toDouble();
+    final magnitude = math.pow(10, log10(value.abs()).floor()).toDouble();
     final normalized = value / magnitude;
 
     return _getNextNiceNumber(normalized) * magnitude;
@@ -364,7 +359,7 @@ class AxisCalculator {
       return -1.0;
     }
 
-    final magnitude = math.pow(10, (log10(value.abs())).floor()).toDouble();
+    final magnitude = math.pow(10, log10(value.abs()).floor()).toDouble();
     final normalized = value / magnitude;
 
     final previous = _getPreviousNiceNumber(normalized);

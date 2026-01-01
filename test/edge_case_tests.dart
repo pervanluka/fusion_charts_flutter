@@ -1,6 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
-import 'dart:math' as math;
 
 void main() {
   group('🔥 CRITICAL EDGE CASES - Axis Calculations', () {
@@ -113,7 +114,7 @@ void main() {
       });
 
       test('handles repeated decimal division (0.3 / 3)', () {
-        final value = 0.3 / 3; // 0.09999999999999999...
+        const value = 0.3 / 3; // 0.09999999999999999...
 
         final bounds = AxisBounds.fromDataRange(dataMin: 0, dataMax: value, desiredTickCount: 3);
 
@@ -123,7 +124,7 @@ void main() {
 
       test('handles large number precision loss', () {
         // When adding small to large: 1e15 + 1 = 1e15 (precision loss)
-        final large = 1e15;
+        const large = 1e15;
         final bounds = AxisBounds.fromDataRange(
           dataMin: large,
           dataMax: large + 100,
@@ -425,8 +426,8 @@ void main() {
   group('🔥 CRITICAL EDGE CASES - Numerical Stability', () {
     test('handles catastrophic cancellation', () {
       // When subtracting nearly equal large numbers
-      final a = 1.0000000000001;
-      final b = 1.0;
+      const a = 1.0000000000001;
+      const b = 1.0;
 
       final bounds = AxisBounds.fromDataRange(dataMin: b, dataMax: a, desiredTickCount: 5);
 
@@ -450,8 +451,8 @@ void main() {
     });
 
     test('handles very small intervals between large numbers', () {
-      final dataMin = 1000000.0;
-      final dataMax = 1000000.1; // Tiny interval at large scale
+      const dataMin = 1000000.0;
+      const dataMax = 1000000.1; // Tiny interval at large scale
 
       final bounds = AxisBounds.fromDataRange(
         dataMin: dataMin,

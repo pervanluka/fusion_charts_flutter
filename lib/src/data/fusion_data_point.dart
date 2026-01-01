@@ -1,5 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'dart:math' show Random, sqrt;
+
+import 'package:flutter/foundation.dart';
 
 /// Represents a single data point in a chart.
 ///

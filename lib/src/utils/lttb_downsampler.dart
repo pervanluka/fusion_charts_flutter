@@ -187,8 +187,8 @@ class LTTBDownsampler {
     final targetPoints = (pixelWidth * pointsPerPixel).round();
 
     // Ensure minimum points for quality
-    final minPoints = 50;
-    final maxPoints = 2000; // Prevent excessive points
+    const minPoints = 50;
+    const maxPoints = 2000; // Prevent excessive points
 
     final clampedTarget = targetPoints.clamp(minPoints, maxPoints);
 

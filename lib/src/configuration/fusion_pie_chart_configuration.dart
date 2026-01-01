@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'fusion_chart_configuration.dart';
-import 'fusion_tooltip_configuration.dart';
+
 import '../series/fusion_pie_series.dart';
 import '../themes/fusion_chart_theme.dart';
+import 'fusion_chart_configuration.dart';
+import 'fusion_tooltip_configuration.dart';
 
 /// Configuration for pie and donut charts.
 ///

@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-
 import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
 
 import '../../data/fusion_data_point.dart';
 import '../fusion_coordinate_system.dart';

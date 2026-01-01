@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+
 import '../../configuration/fusion_chart_configuration.dart';
-import '../../rendering/fusion_coordinate_system.dart';
 import '../../rendering/engine/fusion_paint_pool.dart';
 import '../../rendering/engine/fusion_shader_cache.dart';
+import '../../rendering/fusion_coordinate_system.dart';
 import '../../series/series_with_data_points.dart';
 import '../../utils/fusion_margin_calculator.dart';
 import 'fusion_chart_base.dart';
@@ -68,11 +69,12 @@ import 'fusion_interactive_state_base.dart';
 /// }
 /// ```
 abstract class FusionChartBaseState<
-    W extends FusionChartBase<S>,
-    S extends SeriesWithDataPoints,
-    I extends FusionInteractiveStateBase
-  > extends State<W> with SingleTickerProviderStateMixin {
-  
+  W extends FusionChartBase<S>,
+  S extends SeriesWithDataPoints,
+  I extends FusionInteractiveStateBase
+>
+    extends State<W>
+    with SingleTickerProviderStateMixin {
   // ===========================================================================
   // SHARED RESOURCES
   // ===========================================================================
@@ -228,9 +230,7 @@ abstract class FusionChartBaseState<
     final config = effectiveConfig;
 
     _animationController = AnimationController(
-      duration: config.enableAnimation 
-          ? config.effectiveAnimationDuration 
-          : Duration.zero,
+      duration: config.enableAnimation ? config.effectiveAnimationDuration : Duration.zero,
       vsync: this,
     );
 
@@ -284,8 +284,7 @@ abstract class FusionChartBaseState<
   /// Override in subclass if custom change detection is needed.
   @protected
   bool _shouldReinitialize(W oldWidget) {
-    return widget.series != oldWidget.series || 
-           widget.config != oldWidget.config;
+    return widget.series != oldWidget.series || widget.config != oldWidget.config;
   }
 
   /// Invalidates the coordinate system cache.
@@ -317,9 +316,8 @@ abstract class FusionChartBaseState<
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (widget.title != null) 
-            FusionChartTitle(title: widget.title!, theme: theme),
-          if (widget.subtitle != null) 
+          if (widget.title != null) FusionChartTitle(title: widget.title!, theme: theme),
+          if (widget.subtitle != null)
             FusionChartSubtitle(subtitle: widget.subtitle!, theme: theme),
           Expanded(
             child: AnimatedBuilder(
@@ -386,9 +384,7 @@ abstract class FusionChartBaseState<
 
     // Check cache
     final seriesHash = calculateSeriesHash();
-    if (_cachedSize == size && 
-        _cachedSeriesHash == seriesHash && 
-        _cachedCoordSystem != null) {
+    if (_cachedSize == size && _cachedSeriesHash == seriesHash && _cachedCoordSystem != null) {
       _coordSystem = _cachedCoordSystem;
       return;
     }

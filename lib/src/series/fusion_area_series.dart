@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+
 import '../core/enums/marker_shape.dart';
+import '../data/fusion_data_point.dart';
 import 'fusion_series.dart';
 import 'series_with_data_points.dart';
-import '../data/fusion_data_point.dart';
 
 /// Area series for area charts.
 ///

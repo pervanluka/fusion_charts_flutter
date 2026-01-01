@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../engine/fusion_render_context.dart';
-import '../../series/fusion_bar_series.dart';
+
 import '../../data/fusion_data_point.dart';
+import '../../series/fusion_bar_series.dart';
+import '../engine/fusion_render_context.dart';
 
 /// Dedicated renderer for bar series with proper category positioning.
 ///
@@ -285,7 +286,7 @@ class FusionBarSeriesRenderer {
       // Draw track border
       if (series.trackBorderWidth > 0 && series.trackBorderColor != null) {
         final borderPaint = context.getPaint(
-          color: series.trackBorderColor!,
+          color: series.trackBorderColor,
           strokeWidth: series.trackBorderWidth,
           style: PaintingStyle.stroke,
         );
@@ -325,7 +326,7 @@ class FusionBarSeriesRenderer {
           final totalGroupWidth =
               totalSeriesCount * layout.barWidth + (totalSeriesCount - 1) * layout.barSpacing;
           final groupStartX = barCenterX - (totalGroupWidth / 2);
-          final barOffset = (seriesIndex * (layout.barWidth + layout.barSpacing));
+          final barOffset = seriesIndex * (layout.barWidth + layout.barSpacing);
           barCenterX = groupStartX + barOffset + (layout.barWidth / 2);
         }
       } else {
@@ -636,7 +637,7 @@ class FusionBarSeriesRenderer {
     FusionBarSeries series,
   ) {
     final borderPaint = context.getPaint(
-      color: series.borderColor!,
+      color: series.borderColor,
       strokeWidth: series.borderWidth,
       style: PaintingStyle.stroke,
     );

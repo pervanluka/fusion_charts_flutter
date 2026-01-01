@@ -12,8 +12,7 @@ import 'base/fusion_interactive_state_base.dart';
 /// Unlike the generic interactive state that finds nearest points by distance,
 /// this uses rectangle-based hit testing for accurate bar selection.
 /// Also supports zoom and pan with configuration-aware constraints.
-class FusionBarInteractiveState extends ChangeNotifier
-    implements FusionInteractiveStateBase {
+class FusionBarInteractiveState extends ChangeNotifier implements FusionInteractiveStateBase {
   FusionBarInteractiveState({
     required this.config,
     required FusionCoordinateSystem initialCoordSystem,
@@ -411,12 +410,12 @@ class FusionBarInteractiveState extends ChangeNotifier
   void _showCrosshair(Offset position, BarHitTestResult? hitResult) {
     _crosshairHideTimer?.cancel();
     _crosshairPosition = position;
-    
+
     // For bar charts, create a synthetic point with index as X for correct crosshair positioning
     // The crosshair layer uses point.x for screen position calculation
     if (hitResult != null) {
       _crosshairPoint = FusionDataPoint(
-        hitResult.pointIndex.toDouble(),  // Use index, not original x value
+        hitResult.pointIndex.toDouble(), // Use index, not original x value
         hitResult.point.y,
         label: hitResult.point.label ?? _formatXLabel(hitResult.point.x),
       );
@@ -425,29 +424,29 @@ class FusionBarInteractiveState extends ChangeNotifier
     }
     notifyListeners();
   }
-  
+
   /// Formats X value as label string
   String _formatXLabel(double x) {
     return x == x.roundToDouble() ? x.round().toString() : x.toString();
   }
-  
+
   /// Updates crosshair position during drag, with coordinate system clamping.
   void _updateCrosshairPosition(Offset position) {
     _crosshairHideTimer?.cancel();
-    
+
     // CRITICAL FIX: Clamp in data space using coordinate system
     // This is more natural than clamping to pixel bounds
     final dataX = _currentCoordSystem.screenXToDataX(position.dx);
     final dataY = _currentCoordSystem.screenYToDataY(position.dy);
-    
+
     final clampedDataX = dataX.clamp(_currentCoordSystem.dataXMin, _currentCoordSystem.dataXMax);
     final clampedDataY = dataY.clamp(_currentCoordSystem.dataYMin, _currentCoordSystem.dataYMax);
-    
+
     final clampedPosition = Offset(
       _currentCoordSystem.dataXToScreenX(clampedDataX),
       _currentCoordSystem.dataYToScreenY(clampedDataY),
     );
-    
+
     // Find hit at clamped position
     final hitResult = _hitTester.hitTest(
       screenPosition: clampedPosition,
@@ -455,13 +454,10 @@ class FusionBarInteractiveState extends ChangeNotifier
       coordSystem: _currentCoordSystem,
       enableSideBySideSeriesPlacement: enableSideBySideSeriesPlacement,
     );
-    
+
     if (hitResult != null && config.crosshairBehavior.snapToDataPoint) {
       // Snap to bar center
-      final snappedPosition = Offset(
-        hitResult.barRect.center.dx,
-        hitResult.barRect.top,
-      );
+      final snappedPosition = Offset(hitResult.barRect.center.dx, hitResult.barRect.top);
       _crosshairPosition = snappedPosition;
       // Use index-based point for correct crosshair rendering
       _crosshairPoint = FusionDataPoint(
@@ -482,7 +478,7 @@ class FusionBarInteractiveState extends ChangeNotifier
         _crosshairPoint = null;
       }
     }
-    
+
     notifyListeners();
   }
 
@@ -494,12 +490,10 @@ class FusionBarInteractiveState extends ChangeNotifier
       notifyListeners();
     }
   }
-  
+
   void _startCrosshairHideTimer(Duration delay) {
     _crosshairHideTimer?.cancel();
-    _crosshairHideTimer = Timer(delay, () {
-      _hideCrosshair();
-    });
+    _crosshairHideTimer = Timer(delay, _hideCrosshair);
   }
 
   // ========================================================================
@@ -512,7 +506,7 @@ class FusionBarInteractiveState extends ChangeNotifier
 
     if (config.enableTooltip || config.enableSelection) {
       recognizers[TapGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(() => TapGestureRecognizer(), (
+          GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(TapGestureRecognizer.new, (
             recognizer,
           ) {
             recognizer.onTapDown = (details) {
@@ -533,7 +527,7 @@ class FusionBarInteractiveState extends ChangeNotifier
     if (config.enableCrosshair) {
       recognizers[LongPressGestureRecognizer] =
           GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
-            () => LongPressGestureRecognizer(),
+            LongPressGestureRecognizer.new,
             (recognizer) {
               recognizer
                 ..onLongPressStart = (details) {
@@ -574,43 +568,42 @@ class FusionBarInteractiveState extends ChangeNotifier
     // Use ScaleGestureRecognizer when both zoom and pan are enabled
     if (config.enableZoom && config.enablePanning) {
       recognizers[ScaleGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
-            () => ScaleGestureRecognizer(),
-            (recognizer) {
-              recognizer
-                ..onStart = (details) {
-                  _handleScaleStart(details.localFocalPoint);
+          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(ScaleGestureRecognizer.new, (
+            recognizer,
+          ) {
+            recognizer
+              ..onStart = (details) {
+                _handleScaleStart(details.localFocalPoint);
+              }
+              ..onUpdate = (details) {
+                if (details.scale == 1.0) {
+                  // Pan gesture
+                  if (!_isPanning) {
+                    _handlePanStart(details.localFocalPoint);
+                  }
+                  if (_lastPointerPosition != null) {
+                    final delta = details.localFocalPoint - _lastPointerPosition!;
+                    _handlePanUpdate(delta);
+                  }
+                  _lastPointerPosition = details.localFocalPoint;
+                } else {
+                  // Pinch zoom
+                  _handleScaleUpdate(details.scale, details.localFocalPoint);
                 }
-                ..onUpdate = (details) {
-                  if (details.scale == 1.0) {
-                    // Pan gesture
-                    if (!_isPanning) {
-                      _handlePanStart(details.localFocalPoint);
-                    }
-                    if (_lastPointerPosition != null) {
-                      final delta = details.localFocalPoint - _lastPointerPosition!;
-                      _handlePanUpdate(delta);
-                    }
-                    _lastPointerPosition = details.localFocalPoint;
-                  } else {
-                    // Pinch zoom
-                    _handleScaleUpdate(details.scale, details.localFocalPoint);
-                  }
+              }
+              ..onEnd = (details) {
+                if (_isPanning) {
+                  _handlePanEnd();
                 }
-                ..onEnd = (details) {
-                  if (_isPanning) {
-                    _handlePanEnd();
-                  }
-                  if (_isZooming) {
-                    _handleScaleEnd();
-                  }
-                  _lastPointerPosition = null;
-                };
-            },
-          );
+                if (_isZooming) {
+                  _handleScaleEnd();
+                }
+                _lastPointerPosition = null;
+              };
+          });
     } else if (config.enablePanning) {
       recognizers[PanGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(() => PanGestureRecognizer(), (
+          GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(PanGestureRecognizer.new, (
             recognizer,
           ) {
             recognizer
@@ -626,23 +619,22 @@ class FusionBarInteractiveState extends ChangeNotifier
           });
     } else if (config.enableZoom) {
       recognizers[ScaleGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
-            () => ScaleGestureRecognizer(),
-            (recognizer) {
-              recognizer
-                ..onStart = (details) {
-                  _handleScaleStart(details.localFocalPoint);
+          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(ScaleGestureRecognizer.new, (
+            recognizer,
+          ) {
+            recognizer
+              ..onStart = (details) {
+                _handleScaleStart(details.localFocalPoint);
+              }
+              ..onUpdate = (details) {
+                if (details.scale != 1.0) {
+                  _handleScaleUpdate(details.scale, details.localFocalPoint);
                 }
-                ..onUpdate = (details) {
-                  if (details.scale != 1.0) {
-                    _handleScaleUpdate(details.scale, details.localFocalPoint);
-                  }
-                }
-                ..onEnd = (details) {
-                  _handleScaleEnd();
-                };
-            },
-          );
+              }
+              ..onEnd = (details) {
+                _handleScaleEnd();
+              };
+          });
     }
 
     return recognizers;

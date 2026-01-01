@@ -403,7 +403,7 @@ class FusionPerformanceOptimizer {
   /// Returns estimated FPS for different point counts.
   static Map<int, double> benchmarkPointCounts(
     List<int> pointCounts,
-    Function(int) renderFunction,
+    void Function(int) renderFunction,
   ) {
     final results = <int, double>{};
 

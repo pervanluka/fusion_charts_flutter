@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' show TextPainter, Offset, Path, Shader, TextStyle;
+import 'package:flutter/material.dart' show Offset, Path, Shader, TextPainter, TextStyle;
 
 import '../data/fusion_data_point.dart';
 import 'fusion_coordinate_system.dart';
@@ -228,7 +228,7 @@ class FusionRenderCache {
     return CacheStatistics(
       totalEntries: _cache.length,
       maxSize: maxCacheSize,
-      utilizationPercent: (_cache.length / maxCacheSize * 100),
+      utilizationPercent: _cache.length / maxCacheSize * 100,
     );
   }
 
@@ -272,7 +272,7 @@ class CacheStatistics {
   String toString() {
     return 'CacheStatistics('
         'entries: $totalEntries/$maxSize, '
-        'utilization: ${utilizationPercent.toStringAsFixed(1)}%'
+        'utilization: ${utilizationPercent.toStringAsFixed(1)}% '
         ')';
   }
 }

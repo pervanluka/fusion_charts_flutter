@@ -300,12 +300,7 @@ class FusionInteractionHandler {
       newYMax = focalDataY + (yRange * (1 - yRatio));
     }
 
-    return (
-      xMin: newXMin,
-      xMax: newXMax,
-      yMin: newYMin,
-      yMax: newYMax,
-    );
+    return (xMin: newXMin, xMax: newXMax, yMin: newYMin, yMax: newYMax);
   }
 
   /// Constrains bounds using zoom configuration limits.
@@ -323,7 +318,7 @@ class FusionInteractionHandler {
     // minZoomLevel = 0.5 means you can zoom out to see 200% of original range (1/0.5 = 2x)
     // maxZoomLevel = 5.0 means you can zoom in to see 20% of original range (1/5 = 0.2x)
     final maxZoomOut = 1.0 / zoomConfig.minZoomLevel; // e.g., 1/0.5 = 2.0 (200% of range)
-    final minZoomIn = 1.0 / zoomConfig.maxZoomLevel;  // e.g., 1/5.0 = 0.2 (20% of range)
+    final minZoomIn = 1.0 / zoomConfig.maxZoomLevel; // e.g., 1/5.0 = 0.2 (20% of range)
 
     final originalXRange = dataXMax - dataXMin;
     final originalYRange = dataYMax - dataYMin;
@@ -396,7 +391,7 @@ class FusionInteractionHandler {
     return <Type, GestureRecognizerFactory>{
       if (onTap != null)
         TapGestureRecognizer: GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
-          () => TapGestureRecognizer(),
+          TapGestureRecognizer.new,
           (instance) {
             instance.onTapDown = (details) {
               handleTapDown(details.localPosition, allPoints);
@@ -406,7 +401,7 @@ class FusionInteractionHandler {
       if (onLongPress != null)
         LongPressGestureRecognizer:
             GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
-              () => LongPressGestureRecognizer(),
+              LongPressGestureRecognizer.new,
               (instance) {
                 instance.onLongPress = () {
                   if (_lastPanPosition != null) {
@@ -417,7 +412,7 @@ class FusionInteractionHandler {
             ),
       if (onPanStart != null || onPanUpdate != null || onPanEnd != null)
         PanGestureRecognizer: GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(
-          () => PanGestureRecognizer(),
+          PanGestureRecognizer.new,
           (instance) {
             instance
               ..onStart = (details) {
@@ -436,7 +431,7 @@ class FusionInteractionHandler {
         ),
       if (onScaleStart != null || onScaleUpdate != null || onScaleEnd != null)
         ScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
-          () => ScaleGestureRecognizer(),
+          ScaleGestureRecognizer.new,
           (instance) {
             instance
               ..onStart = (details) {

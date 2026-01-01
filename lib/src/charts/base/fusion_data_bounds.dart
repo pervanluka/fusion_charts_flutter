@@ -34,28 +34,6 @@ class FusionDataBounds {
     this.marginMaxX,
   });
 
-  /// Minimum X value for coordinate system.
-  final double minX;
-
-  /// Maximum X value for coordinate system.
-  final double maxX;
-
-  /// Minimum Y value for coordinate system.
-  final double minY;
-
-  /// Maximum Y value for coordinate system.
-  final double maxY;
-
-  /// Optional: X value to use for left margin calculation.
-  /// Used when label overflow calculation differs from data bounds.
-  /// Falls back to [minX] if not specified.
-  final double? marginMinX;
-
-  /// Optional: X value to use for right margin calculation.
-  /// Used when label overflow calculation differs from data bounds.
-  /// Falls back to [maxX] if not specified.
-  final double? marginMaxX;
-
   /// Creates bounds from a list of data points.
   ///
   /// Automatically calculates min/max from the points.
@@ -64,12 +42,7 @@ class FusionDataBounds {
   /// Returns default bounds if points list is empty.
   factory FusionDataBounds.fromPoints(List<FusionDataPoint> points) {
     if (points.isEmpty) {
-      return const FusionDataBounds(
-        minX: 0,
-        maxX: 10,
-        minY: 0,
-        maxY: 100,
-      );
+      return const FusionDataBounds(minX: 0, maxX: 10, minY: 0, maxY: 100);
     }
 
     final dataMinX = points.map((p) => p.x).reduce((a, b) => a < b ? a : b);
@@ -133,6 +106,28 @@ class FusionDataBounds {
     );
   }
 
+  /// Minimum X value for coordinate system.
+  final double minX;
+
+  /// Maximum X value for coordinate system.
+  final double maxX;
+
+  /// Minimum Y value for coordinate system.
+  final double minY;
+
+  /// Maximum Y value for coordinate system.
+  final double maxY;
+
+  /// Optional: X value to use for left margin calculation.
+  /// Used when label overflow calculation differs from data bounds.
+  /// Falls back to [minX] if not specified.
+  final double? marginMinX;
+
+  /// Optional: X value to use for right margin calculation.
+  /// Used when label overflow calculation differs from data bounds.
+  /// Falls back to [maxX] if not specified.
+  final double? marginMaxX;
+
   /// Gets the effective margin minX (falls back to minX).
   double get effectiveMarginMinX => marginMinX ?? minX;
 
@@ -165,10 +160,7 @@ class FusionDataBounds {
   }
 
   /// Expands bounds to include additional padding.
-  FusionDataBounds withPadding({
-    double xPadding = 0,
-    double yPadding = 0,
-  }) {
+  FusionDataBounds withPadding({double xPadding = 0, double yPadding = 0}) {
     return FusionDataBounds(
       minX: minX - xPadding,
       maxX: maxX + xPadding,

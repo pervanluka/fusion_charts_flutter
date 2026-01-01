@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
+
+import '../configuration/fusion_axis_configuration.dart';
+import '../configuration/fusion_chart_configuration.dart';
+import '../data/fusion_data_point.dart';
+import '../rendering/engine/fusion_paint_pool.dart';
+import '../rendering/engine/fusion_shader_cache.dart';
+import '../rendering/fusion_coordinate_system.dart';
 import '../rendering/painters/fusion_line_chart_painter.dart';
 import '../series/fusion_line_series.dart';
 import '../series/series_with_data_points.dart';
-import '../configuration/fusion_chart_configuration.dart';
-import '../configuration/fusion_axis_configuration.dart';
-import '../data/fusion_data_point.dart';
-import '../rendering/fusion_coordinate_system.dart';
-import '../utils/fusion_margin_calculator.dart';
 import '../utils/chart_bounds_calculator.dart';
-import 'fusion_interactive_chart.dart';
-import '../rendering/engine/fusion_paint_pool.dart';
-import '../rendering/engine/fusion_shader_cache.dart';
+import '../utils/fusion_margin_calculator.dart';
 import 'base/fusion_chart_header.dart';
+import 'fusion_interactive_chart.dart';
 
 class FusionLineChart extends StatefulWidget {
   const FusionLineChart({
-    super.key,
     required this.series,
+    super.key,
     this.config,
     this.xAxis,
     this.yAxis,
@@ -80,7 +81,10 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
     // This will be updated with proper chartArea in first build
     final allPoints = widget.series.where((s) => s.visible).expand((s) => s.dataPoints).toList();
 
-    double minX = 0, maxX = 10, minY = 0, maxY = 100;
+    double minX = 0;
+    double maxX = 10;
+    double minY = 0;
+    double maxY = 100;
 
     if (allPoints.isNotEmpty) {
       final dataMinX = allPoints.map((p) => p.x).reduce((a, b) => a < b ? a : b);
@@ -99,7 +103,7 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
         dataMaxY: dataMaxY,
         yAxisConfig: widget.yAxis,
       );
-      
+
       minX = xBounds.minX;
       maxX = xBounds.maxX;
       minY = yBounds.minY;

@@ -8,8 +8,9 @@
 // 4. Better than Syncfusion - automatically detects optimal period
 // =============================================================================
 
-import 'package:flutter/material.dart' show immutable;
 import 'dart:math' as math;
+
+import 'package:flutter/material.dart' show immutable;
 
 import '../core/enums/fusion_label_alignment_strategy.dart';
 import '../data/fusion_data_point.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class FusionChartErrorBoundary extends StatefulWidget {
-  const FusionChartErrorBoundary({super.key, required this.child, this.onError, this.fallback});
+  const FusionChartErrorBoundary({required this.child, super.key, this.onError, this.fallback});
 
   final Widget child;
   final void Function(Object error, StackTrace stack)? onError;

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../configuration/fusion_pie_chart_configuration.dart';
 import '../../data/fusion_pie_data_point.dart';
 import '../../series/fusion_pie_series.dart';
 import '../../utils/fusion_color_palette.dart';
@@ -238,7 +240,7 @@ class FusionPieSegmentComputer {
   final FusionPieSeries series;
 
   /// The chart configuration (provides resolved values).
-  final dynamic config; // FusionPieChartConfiguration
+  final FusionPieChartConfiguration? config;
 
   /// Center point of the pie.
   final Offset center;
@@ -273,24 +275,27 @@ class FusionPieSegmentComputer {
 
     if (total <= 0) return const [];
 
+    // Cache config for null-safe access
+    final cfg = config;
+
     // Resolve geometry values from config
-    final resolvedOuterRadius = config?.resolveOuterRadius != null
-        ? config.resolveOuterRadius(series)
+    final double resolvedOuterRadius = cfg != null
+        ? cfg.resolveOuterRadius(series)
         : series.outerRadiusPercent;
-    final resolvedInnerRadius = config?.resolveInnerRadius != null
-        ? config.resolveInnerRadius(series)
+    final double resolvedInnerRadius = cfg != null
+        ? cfg.resolveInnerRadius(series)
         : series.innerRadiusPercent;
-    final resolvedStartAngle = config?.resolveStartAngle != null
-        ? config.resolveStartAngle(series)
+    final double resolvedStartAngle = cfg != null
+        ? cfg.resolveStartAngle(series)
         : series.startAngle;
-    final resolvedGap = config?.resolveGapBetweenSlices != null
-        ? config.resolveGapBetweenSlices(series)
+    final double resolvedGap = cfg != null
+        ? cfg.resolveGapBetweenSlices(series)
         : series.gapBetweenSlices;
-    final resolvedCornerRadius = config?.resolveCornerRadius != null
-        ? config.resolveCornerRadius(series)
+    final double resolvedCornerRadius = cfg != null
+        ? cfg.resolveCornerRadius(series)
         : series.cornerRadius;
-    final resolvedExplodeOffset = config?.resolveExplodeOffset != null
-        ? config.resolveExplodeOffset(series)
+    final double resolvedExplodeOffset = cfg != null
+        ? cfg.resolveExplodeOffset(series)
         : series.explodeOffset;
 
     // Calculate radii using resolved values
@@ -303,8 +308,8 @@ class FusionPieSegmentComputer {
     final availableSweep = 360.0 - totalGap;
 
     // Resolve direction once (outside loop)
-    final resolvedDirection = config?.resolveDirection != null
-        ? config.resolveDirection(series)
+    final PieDirection resolvedDirection = cfg != null
+        ? cfg.resolveDirection(series)
         : series.direction;
     final directionMultiplier = resolvedDirection == PieDirection.counterClockwise ? -1.0 : 1.0;
 
@@ -399,44 +404,45 @@ class FusionPieSegmentComputer {
   /// This is the critical method that wires config → data processing.
   /// Config values override series values.
   List<FusionPieDataPoint> _getProcessedDataPoints() {
-    var data = List<FusionPieDataPoint>.from(series.dataPoints);
+    final data = List<FusionPieDataPoint>.from(series.dataPoints);
+
+    // Cache config for null-safe access
+    final cfg = config;
 
     // 1. Apply sorting from CONFIG (not series)
-    final sortMode = config?.resolveSortMode != null
-        ? config.resolveSortMode(series)
+    final PieSortMode sortMode = cfg != null
+        ? cfg.resolveSortMode(series)
         : series.sortMode;
 
     switch (sortMode) {
       case PieSortMode.ascending:
         data.sort((a, b) => a.value.compareTo(b.value));
-        break;
       case PieSortMode.descending:
         data.sort((a, b) => b.value.compareTo(a.value));
-        break;
       case PieSortMode.none:
         break;
     }
 
     // 2. Apply grouping from CONFIG (not series)
-    final shouldGroup = config?.resolveGroupSmallSegments != null
-        ? config.resolveGroupSmallSegments(series)
+    final bool shouldGroup = cfg != null
+        ? cfg.resolveGroupSmallSegments(series)
         : series.groupSmallSegments;
 
     if (!shouldGroup) return data;
 
-    final threshold = config?.resolveGroupThreshold != null
-        ? config.resolveGroupThreshold(series)
+    final double threshold = cfg != null
+        ? cfg.resolveGroupThreshold(series)
         : series.groupThreshold;
 
-    final groupLabel = config?.resolveGroupLabel != null
-        ? config.resolveGroupLabel(series)
+    final String groupLabel = cfg != null
+        ? cfg.resolveGroupLabel(series)
         : series.groupLabel;
 
     final total = data.fold(0.0, (sum, p) => sum + p.value);
     if (total <= 0) return data;
 
     final mainSegments = <FusionPieDataPoint>[];
-    double otherValue = 0;
+    var otherValue = 0.0;
 
     for (final point in data) {
       final percentage = (point.value / total) * 100;
@@ -450,7 +456,7 @@ class FusionPieSegmentComputer {
     // Add "Other" segment if we grouped anything
     if (otherValue > 0) {
       // Resolve group color: config.groupColor > series.groupColor > fallback gray
-      final groupColor = config?.groupColor ?? series.groupColor ?? const Color(0xFF9CA3AF);
+      final Color groupColor = cfg?.groupColor ?? series.groupColor ?? const Color(0xFF9CA3AF);
       
       mainSegments.add(FusionPieDataPoint(
         otherValue,
@@ -497,7 +503,7 @@ class FusionPieSegmentCache {
   /// Gets cached segments or computes new ones.
   List<ComputedPieSegment> getOrCompute({
     required FusionPieSeries series,
-    required dynamic config, // FusionPieChartConfiguration
+    required FusionPieChartConfiguration? config,
     required Size layoutSize,
     required Offset center,
     required double availableRadius,

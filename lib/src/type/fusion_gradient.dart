@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
 import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 /// Gradient configuration for chart elements.
 ///
@@ -23,6 +25,76 @@ class FusionGradient {
     this.endAngle = math.pi * 2,
     this.tileMode = TileMode.clamp,
   }) : assert(colors.length >= 2, 'At least 2 colors required');
+
+  /// Creates a horizontal linear gradient.
+  factory FusionGradient.horizontal({required List<Color> colors, List<double>? stops}) {
+    return FusionGradient(
+      colors: colors,
+      stops: stops,
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+    );
+  }
+
+  // ==========================================================================
+  // FACTORY CONSTRUCTORS
+  // ==========================================================================
+
+  /// Creates a simple vertical linear gradient.
+  ///
+  /// Most common gradient type - colors from top to bottom.
+  factory FusionGradient.vertical({required List<Color> colors, List<double>? stops}) {
+    return FusionGradient(
+      colors: colors,
+      stops: stops,
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+    );
+  }
+
+  /// Creates a diagonal linear gradient.
+  factory FusionGradient.diagonal({required List<Color> colors, List<double>? stops}) {
+    return FusionGradient(
+      colors: colors,
+      stops: stops,
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+  }
+
+  /// Creates a radial gradient from center.
+  factory FusionGradient.radial({
+    required List<Color> colors,
+    List<double>? stops,
+    AlignmentGeometry center = Alignment.center,
+    double radius = 0.5,
+  }) {
+    return FusionGradient(
+      colors: colors,
+      stops: stops,
+      type: FusionGradientType.radial,
+      center: center,
+      radius: radius,
+    );
+  }
+
+  /// Creates a sweep (angular) gradient.
+  factory FusionGradient.sweep({
+    required List<Color> colors,
+    List<double>? stops,
+    AlignmentGeometry center = Alignment.center,
+    double startAngle = 0.0,
+    double endAngle = math.pi * 2,
+  }) {
+    return FusionGradient(
+      colors: colors,
+      stops: stops,
+      type: FusionGradientType.sweep,
+      center: center,
+      startAngle: startAngle,
+      endAngle: endAngle,
+    );
+  }
 
   /// Colors in the gradient.
   ///
@@ -70,76 +142,6 @@ class FusionGradient {
 
   /// How to tile the gradient outside bounds.
   final TileMode tileMode;
-
-  // ==========================================================================
-  // FACTORY CONSTRUCTORS
-  // ==========================================================================
-
-  /// Creates a simple vertical linear gradient.
-  ///
-  /// Most common gradient type - colors from top to bottom.
-  factory FusionGradient.vertical({required List<Color> colors, List<double>? stops}) {
-    return FusionGradient(
-      colors: colors,
-      stops: stops,
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-    );
-  }
-
-  /// Creates a horizontal linear gradient.
-  factory FusionGradient.horizontal({required List<Color> colors, List<double>? stops}) {
-    return FusionGradient(
-      colors: colors,
-      stops: stops,
-      begin: Alignment.centerLeft,
-      end: Alignment.centerRight,
-    );
-  }
-
-  /// Creates a diagonal linear gradient.
-  factory FusionGradient.diagonal({required List<Color> colors, List<double>? stops}) {
-    return FusionGradient(
-      colors: colors,
-      stops: stops,
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
-  }
-
-  /// Creates a radial gradient from center.
-  factory FusionGradient.radial({
-    required List<Color> colors,
-    List<double>? stops,
-    AlignmentGeometry center = Alignment.center,
-    double radius = 0.5,
-  }) {
-    return FusionGradient(
-      colors: colors,
-      stops: stops,
-      type: FusionGradientType.radial,
-      center: center,
-      radius: radius,
-    );
-  }
-
-  /// Creates a sweep (angular) gradient.
-  factory FusionGradient.sweep({
-    required List<Color> colors,
-    List<double>? stops,
-    AlignmentGeometry center = Alignment.center,
-    double startAngle = 0.0,
-    double endAngle = math.pi * 2,
-  }) {
-    return FusionGradient(
-      colors: colors,
-      stops: stops,
-      type: FusionGradientType.sweep,
-      center: center,
-      startAngle: startAngle,
-      endAngle: endAngle,
-    );
-  }
 
   // ==========================================================================
   // PRESET GRADIENTS
@@ -270,8 +272,8 @@ class FusionGradient {
     if (identical(this, other)) return true;
 
     return other is FusionGradient &&
-        _listEquals(other.colors, colors) &&
-        _listEquals(other.stops, stops) &&
+        listEquals(other.colors, colors) &&
+        listEquals(other.stops, stops) &&
         other.begin == begin &&
         other.end == end &&
         other.type == type;
@@ -280,15 +282,6 @@ class FusionGradient {
   @override
   int get hashCode =>
       Object.hash(Object.hashAll(colors), Object.hashAll(stops ?? []), begin, end, type);
-
-  bool _listEquals(List? a, List? b) {
-    if (a == null) return b == null;
-    if (b == null || a.length != b.length) return false;
-    for (int i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
-    }
-    return true;
-  }
 }
 
 /// Type of gradient.

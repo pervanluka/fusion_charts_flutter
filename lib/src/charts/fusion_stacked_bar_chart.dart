@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
-import '../series/fusion_stacked_bar_series.dart';
-import '../configuration/fusion_chart_configuration.dart';
-import '../configuration/fusion_stacked_bar_chart_configuration.dart';
+
 import '../configuration/fusion_axis_configuration.dart';
-import '../configuration/fusion_stacked_tooltip_builder.dart';
-import '../configuration/fusion_tooltip_configuration.dart';
+import '../configuration/fusion_chart_configuration.dart';
 import '../configuration/fusion_crosshair_configuration.dart';
 import '../configuration/fusion_pan_configuration.dart';
+import '../configuration/fusion_stacked_bar_chart_configuration.dart';
+import '../configuration/fusion_stacked_tooltip_builder.dart';
+import '../configuration/fusion_tooltip_configuration.dart';
 import '../configuration/fusion_zoom_configuration.dart';
 import '../data/fusion_data_point.dart';
-import '../rendering/fusion_coordinate_system.dart';
-import '../rendering/painters/fusion_stacked_bar_chart_painter.dart';
 import '../rendering/engine/fusion_paint_pool.dart';
 import '../rendering/engine/fusion_shader_cache.dart';
-import '../utils/fusion_margin_calculator.dart';
+import '../rendering/fusion_coordinate_system.dart';
+import '../rendering/painters/fusion_stacked_bar_chart_painter.dart';
+import '../series/fusion_stacked_bar_series.dart';
 import '../utils/chart_bounds_calculator.dart';
-import 'fusion_stacked_bar_interactive_state.dart';
+import '../utils/fusion_margin_calculator.dart';
 import 'base/fusion_chart_header.dart';
+import 'fusion_stacked_bar_interactive_state.dart';
 
 /// A professional stacked bar chart widget.
 ///
@@ -76,8 +77,8 @@ import 'base/fusion_chart_header.dart';
 /// ```
 class FusionStackedBarChart extends StatefulWidget {
   const FusionStackedBarChart({
-    super.key,
     required this.series,
+    super.key,
     this.config,
     this.xAxis,
     this.yAxis,
@@ -424,9 +425,9 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
     final pointCount = widget.series.isNotEmpty ? widget.series.first.dataPoints.length : 1;
 
     // Coordinate system uses -0.5 to pointCount-0.5 for bar centering
-    final minX = -0.5;
+    const minX = -0.5;
     final maxX = pointCount - 0.5;
-    final minY = 0.0;
+    const minY = 0.0;
 
     // Calculate nice Y-axis bounds using shared utility
     double maxY;
@@ -444,7 +445,7 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
 
     // For margin calculation, use actual label positions (0 to pointCount-1)
     // This ensures correct label width calculations
-    final marginMinX = 0.0;
+    const marginMinX = 0.0;
     final marginMaxX = (pointCount - 1).toDouble();
 
     // Calculate dynamic margins based on axis labels

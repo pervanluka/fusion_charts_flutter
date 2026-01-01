@@ -33,7 +33,7 @@ class FusionPieTooltipLayer extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (!tooltipBehavior.enable || tooltipData == null) return;
     if (tooltipOpacity <= 0) return;
-    
+
     // Skip tooltip in very small charts (preview cards)
     const minTooltipSize = 120.0;
     if (size.width < minTooltipSize || size.height < minTooltipSize) return;
@@ -47,11 +47,9 @@ class FusionPieTooltipLayer extends CustomPainter {
     switch (tooltipBehavior.position) {
       case FusionTooltipPosition.floating:
         _paintFloatingTooltip(canvas, size, data);
-        break;
       case FusionTooltipPosition.top:
       case FusionTooltipPosition.bottom:
         _paintAnchoredTooltip(canvas, size, data);
-        break;
     }
   }
 
@@ -204,21 +202,13 @@ class FusionPieTooltipLayer extends CustomPainter {
 
     // Draw color indicator
     final indicatorRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(
-        tooltipX + padding.left,
-        tooltipY + padding.top,
-        4,
-        textPainter.height,
-      ),
+      Rect.fromLTWH(tooltipX + padding.left, tooltipY + padding.top, 4, textPainter.height),
       Radius.circular(theme.tooltipIndicatorRadius),
     );
     canvas.drawRRect(indicatorRect, Paint()..color = data.color);
 
     // Draw text
-    textPainter.paint(
-      canvas,
-      Offset(tooltipX + padding.left + 12, tooltipY + padding.top),
-    );
+    textPainter.paint(canvas, Offset(tooltipX + padding.left + 12, tooltipY + padding.top));
 
     canvas.restore();
 
@@ -338,7 +328,7 @@ class FusionPieTooltipLayer extends CustomPainter {
     // Calculate arrow X bounds with safety
     final minArrowX = tooltipRect.left + arrowSize + 4;
     final maxArrowX = tooltipRect.right - arrowSize - 4;
-    
+
     // Skip arrow if tooltip is too small
     if (maxArrowX <= minArrowX) return;
 
@@ -423,10 +413,7 @@ class FusionPieTooltipLayer extends CustomPainter {
         final nextDistance = distance + dashLength;
 
         if (draw) {
-          final extractPath = metric.extractPath(
-            distance,
-            nextDistance.clamp(0, metric.length),
-          );
+          final extractPath = metric.extractPath(distance, nextDistance.clamp(0, metric.length));
           dashedPath.addPath(extractPath, Offset.zero);
         }
 
@@ -446,7 +433,6 @@ class FusionPieTooltipLayer extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant FusionPieTooltipLayer oldDelegate) {
-    return tooltipData != oldDelegate.tooltipData ||
-        tooltipOpacity != oldDelegate.tooltipOpacity;
+    return tooltipData != oldDelegate.tooltipData || tooltipOpacity != oldDelegate.tooltipOpacity;
   }
 }

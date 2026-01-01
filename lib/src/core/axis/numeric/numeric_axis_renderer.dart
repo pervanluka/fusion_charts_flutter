@@ -1,13 +1,14 @@
-import 'package:flutter/material.dart';
 import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
 
 import '../../../configuration/fusion_axis_configuration.dart';
 import '../../../themes/fusion_chart_theme.dart';
 import '../../../utils/axis_calculator.dart';
 import '../../../utils/fusion_data_formatter.dart';
+import '../../enums/axis_range_padding.dart';
 import '../../models/axis_bounds.dart';
 import '../../models/axis_label.dart';
-import '../../enums/axis_range_padding.dart';
 import '../base/fusion_axis_renderer.dart';
 import 'fusion_numeric_axis.dart';
 

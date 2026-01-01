@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../../core/enums/fusion_data_label_display.dart';
-import '../../series/fusion_series.dart';
-import '../engine/fusion_render_context.dart';
-import '../../series/series_with_data_points.dart';
 import '../../data/fusion_data_point.dart';
+import '../../series/fusion_series.dart';
+import '../../series/series_with_data_points.dart';
+import '../engine/fusion_render_context.dart';
 import 'fusion_render_layer.dart';
 
 /// Renders data labels on charts with smart positioning.
@@ -133,12 +134,12 @@ class FusionDataLabelLayer extends FusionRenderLayer {
   ) {
     final labels = <_LabelInfo>[];
     final dataPoints = series.dataPoints;
-    
+
     if (dataPoints.isEmpty) return labels;
 
     // Get display mode
     final displayMode = labelSeries.dataLabelDisplay;
-    
+
     // Early return for none mode
     if (displayMode == FusionDataLabelDisplay.none) {
       return labels;
@@ -196,12 +197,9 @@ class FusionDataLabelLayer extends FusionRenderLayer {
   }
 
   /// Returns the indices of points that should display labels based on display mode.
-  /// 
+  ///
   /// Uses indices instead of points to handle multiple points with same Y value.
-  Set<int> _getIndicesToShow(
-    List<FusionDataPoint> dataPoints,
-    FusionDataLabelDisplay displayMode,
-  ) {
+  Set<int> _getIndicesToShow(List<FusionDataPoint> dataPoints, FusionDataLabelDisplay displayMode) {
     if (dataPoints.isEmpty) return {};
 
     switch (displayMode) {
@@ -217,7 +215,7 @@ class FusionDataLabelLayer extends FusionRenderLayer {
         // Return ALL indices with this max value
         return {
           for (int i = 0; i < dataPoints.length; i++)
-            if (dataPoints[i].y == maxY) i
+            if (dataPoints[i].y == maxY) i,
         };
 
       case FusionDataLabelDisplay.minOnly:
@@ -226,7 +224,7 @@ class FusionDataLabelLayer extends FusionRenderLayer {
         // Return ALL indices with this min value
         return {
           for (int i = 0; i < dataPoints.length; i++)
-            if (dataPoints[i].y == minY) i
+            if (dataPoints[i].y == minY) i,
         };
 
       case FusionDataLabelDisplay.maxAndMin:
@@ -236,7 +234,7 @@ class FusionDataLabelLayer extends FusionRenderLayer {
         // Return ALL indices with max or min value
         return {
           for (int i = 0; i < dataPoints.length; i++)
-            if (dataPoints[i].y == maxY || dataPoints[i].y == minY) i
+            if (dataPoints[i].y == maxY || dataPoints[i].y == minY) i,
         };
 
       case FusionDataLabelDisplay.firstAndLast:
@@ -248,7 +246,7 @@ class FusionDataLabelLayer extends FusionRenderLayer {
   }
 
   /// Calculates label position with smart boundary handling.
-  /// 
+  ///
   /// - Tries to position above the point first
   /// - If that overflows top, positions below
   /// - Clamps horizontal position to stay within chart area
@@ -259,38 +257,38 @@ class FusionDataLabelLayer extends FusionRenderLayer {
     required EdgeInsets labelPadding,
   }) {
     const pointPadding = 6.0; // Gap between point and label
-    
+
     // Calculate label dimensions with padding for background
     final labelWidth = labelSize.width + labelPadding.horizontal;
     final labelHeight = labelSize.height + labelPadding.vertical;
-    
+
     // Try above first
     double labelY = screenPos.dy - labelHeight - pointPadding;
-    
+
     // If above overflows top, position below
     if (labelY < chartArea.top) {
       labelY = screenPos.dy + pointPadding + 4; // +4 for marker clearance
     }
-    
+
     // If below also overflows, clamp to top
     if (labelY + labelHeight > chartArea.bottom) {
       labelY = chartArea.top;
     }
-    
+
     // Calculate horizontal position (centered on point)
     double labelX = screenPos.dx - labelSize.width / 2;
-    
+
     // Clamp horizontal to stay within chart area (no extra padding)
     final minX = chartArea.left;
     final maxX = chartArea.right - labelWidth;
-    
+
     if (maxX > minX) {
       labelX = labelX.clamp(minX, maxX);
     } else {
       // Label wider than chart area - center it
       labelX = chartArea.left + (chartArea.width - labelSize.width) / 2;
     }
-    
+
     return Offset(labelX, labelY);
   }
 
@@ -515,7 +513,7 @@ class FusionDataLabelLayer extends FusionRenderLayer {
     final theme = context.theme;
     final padding = theme.dataLabelPadding;
     final borderRadius = theme.dataLabelBorderRadius;
-    
+
     // Calculate bounds with theme padding
     final bounds = Rect.fromLTWH(
       label.position.dx - padding.left,

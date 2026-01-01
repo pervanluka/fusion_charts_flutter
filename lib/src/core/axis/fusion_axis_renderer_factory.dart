@@ -1,6 +1,6 @@
 import '../../configuration/fusion_axis_configuration.dart';
-import 'base/fusion_axis_renderer.dart';
 import 'base/fusion_axis_base.dart';
+import 'base/fusion_axis_renderer.dart';
 import 'category/category_axis_renderer.dart';
 import 'category/fusion_category_axis.dart';
 import 'datetime/fusion_datetime_axis.dart';

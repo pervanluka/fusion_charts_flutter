@@ -33,6 +33,51 @@ class AxisBounds {
        assert(decimalPlaces >= 0, 'decimalPlaces must be non-negative'),
        assert(padding >= 0 && padding <= 1, 'padding must be between 0 and 1');
 
+  // ==========================================================================
+  // FACTORY CONSTRUCTORS
+  // ==========================================================================
+
+  /// Creates bounds from raw data range.
+  ///
+  /// Applies nice number algorithm to create human-friendly intervals.
+  factory AxisBounds.fromDataRange({
+    required double dataMin,
+    required double dataMax,
+    int? desiredTickCount,
+    double padding = 0.05,
+    bool includeZero = false,
+  }) {
+    // Apply padding
+    var range = dataMax - dataMin;
+    if (range == 0) {
+      // Handle single value
+      range = dataMin.abs() * 0.1;
+      if (range == 0) range = 1;
+    }
+
+    final paddedMin = dataMin - (range * padding);
+    final paddedMax = dataMax + (range * padding);
+
+    // Include zero if requested
+    final adjustedMin = includeZero && paddedMin > 0 ? 0 : paddedMin;
+    final adjustedMax = includeZero && paddedMax < 0 ? 0 : paddedMax;
+
+    // Calculate nice bounds (simplified - full implementation in calculator)
+    final niceRange = adjustedMax - adjustedMin;
+    final interval = _calculateNiceInterval(niceRange, desiredTickCount ?? 5);
+
+    final niceMin = (adjustedMin / interval).floor() * interval;
+    final niceMax = (adjustedMax / interval).ceil() * interval;
+
+    return AxisBounds(
+      min: niceMin,
+      max: niceMax,
+      interval: interval,
+      decimalPlaces: _calculateDecimalPlaces(interval),
+      padding: padding,
+    );
+  }
+
   /// Minimum value of the axis.
   ///
   /// This is the "nice" minimum after applying rounding algorithms.
@@ -84,7 +129,7 @@ class AxisBounds {
   /// Includes both min and max ticks.
   int get majorTickCount {
     if (range == 0) return 1;
-    return ((range / interval).round() + 1);
+    return (range / interval).round() + 1;
   }
 
   /// Number of minor ticks between each major tick pair.
@@ -130,51 +175,6 @@ class AxisBounds {
     }
 
     return ticks;
-  }
-
-  // ==========================================================================
-  // FACTORY CONSTRUCTORS
-  // ==========================================================================
-
-  /// Creates bounds from raw data range.
-  ///
-  /// Applies nice number algorithm to create human-friendly intervals.
-  factory AxisBounds.fromDataRange({
-    required double dataMin,
-    required double dataMax,
-    int? desiredTickCount,
-    double padding = 0.05,
-    bool includeZero = false,
-  }) {
-    // Apply padding
-    var range = dataMax - dataMin;
-    if (range == 0) {
-      // Handle single value
-      range = dataMin.abs() * 0.1;
-      if (range == 0) range = 1;
-    }
-
-    final paddedMin = dataMin - (range * padding);
-    final paddedMax = dataMax + (range * padding);
-
-    // Include zero if requested
-    final adjustedMin = includeZero && paddedMin > 0 ? 0 : paddedMin;
-    final adjustedMax = includeZero && paddedMax < 0 ? 0 : paddedMax;
-
-    // Calculate nice bounds (simplified - full implementation in calculator)
-    final niceRange = adjustedMax - adjustedMin;
-    final interval = _calculateNiceInterval(niceRange, desiredTickCount ?? 5);
-
-    final niceMin = (adjustedMin / interval).floor() * interval;
-    final niceMax = (adjustedMax / interval).ceil() * interval;
-
-    return AxisBounds(
-      min: niceMin,
-      max: niceMax,
-      interval: interval,
-      decimalPlaces: _calculateDecimalPlaces(interval),
-      padding: padding,
-    );
   }
 
   /// Simple nice interval calculation (full version in calculator).

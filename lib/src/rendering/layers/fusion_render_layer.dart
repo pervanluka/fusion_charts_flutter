@@ -106,7 +106,7 @@ class FusionBorderLayer extends FusionRenderLayer {
   @override
   void paint(Canvas canvas, Size size, FusionRenderContext context) {
     final chartArea = context.chartArea;
-    
+
     final paint = Paint()
       ..color = context.theme.borderColor
       ..strokeWidth = context.theme.axisLineWidth
@@ -191,7 +191,10 @@ class FusionGridLayer extends FusionRenderLayer {
         final xInterval =
             verticalInterval ??
             xAxisConfig.interval ??
-            _calculateNiceInterval(dataBounds.right - dataBounds.left, xAxisConfig.desiredIntervals);
+            _calculateNiceInterval(
+              dataBounds.right - dataBounds.left,
+              xAxisConfig.desiredIntervals,
+            );
 
         if (xInterval > 0) {
           // Start from nice number
@@ -203,7 +206,11 @@ class FusionGridLayer extends FusionRenderLayer {
 
           while (currentX <= dataBounds.right && iterations < _maxIterations) {
             final screenX = context.dataXToScreenX(currentX).roundToDouble();
-            canvas.drawLine(Offset(screenX, chartArea.top), Offset(screenX, chartArea.bottom), paint);
+            canvas.drawLine(
+              Offset(screenX, chartArea.top),
+              Offset(screenX, chartArea.bottom),
+              paint,
+            );
             currentX += xInterval;
             iterations++;
           }
@@ -214,7 +221,10 @@ class FusionGridLayer extends FusionRenderLayer {
           final xInterval =
               verticalInterval ??
               xAxisConfig.interval ??
-              _calculateNiceInterval(dataBounds.right - dataBounds.left, xAxisConfig.desiredIntervals);
+              _calculateNiceInterval(
+                dataBounds.right - dataBounds.left,
+                xAxisConfig.desiredIntervals,
+              );
           _renderMinorGridLines(
             canvas,
             context,
@@ -709,13 +719,10 @@ class FusionAxisLayer extends FusionRenderLayer {
         switch (alignment) {
           case LabelAlignment.start:
             yOffset = screenY - textPainter.height; // Top aligned
-            break;
           case LabelAlignment.end:
             yOffset = screenY; // Bottom aligned
-            break;
           case LabelAlignment.center:
             yOffset = screenY - (textPainter.height / 2); // Center aligned
-            break;
         }
 
         final Offset labelOffset;
@@ -736,13 +743,10 @@ class FusionAxisLayer extends FusionRenderLayer {
         switch (alignment) {
           case LabelAlignment.start:
             xOffset = screenX; // Left aligned
-            break;
           case LabelAlignment.end:
             xOffset = screenX - textPainter.width; // Right aligned
-            break;
           case LabelAlignment.center:
             xOffset = screenX - (textPainter.width / 2); // Center aligned
-            break;
         }
 
         if (rotation != 0.0) {
@@ -761,13 +765,10 @@ class FusionAxisLayer extends FusionRenderLayer {
           switch (alignment) {
             case LabelAlignment.start:
               rotatedXOffset = 0;
-              break;
             case LabelAlignment.end:
               rotatedXOffset = -textPainter.width;
-              break;
             case LabelAlignment.center:
               rotatedXOffset = -textPainter.width / 2;
-              break;
           }
 
           textPainter.paint(canvas, Offset(rotatedXOffset, 0));

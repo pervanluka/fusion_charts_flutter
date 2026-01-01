@@ -367,7 +367,7 @@ class FusionPathBuilder {
     final dy = lineEnd.dy - lineStart.dy;
 
     final numerator = ((point.dx - lineStart.dx) * dy - (point.dy - lineStart.dy) * dx).abs();
-    final denominator = (dx * dx + dy * dy);
+    final denominator = dx * dx + dy * dy;
 
     if (denominator == 0) return 0;
 

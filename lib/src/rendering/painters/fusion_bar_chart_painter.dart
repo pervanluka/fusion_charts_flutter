@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 
-import '../engine/fusion_render_pipeline.dart';
-import '../engine/fusion_render_context.dart';
 import '../engine/fusion_paint_pool.dart';
+import '../engine/fusion_render_context.dart';
+import '../engine/fusion_render_pipeline.dart';
 import '../engine/fusion_shader_cache.dart';
+import '../layers/fusion_crosshair_layer.dart';
+import '../layers/fusion_data_label_layer.dart';
 import '../layers/fusion_render_layer.dart';
 import '../layers/fusion_series_layer.dart';
-import '../layers/fusion_data_label_layer.dart';
 import '../layers/fusion_tooltip_layer.dart';
-import '../layers/fusion_crosshair_layer.dart';
 
 /// Professional painter for bar charts using modern render pipeline.
 ///
@@ -153,9 +153,9 @@ class FusionBarChartPainter extends CustomPainter {
     final effectiveConfig = config ?? const FusionChartConfiguration();
 
     // Get bar-specific config, use defaults if base config provided
-    final enableSideBySide = config is FusionBarChartConfiguration
-        ? (config as FusionBarChartConfiguration).enableSideBySideSeriesPlacement
-        : true;
+    final enableSideBySide =
+        config is! FusionBarChartConfiguration ||
+        (config! as FusionBarChartConfiguration).enableSideBySideSeriesPlacement;
 
     return FusionRenderPipeline(
       layers: [
@@ -193,7 +193,7 @@ class FusionBarChartPainter extends CustomPainter {
         // Layer 1001: Crosshair (if showing)
         if (crosshairPosition != null && effectiveConfig.enableCrosshair)
           FusionCrosshairLayer(
-            position: crosshairPosition!,
+            position: crosshairPosition,
             snappedPoint: crosshairPoint,
             crosshairConfig: effectiveConfig.crosshairBehavior,
           ),
@@ -289,11 +289,11 @@ class FusionBarChartPainter extends CustomPainter {
     // For bar charts, X bounds should include half-bar padding
     // This centers bars within their grid cells
     final pointCount = series.first.dataPoints.length;
-    final minX = -0.5; // Half bar width before first bar
+    const minX = -0.5; // Half bar width before first bar
     final maxX = pointCount - 0.5; // Half bar width after last bar
 
     // For bars, we want to start at 0 (baseline)
-    final minY = 0.0;
+    const minY = 0.0;
     final maxY = allPoints.map((p) => p.y).reduce((a, b) => a > b ? a : b);
 
     return Rect.fromLTRB(minX, minY, maxX, maxY);

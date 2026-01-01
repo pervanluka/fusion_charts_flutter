@@ -1,11 +1,10 @@
-// lib/src/configuration/fusion_bar_chart_configuration.dart
-
 import 'package:flutter/material.dart';
+
 import '../themes/fusion_chart_theme.dart';
 import 'fusion_chart_configuration.dart';
-import 'fusion_tooltip_configuration.dart';
 import 'fusion_crosshair_configuration.dart';
 import 'fusion_pan_configuration.dart';
+import 'fusion_tooltip_configuration.dart';
 import 'fusion_zoom_configuration.dart';
 
 /// Configuration specifically for bar charts.
@@ -24,7 +23,7 @@ import 'fusion_zoom_configuration.dart';
 ///     // Base settings
 ///     theme: FusionDarkTheme(),
 ///     enableAnimation: true,
-///     
+///
 ///     // Bar-specific settings
 ///     enableSideBySideSeriesPlacement: true,  // Grouped bars
 ///     barWidthRatio: 0.8,
@@ -79,9 +78,9 @@ class FusionBarChartConfiguration extends FusionChartConfiguration {
     this.barSpacing = 0.2,
     this.borderRadius = 0.0,
     this.enableBarShadow = false,
-  })  : assert(barWidthRatio > 0 && barWidthRatio <= 1, 'barWidthRatio must be between 0 and 1'),
-        assert(barSpacing >= 0 && barSpacing <= 1, 'barSpacing must be between 0 and 1'),
-        assert(borderRadius >= 0, 'borderRadius must be non-negative');
+  }) : assert(barWidthRatio > 0 && barWidthRatio <= 1, 'barWidthRatio must be between 0 and 1'),
+       assert(barSpacing >= 0 && barSpacing <= 1, 'barSpacing must be between 0 and 1'),
+       assert(borderRadius >= 0, 'borderRadius must be non-negative');
 
   // ==========================================================================
   // BAR-SPECIFIC SETTINGS
@@ -184,7 +183,8 @@ class FusionBarChartConfiguration extends FusionChartConfiguration {
       padding: padding ?? this.padding,
       animationDuration: animationDuration ?? this.animationDuration,
       animationCurve: animationCurve ?? this.animationCurve,
-      enableSideBySideSeriesPlacement: enableSideBySideSeriesPlacement ?? this.enableSideBySideSeriesPlacement,
+      enableSideBySideSeriesPlacement:
+          enableSideBySideSeriesPlacement ?? this.enableSideBySideSeriesPlacement,
       barWidthRatio: barWidthRatio ?? this.barWidthRatio,
       barSpacing: barSpacing ?? this.barSpacing,
       borderRadius: borderRadius ?? this.borderRadius,

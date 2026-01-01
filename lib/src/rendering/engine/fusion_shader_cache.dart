@@ -1,6 +1,7 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'dart:ui' as ui;
 
 /// Cache for gradient shaders to avoid recreation every frame.
 ///
@@ -242,7 +243,7 @@ class FusionShaderCache {
     debugPrint('Cache Hits: $_cacheHits');
     debugPrint('Cache Misses: $_cacheMisses');
     debugPrint('Hit Rate: ${(statistics.hitRate * 100).toStringAsFixed(1)}%');
-    debugPrint('Memory Used: ~${(_cache.length * 1024)} bytes (estimated)');
+    debugPrint('Memory Used: ~${_cache.length * 1024} bytes (estimated)');
   }
 
   /// Checks if shader is cached.
@@ -264,7 +265,7 @@ class FusionShaderCache {
   String toString() {
     return 'FusionShaderCache('
         'size: ${_cache.length}/$maxCacheSize, '
-        'hitRate: ${(statistics.hitRate * 100).toStringAsFixed(1)}%'
+        'hitRate: ${(statistics.hitRate * 100).toStringAsFixed(1)}% '
         ')';
   }
 }
@@ -325,7 +326,7 @@ class ShaderCacheStatistics {
         'shaders: $totalShaders, '
         'hits: $cacheHits, '
         'misses: $cacheMisses, '
-        'hitRate: ${(hitRate * 100).toStringAsFixed(1)}%'
+        'hitRate: ${(hitRate * 100).toStringAsFixed(1)}% '
         ')';
   }
 }
