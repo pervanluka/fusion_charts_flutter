@@ -1,0 +1,38 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Example App",
+            "cwd": "example",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "Example App (Profile Mode)",
+            "cwd": "example",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "Example App (Release Mode)",
+            "cwd": "example",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "Run All Tests",
+            "request": "launch",
+            "type": "dart",
+            "program": "test/",
+            "args": ["--exclude-tags=golden"]
+        },
+        {
+            "name": "Run Golden Tests",
+            "request": "launch",
+            "type": "dart",
+            "program": "test/golden_tests/"
+        }
+    ]
+}
