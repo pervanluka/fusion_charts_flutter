@@ -166,10 +166,7 @@ class ComputedPieSegment {
   // ===========================================================================
 
   /// Creates a copy with modified selection/hover state.
-  ComputedPieSegment copyWith({
-    bool? isSelected,
-    bool? isHovered,
-  }) {
+  ComputedPieSegment copyWith({bool? isSelected, bool? isHovered}) {
     return ComputedPieSegment(
       index: index,
       originalIndex: originalIndex,
@@ -193,7 +190,8 @@ class ComputedPieSegment {
   }
 
   @override
-  String toString() => 'ComputedPieSegment(index: $index, '
+  String toString() =>
+      'ComputedPieSegment(index: $index, '
       'label: $label, '
       'percentage: ${percentage.toStringAsFixed(1)}%)';
 }
@@ -311,7 +309,8 @@ class FusionPieSegmentComputer {
     final PieDirection resolvedDirection = cfg != null
         ? cfg.resolveDirection(series)
         : series.direction;
-    final directionMultiplier = resolvedDirection == PieDirection.counterClockwise ? -1.0 : 1.0;
+    final directionMultiplier =
+        resolvedDirection == PieDirection.counterClockwise ? -1.0 : 1.0;
 
     // Build segments
     final segments = <ComputedPieSegment>[];
@@ -320,21 +319,25 @@ class FusionPieSegmentComputer {
     for (int i = 0; i < dataPoints.length; i++) {
       final dataPoint = dataPoints[i];
       final percentage = (dataPoint.value / total) * 100;
-      final sweepAngle = (dataPoint.value / total) * availableSweep * directionMultiplier;
+      final sweepAngle =
+          (dataPoint.value / total) * availableSweep * directionMultiplier;
 
       // Determine if exploded
-      final isExploded = series.explodeAll ||
-          dataPoint.explode ||
-          explodedIndices.contains(i);
+      final isExploded =
+          series.explodeAll || dataPoint.explode || explodedIndices.contains(i);
 
       // Calculate explode offset - uniform radial offset for all exploded segments
       final explodeDistance = isExploded
           ? (dataPoint.explodeOffset ?? resolvedExplodeOffset)
           : 0.0;
-      
+
       final midAngle = currentAngle + sweepAngle / 2;
       final explodeOffset = isExploded
-          ? FusionPolarMath.pointOnCircle(Offset.zero, explodeDistance, midAngle)
+          ? FusionPolarMath.pointOnCircle(
+              Offset.zero,
+              explodeDistance,
+              midAngle,
+            )
           : Offset.zero;
 
       // Adjust center for exploded segments
@@ -371,26 +374,28 @@ class FusionPieSegmentComputer {
         sweepAngle: sweepAngle.abs(),
       );
 
-      segments.add(ComputedPieSegment(
-        index: i,
-        originalIndex: i,
-        dataPoint: dataPoint,
-        value: dataPoint.value,
-        percentage: percentage,
-        startAngle: currentAngle,
-        sweepAngle: sweepAngle.abs(),
-        center: segmentCenter,
-        innerRadius: innerRadius,
-        outerRadius: outerRadius,
-        color: color,
-        path: path,
-        centroid: centroid,
-        labelAnchor: labelAnchor,
-        isExploded: isExploded,
-        explodeOffset: explodeOffset,
-        isSelected: selectedIndices.contains(i),
-        isHovered: hoveredIndex == i,
-      ));
+      segments.add(
+        ComputedPieSegment(
+          index: i,
+          originalIndex: i,
+          dataPoint: dataPoint,
+          value: dataPoint.value,
+          percentage: percentage,
+          startAngle: currentAngle,
+          sweepAngle: sweepAngle.abs(),
+          center: segmentCenter,
+          innerRadius: innerRadius,
+          outerRadius: outerRadius,
+          color: color,
+          path: path,
+          centroid: centroid,
+          labelAnchor: labelAnchor,
+          isExploded: isExploded,
+          explodeOffset: explodeOffset,
+          isSelected: selectedIndices.contains(i),
+          isHovered: hoveredIndex == i,
+        ),
+      );
 
       // Move to next segment
       currentAngle += sweepAngle + (gapPerSegment * directionMultiplier);
@@ -400,7 +405,7 @@ class FusionPieSegmentComputer {
   }
 
   /// Gets data points processed according to CONFIG values.
-  /// 
+  ///
   /// This is the critical method that wires config → data processing.
   /// Config values override series values.
   List<FusionPieDataPoint> _getProcessedDataPoints() {
@@ -456,13 +461,12 @@ class FusionPieSegmentComputer {
     // Add "Other" segment if we grouped anything
     if (otherValue > 0) {
       // Resolve group color: config.groupColor > series.groupColor > fallback gray
-      final Color groupColor = cfg?.groupColor ?? series.groupColor ?? const Color(0xFF9CA3AF);
-      
-      mainSegments.add(FusionPieDataPoint(
-        otherValue,
-        label: groupLabel,
-        color: groupColor,
-      ));
+      final Color groupColor =
+          cfg?.groupColor ?? series.groupColor ?? const Color(0xFF9CA3AF);
+
+      mainSegments.add(
+        FusionPieDataPoint(otherValue, label: groupLabel, color: groupColor),
+      );
     }
 
     return mainSegments;
@@ -521,10 +525,7 @@ class FusionPieSegmentCache {
         _layoutSize == layoutSize &&
         _center == center) {
       // Update selection/hover state without full recompute
-      return _updateInteractiveState(
-        selectedIndices,
-        hoveredIndex,
-      );
+      return _updateInteractiveState(selectedIndices, hoveredIndex);
     }
 
     // Full recompute
@@ -558,14 +559,12 @@ class FusionPieSegmentCache {
       final newSelected = selectedIndices.contains(segment.index);
       final newHovered = hoveredIndex == segment.index;
 
-      if (segment.isSelected == newSelected && segment.isHovered == newHovered) {
+      if (segment.isSelected == newSelected &&
+          segment.isHovered == newHovered) {
         return segment;
       }
 
-      return segment.copyWith(
-        isSelected: newSelected,
-        isHovered: newHovered,
-      );
+      return segment.copyWith(isSelected: newSelected, isHovered: newHovered);
     }).toList();
   }
 

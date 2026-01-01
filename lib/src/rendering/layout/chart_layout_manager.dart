@@ -141,7 +141,12 @@ class ChartLayoutManager {
       chartSize.height - padding.bottom,
     );
 
-    final yAxisArea = Rect.fromLTRB(padding.left, plotArea.top, plotArea.left, plotArea.bottom);
+    final yAxisArea = Rect.fromLTRB(
+      padding.left,
+      plotArea.top,
+      plotArea.left,
+      plotArea.bottom,
+    );
 
     // Step 9: Calculate optional areas
     Rect? titleArea;
@@ -200,7 +205,9 @@ class ChartLayoutManager {
     final textPainter = TextPainter(
       text: TextSpan(
         text: title,
-        style: theme?.titleStyle ?? const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        style:
+            theme?.titleStyle ??
+            const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
       textDirection: TextDirection.ltr,
     );

@@ -35,7 +35,10 @@ class _FusionTooltipRendererState extends State<FusionTooltipRenderer>
       duration: widget.behavior.animationDuration,
       vsync: this,
     );
-    _fadeAnimation = CurvedAnimation(parent: _animationController, curve: Curves.easeInOut);
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
 
     if (widget.renderData != null) {
       _showTooltip();
@@ -86,7 +89,10 @@ class _FusionTooltipRendererState extends State<FusionTooltipRenderer>
       return const SizedBox.shrink();
     }
 
-    return FadeTransition(opacity: _fadeAnimation, child: _buildTooltip(context));
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: _buildTooltip(context),
+    );
   }
 
   Widget _buildTooltip(BuildContext context) {
@@ -95,7 +101,12 @@ class _FusionTooltipRendererState extends State<FusionTooltipRenderer>
     // Use custom builder if provided
     if (widget.behavior.builder != null) {
       return _positionTooltip(
-        widget.behavior.builder!(context, data.point, data.seriesName, data.seriesColor),
+        widget.behavior.builder!(
+          context,
+          data.point,
+          data.seriesName,
+          data.seriesColor,
+        ),
         data.screenPosition,
       );
     }
@@ -140,13 +151,17 @@ class _FusionTooltipRendererState extends State<FusionTooltipRenderer>
             borderRadius: BorderRadius.circular(4),
             border: widget.behavior.borderWidth > 0
                 ? Border.all(
-                    color: widget.behavior.borderColor ?? Colors.white.withValues(alpha: 0.2),
+                    color:
+                        widget.behavior.borderColor ??
+                        Colors.white.withValues(alpha: 0.2),
                     width: widget.behavior.borderWidth,
                   )
                 : null,
             boxShadow: [
               BoxShadow(
-                color: (widget.behavior.shadowColor ?? Colors.black).withValues(alpha: 0.3),
+                color: (widget.behavior.shadowColor ?? Colors.black).withValues(
+                  alpha: 0.3,
+                ),
                 blurRadius: widget.behavior.elevation * 2,
                 offset: Offset(0, widget.behavior.elevation),
               ),
@@ -163,7 +178,10 @@ class _FusionTooltipRendererState extends State<FusionTooltipRenderer>
                     Container(
                       width: 10,
                       height: 10,
-                      decoration: BoxDecoration(color: data.seriesColor, shape: BoxShape.circle),
+                      decoration: BoxDecoration(
+                        color: data.seriesColor,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                     const SizedBox(width: 6),
                   ],
@@ -172,7 +190,11 @@ class _FusionTooltipRendererState extends State<FusionTooltipRenderer>
                 content,
                 style:
                     widget.behavior.textStyle ??
-                    TextStyle(color: textColor, fontSize: 12, fontWeight: FontWeight.w500),
+                    TextStyle(
+                      color: textColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                 textAlign: _getTextAlign(),
               ),
             ],

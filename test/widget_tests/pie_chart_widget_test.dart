@@ -7,7 +7,11 @@ void main() {
   final basicPieData = [
     FusionPieDataPoint(35, label: 'Sales', color: const Color(0xFF6366F1)),
     FusionPieDataPoint(25, label: 'Marketing', color: const Color(0xFF22C55E)),
-    FusionPieDataPoint(20, label: 'Engineering', color: const Color(0xFFF59E0B)),
+    FusionPieDataPoint(
+      20,
+      label: 'Engineering',
+      color: const Color(0xFFF59E0B),
+    ),
     FusionPieDataPoint(20, label: 'Support', color: const Color(0xFFA855F7)),
   ];
 
@@ -43,9 +47,7 @@ void main() {
                 height: 400,
                 child: FusionPieChart(
                   series: FusionPieSeries(
-                    dataPoints: [
-                      FusionPieDataPoint(100, label: 'Total'),
-                    ],
+                    dataPoints: [FusionPieDataPoint(100, label: 'Total')],
                   ),
                 ),
               ),
@@ -60,10 +62,7 @@ void main() {
       testWidgets('renders with many data points', (tester) async {
         final manyPoints = List.generate(
           12,
-          (i) => FusionPieDataPoint(
-            (i + 1) * 10.0,
-            label: 'Segment ${i + 1}',
-          ),
+          (i) => FusionPieDataPoint((i + 1) * 10.0, label: 'Segment ${i + 1}'),
         );
 
         await tester.pumpWidget(
@@ -265,9 +264,7 @@ void main() {
                     dataPoints: basicPieData,
                     cornerRadius: 10.0,
                   ),
-                  config: const FusionPieChartConfiguration(
-                    cornerRadius: 10.0,
-                  ),
+                  config: const FusionPieChartConfiguration(cornerRadius: 10.0),
                 ),
               ),
             ),
@@ -328,7 +325,12 @@ void main() {
 
       testWidgets('renders with exploded segments', (tester) async {
         final explodedData = [
-          FusionPieDataPoint(35, label: 'Sales', color: Colors.blue, explode: true),
+          FusionPieDataPoint(
+            35,
+            label: 'Sales',
+            color: Colors.blue,
+            explode: true,
+          ),
           FusionPieDataPoint(25, label: 'Marketing', color: Colors.green),
           FusionPieDataPoint(20, label: 'Engineering', color: Colors.orange),
           FusionPieDataPoint(20, label: 'Support', color: Colors.purple),
@@ -801,9 +803,7 @@ void main() {
                     dataPoints: basicPieData,
                     startAngle: 0, // 3 o'clock position
                   ),
-                  config: const FusionPieChartConfiguration(
-                    startAngle: 0,
-                  ),
+                  config: const FusionPieChartConfiguration(startAngle: 0),
                 ),
               ),
             ),
@@ -1025,7 +1025,9 @@ void main() {
 
     group('Data Updates', () {
       testWidgets('handles data change', (tester) async {
-        final dataNotifier = ValueNotifier<List<FusionPieDataPoint>>(basicPieData);
+        final dataNotifier = ValueNotifier<List<FusionPieDataPoint>>(
+          basicPieData,
+        );
 
         await tester.pumpWidget(
           MaterialApp(
@@ -1084,7 +1086,9 @@ void main() {
         expect(find.byType(FusionPieChart), findsOneWidget);
       });
 
-      testWidgets('onSelectionChanged callback is set correctly', (tester) async {
+      testWidgets('onSelectionChanged callback is set correctly', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -1198,10 +1202,7 @@ void main() {
         innerRadiusPercent: 0.0,
       );
 
-      final copy = original.copyWith(
-        name: 'Copy',
-        innerRadiusPercent: 0.5,
-      );
+      final copy = original.copyWith(name: 'Copy', innerRadiusPercent: 0.5);
 
       expect(copy.name, 'Copy');
       expect(copy.innerRadiusPercent, 0.5);

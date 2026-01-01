@@ -47,14 +47,18 @@ void main() {
       test('maintains sorted order', () {
         final data = List.generate(
           1000,
-          (i) => FusionDataPoint(i.toDouble(), math.Random(42).nextDouble() * 100),
+          (i) =>
+              FusionDataPoint(i.toDouble(), math.Random(42).nextDouble() * 100),
         );
 
         final result = downsampler.downsample(data: data, targetPoints: 100);
 
         for (int i = 0; i < result.length - 1; i++) {
-          expect(result[i].x, lessThanOrEqualTo(result[i + 1].x),
-              reason: 'Points should remain sorted by X');
+          expect(
+            result[i].x,
+            lessThanOrEqualTo(result[i + 1].x),
+            reason: 'Points should remain sorted by X',
+          );
         }
       });
     });
@@ -74,10 +78,7 @@ void main() {
       });
 
       test('handles two points', () {
-        final data = [
-          FusionDataPoint(0, 10),
-          FusionDataPoint(1, 20),
-        ];
+        final data = [FusionDataPoint(0, 10), FusionDataPoint(1, 20)];
 
         final result = downsampler.downsample(data: data, targetPoints: 100);
 
@@ -99,7 +100,10 @@ void main() {
       });
 
       test('handles exactly target points', () {
-        final data = List.generate(100, (i) => FusionDataPoint(i.toDouble(), i.toDouble()));
+        final data = List.generate(
+          100,
+          (i) => FusionDataPoint(i.toDouble(), i.toDouble()),
+        );
         final result = downsampler.downsample(data: data, targetPoints: 100);
 
         expect(result.length, 100);
@@ -112,10 +116,8 @@ void main() {
         // Create sine wave with clear peaks at 90° and 270°
         final data = List.generate(
           360,
-          (i) => FusionDataPoint(
-            i.toDouble(),
-            math.sin(i * math.pi / 180) * 100,
-          ),
+          (i) =>
+              FusionDataPoint(i.toDouble(), math.sin(i * math.pi / 180) * 100),
         );
 
         final result = downsampler.downsample(data: data, targetPoints: 36);

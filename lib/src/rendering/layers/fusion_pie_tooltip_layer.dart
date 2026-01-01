@@ -73,7 +73,8 @@ class FusionPieTooltipLayer extends CustomPainter {
     )..layout();
 
     final padding = theme.tooltipPadding;
-    final tooltipWidth = textPainter.width + padding.horizontal + 16; // +16 for color indicator
+    final tooltipWidth =
+        textPainter.width + padding.horizontal + 16; // +16 for color indicator
     final tooltipHeight = textPainter.height + padding.vertical;
     final tooltipSize = Size(tooltipWidth, tooltipHeight);
 
@@ -92,7 +93,10 @@ class FusionPieTooltipLayer extends CustomPainter {
     );
 
     // Apply opacity
-    canvas.saveLayer(null, Paint()..color = Colors.white.withValues(alpha: tooltipOpacity));
+    canvas.saveLayer(
+      null,
+      Paint()..color = Colors.white.withValues(alpha: tooltipOpacity),
+    );
 
     // Draw shadow
     if (tooltipBehavior.elevation > 0) {
@@ -122,7 +126,10 @@ class FusionPieTooltipLayer extends CustomPainter {
     // Draw text
     textPainter.paint(
       canvas,
-      Offset(tooltipPosition.dx + padding.left + 12, tooltipPosition.dy + padding.top),
+      Offset(
+        tooltipPosition.dx + padding.left + 12,
+        tooltipPosition.dy + padding.top,
+      ),
     );
 
     // Draw arrow pointing to segment
@@ -171,10 +178,18 @@ class FusionPieTooltipLayer extends CustomPainter {
     var tooltipX = data.screenPosition.dx - tooltipWidth / 2;
     tooltipX = tooltipX.clamp(minX, effectiveMaxX);
 
-    final tooltipRect = Rect.fromLTWH(tooltipX, tooltipY, tooltipWidth, tooltipHeight);
+    final tooltipRect = Rect.fromLTWH(
+      tooltipX,
+      tooltipY,
+      tooltipWidth,
+      tooltipHeight,
+    );
 
     // Apply opacity
-    canvas.saveLayer(null, Paint()..color = Colors.white.withValues(alpha: tooltipOpacity));
+    canvas.saveLayer(
+      null,
+      Paint()..color = Colors.white.withValues(alpha: tooltipOpacity),
+    );
 
     // Draw trackball line
     if (tooltipBehavior.showTrackballLine) {
@@ -202,13 +217,21 @@ class FusionPieTooltipLayer extends CustomPainter {
 
     // Draw color indicator
     final indicatorRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(tooltipX + padding.left, tooltipY + padding.top, 4, textPainter.height),
+      Rect.fromLTWH(
+        tooltipX + padding.left,
+        tooltipY + padding.top,
+        4,
+        textPainter.height,
+      ),
       Radius.circular(theme.tooltipIndicatorRadius),
     );
     canvas.drawRRect(indicatorRect, Paint()..color = data.color);
 
     // Draw text
-    textPainter.paint(canvas, Offset(tooltipX + padding.left + 12, tooltipY + padding.top));
+    textPainter.paint(
+      canvas,
+      Offset(tooltipX + padding.left + 12, tooltipY + padding.top),
+    );
 
     canvas.restore();
 
@@ -293,11 +316,19 @@ class FusionPieTooltipLayer extends CustomPainter {
       RRect.fromRectAndRadius(rect, Radius.circular(borderRadius)),
       Paint()
         ..color = shadowColor.withValues(alpha: 0.2)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, tooltipBehavior.elevation * 2),
+        ..maskFilter = MaskFilter.blur(
+          BlurStyle.normal,
+          tooltipBehavior.elevation * 2,
+        ),
     );
   }
 
-  void _paintBackground(Canvas canvas, Rect rect, Color bgColor, double borderRadius) {
+  void _paintBackground(
+    Canvas canvas,
+    Rect rect,
+    Color bgColor,
+    double borderRadius,
+  ) {
     canvas.drawRRect(
       RRect.fromRectAndRadius(rect, Radius.circular(borderRadius)),
       Paint()
@@ -306,7 +337,12 @@ class FusionPieTooltipLayer extends CustomPainter {
     );
   }
 
-  void _paintBorder(Canvas canvas, Rect rect, Color color, double borderRadius) {
+  void _paintBorder(
+    Canvas canvas,
+    Rect rect,
+    Color color,
+    double borderRadius,
+  ) {
     canvas.drawRRect(
       RRect.fromRectAndRadius(rect, Radius.circular(borderRadius)),
       Paint()
@@ -316,7 +352,12 @@ class FusionPieTooltipLayer extends CustomPainter {
     );
   }
 
-  void _paintArrow(Canvas canvas, Rect tooltipRect, Offset targetPoint, Color bgColor) {
+  void _paintArrow(
+    Canvas canvas,
+    Rect tooltipRect,
+    Offset targetPoint,
+    Color bgColor,
+  ) {
     const arrowSize = 6.0;
     const overlapTolerance = 4.0;
 
@@ -333,7 +374,8 @@ class FusionPieTooltipLayer extends CustomPainter {
     if (maxArrowX <= minArrowX) return;
 
     final path = Path();
-    final paint = Paint()..color = bgColor.withValues(alpha: tooltipBehavior.opacity);
+    final paint = Paint()
+      ..color = bgColor.withValues(alpha: tooltipBehavior.opacity);
 
     final isAbove = targetPoint.dy < tooltipRect.top;
     final isBelow = targetPoint.dy > tooltipRect.bottom;
@@ -363,7 +405,8 @@ class FusionPieTooltipLayer extends CustomPainter {
     required Color color,
     required bool isTop,
   }) {
-    final lineColor = tooltipBehavior.trackballLineColor ?? color.withValues(alpha: 0.5);
+    final lineColor =
+        tooltipBehavior.trackballLineColor ?? color.withValues(alpha: 0.5);
     final lineWidth = tooltipBehavior.trackballLineWidth;
     final dashPattern = tooltipBehavior.trackballLineDashPattern;
 
@@ -413,7 +456,10 @@ class FusionPieTooltipLayer extends CustomPainter {
         final nextDistance = distance + dashLength;
 
         if (draw) {
-          final extractPath = metric.extractPath(distance, nextDistance.clamp(0, metric.length));
+          final extractPath = metric.extractPath(
+            distance,
+            nextDistance.clamp(0, metric.length),
+          );
           dashedPath.addPath(extractPath, Offset.zero);
         }
 
@@ -433,6 +479,7 @@ class FusionPieTooltipLayer extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant FusionPieTooltipLayer oldDelegate) {
-    return tooltipData != oldDelegate.tooltipData || tooltipOpacity != oldDelegate.tooltipOpacity;
+    return tooltipData != oldDelegate.tooltipData ||
+        tooltipOpacity != oldDelegate.tooltipOpacity;
   }
 }

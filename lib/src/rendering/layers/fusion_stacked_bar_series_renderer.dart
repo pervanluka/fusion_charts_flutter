@@ -40,14 +40,22 @@ class FusionStackedBarSeriesRenderer {
     final stackedData = _calculateStackedData(groupedSeries, is100Percent);
 
     // Calculate layout metrics
-    final layout = _calculateStackedLayout(context, visibleSeries, groupedSeries.length);
+    final layout = _calculateStackedLayout(
+      context,
+      visibleSeries,
+      groupedSeries.length,
+    );
 
     // Render each group
     int groupIndex = 0;
     for (final groupEntry in groupedSeries.entries) {
       final seriesInGroup = groupEntry.value;
 
-      for (int seriesIndex = 0; seriesIndex < seriesInGroup.length; seriesIndex++) {
+      for (
+        int seriesIndex = 0;
+        seriesIndex < seriesInGroup.length;
+        seriesIndex++
+      ) {
         final series = seriesInGroup[seriesIndex];
         final isTopOfStack = seriesIndex == seriesInGroup.length - 1;
 
@@ -178,7 +186,10 @@ class FusionStackedBarSeriesRenderer {
     if (groupCount > 1) {
       // Multiple stack groups side by side
       groupSpacing = groupWidth * 0.1;
-      barWidth = (groupWidth - (groupSpacing * (groupCount - 1))) / groupCount * barWidthRatio;
+      barWidth =
+          (groupWidth - (groupSpacing * (groupCount - 1))) /
+          groupCount *
+          barWidthRatio;
     } else {
       // Single stack group
       barWidth = groupWidth * barWidthRatio;
@@ -210,7 +221,11 @@ class FusionStackedBarSeriesRenderer {
     final chartArea = context.chartArea;
     final animationProgress = context.animationProgress;
 
-    for (int pointIndex = 0; pointIndex < series.dataPoints.length; pointIndex++) {
+    for (
+      int pointIndex = 0;
+      pointIndex < series.dataPoints.length;
+      pointIndex++
+    ) {
       if (pointIndex >= stackedData.length) continue;
 
       final stackValues = stackedData[pointIndex];
@@ -300,7 +315,8 @@ class FusionStackedBarSeriesRenderer {
     // Offset for multiple groups
     if (totalGroups > 1) {
       final totalGroupWidth =
-          totalGroups * layout.barWidth + (totalGroups - 1) * layout.groupSpacing;
+          totalGroups * layout.barWidth +
+          (totalGroups - 1) * layout.groupSpacing;
       final groupStartX = barCenterX - (totalGroupWidth / 2);
       final groupOffset = groupIndex * (layout.barWidth + layout.groupSpacing);
       barCenterX = groupStartX + groupOffset + (layout.barWidth / 2);
@@ -338,7 +354,8 @@ class FusionStackedBarSeriesRenderer {
     // Offset for multiple groups
     if (totalGroups > 1) {
       final totalGroupWidth =
-          totalGroups * layout.barWidth + (totalGroups - 1) * layout.groupSpacing;
+          totalGroups * layout.barWidth +
+          (totalGroups - 1) * layout.groupSpacing;
       final groupStartY = barCenterY - (totalGroupWidth / 2);
       final groupOffset = groupIndex * (layout.barWidth + layout.groupSpacing);
       barCenterY = groupStartY + groupOffset + (layout.barWidth / 2);
@@ -368,11 +385,17 @@ class FusionStackedBarSeriesRenderer {
     required bool isTopOfStack,
     required int seriesIndex,
   }) {
-    final paint = context.getPaint(color: series.color, style: PaintingStyle.fill);
+    final paint = context.getPaint(
+      color: series.color,
+      style: PaintingStyle.fill,
+    );
 
     // Apply gradient if specified
     if (series.gradient != null) {
-      paint.shader = context.shaderCache.getLinearGradient(series.gradient!, barRect);
+      paint.shader = context.shaderCache.getLinearGradient(
+        series.gradient!,
+        barRect,
+      );
     }
 
     // Draw shadow only for bottom segment
@@ -387,9 +410,15 @@ class FusionStackedBarSeriesRenderer {
     if (borderRadius > 0 && isTopOfStack) {
       final rRect = RRect.fromRectAndCorners(
         barRect,
-        topLeft: series.isVertical ? Radius.circular(borderRadius) : Radius.zero,
-        topRight: series.isVertical ? Radius.circular(borderRadius) : Radius.circular(borderRadius),
-        bottomLeft: series.isVertical ? Radius.zero : Radius.circular(borderRadius),
+        topLeft: series.isVertical
+            ? Radius.circular(borderRadius)
+            : Radius.zero,
+        topRight: series.isVertical
+            ? Radius.circular(borderRadius)
+            : Radius.circular(borderRadius),
+        bottomLeft: series.isVertical
+            ? Radius.zero
+            : Radius.circular(borderRadius),
         bottomRight: Radius.zero,
       );
       canvas.drawRRect(rRect, paint);
@@ -405,7 +434,12 @@ class FusionStackedBarSeriesRenderer {
     }
   }
 
-  void _renderShadow(Canvas canvas, Rect barRect, BoxShadow shadow, double borderRadius) {
+  void _renderShadow(
+    Canvas canvas,
+    Rect barRect,
+    BoxShadow shadow,
+    double borderRadius,
+  ) {
     final shadowPaint = Paint()
       ..color = shadow.color
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, shadow.blurRadius);
@@ -428,7 +462,10 @@ class FusionStackedBarSeriesRenderer {
     );
 
     if (borderRadius > 0) {
-      final rRect = RRect.fromRectAndRadius(barRect, Radius.circular(borderRadius));
+      final rRect = RRect.fromRectAndRadius(
+        barRect,
+        Radius.circular(borderRadius),
+      );
       canvas.drawRRect(rRect, borderPaint);
     } else {
       canvas.drawRect(barRect, borderPaint);
@@ -440,7 +477,11 @@ class FusionStackedBarSeriesRenderer {
 
 /// Stacked value with base and top positions.
 class _StackedValue {
-  const _StackedValue({required this.base, required this.top, required this.originalValue});
+  const _StackedValue({
+    required this.base,
+    required this.top,
+    required this.originalValue,
+  });
 
   final double base;
   final double top;

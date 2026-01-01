@@ -80,19 +80,20 @@ class FusionStackedBarHitTester {
     // Calculate category width
     final categoryWidth = chartArea.width / pointCount;
     final categorySpacing = categoryWidth * 0.1;
-    final barWidth = (categoryWidth - categorySpacing * 2) * (visibleSeries.first.barWidth);
+    final barWidth =
+        (categoryWidth - categorySpacing * 2) * (visibleSeries.first.barWidth);
 
     // Find which category (X index) was hit by checking each bar
     int? categoryIndex;
     double? barCenterX;
-    
+
     for (int i = 0; i < pointCount; i++) {
       // CRITICAL FIX: Use coordinate system for positioning
       // This ensures hit testing aligns perfectly with rendered bars
       final centerX = coordSystem.dataXToScreenX(i.toDouble());
       final left = centerX - barWidth / 2;
       final right = centerX + barWidth / 2;
-      
+
       // Check if X is within bar bounds (with small tolerance)
       if (screenPosition.dx >= left - 4 && screenPosition.dx <= right + 4) {
         categoryIndex = i;
@@ -153,7 +154,9 @@ class FusionStackedBarHitTester {
     if (segments.isEmpty) return null;
 
     // Calculate stack rect (entire stack bounds)
-    final stackTop = coordSystem.dataYToScreenY(isStacked100 ? 100 : totalValue);
+    final stackTop = coordSystem.dataYToScreenY(
+      isStacked100 ? 100 : totalValue,
+    );
     final stackBottom = coordSystem.dataYToScreenY(0);
 
     final stackRect = Rect.fromLTRB(barLeft, stackTop, barRight, stackBottom);

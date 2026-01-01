@@ -99,7 +99,8 @@ void main() {
                       name: 'Test',
                       dataPoints: List.generate(
                         20,
-                        (i) => FusionDataPoint(i.toDouble(), (i * 5).toDouble()),
+                        (i) =>
+                            FusionDataPoint(i.toDouble(), (i * 5).toDouble()),
                       ),
                       color: Colors.blue,
                     ),
@@ -155,7 +156,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Simulate hover
-        final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+        final gesture = await tester.createGesture(
+          kind: PointerDeviceKind.mouse,
+        );
         await gesture.addPointer(location: const Offset(200, 150));
         await tester.pump();
         await gesture.moveTo(const Offset(250, 150));
@@ -179,7 +182,8 @@ void main() {
                       name: 'Test',
                       dataPoints: List.generate(
                         20,
-                        (i) => FusionDataPoint(i.toDouble(), (i * 5).toDouble()),
+                        (i) =>
+                            FusionDataPoint(i.toDouble(), (i * 5).toDouble()),
                       ),
                       color: Colors.blue,
                     ),
@@ -200,15 +204,19 @@ void main() {
         await tester.pumpAndSettle();
 
         // Simulate mouse wheel scroll for zoom
-        final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+        final gesture = await tester.createGesture(
+          kind: PointerDeviceKind.mouse,
+        );
         await gesture.addPointer(location: const Offset(200, 150));
         await tester.pump();
 
         // Scroll up (zoom in)
-        await tester.sendEventToBinding(PointerScrollEvent(
-          position: const Offset(200, 150),
-          scrollDelta: const Offset(0, -50),
-        ));
+        await tester.sendEventToBinding(
+          PointerScrollEvent(
+            position: const Offset(200, 150),
+            scrollDelta: const Offset(0, -50),
+          ),
+        );
         await tester.pump();
 
         expect(find.byType(FusionLineChart), findsOneWidget);
@@ -572,7 +580,8 @@ void main() {
                       name: 'Test',
                       dataPoints: List.generate(
                         10,
-                        (i) => FusionDataPoint(i.toDouble(), (i * 10).toDouble()),
+                        (i) =>
+                            FusionDataPoint(i.toDouble(), (i * 10).toDouble()),
                       ),
                       color: Colors.blue,
                     ),
@@ -620,7 +629,8 @@ void main() {
                       name: 'Test',
                       dataPoints: List.generate(
                         10,
-                        (i) => FusionDataPoint(i.toDouble(), (i * 10).toDouble()),
+                        (i) =>
+                            FusionDataPoint(i.toDouble(), (i * 10).toDouble()),
                       ),
                       color: Colors.blue,
                     ),
@@ -665,7 +675,8 @@ void main() {
                       name: 'Test',
                       dataPoints: List.generate(
                         10,
-                        (i) => FusionDataPoint(i.toDouble(), (i * 10).toDouble()),
+                        (i) =>
+                            FusionDataPoint(i.toDouble(), (i * 10).toDouble()),
                       ),
                       color: Colors.blue,
                     ),
@@ -753,13 +764,15 @@ void main() {
                       name: 'Test',
                       dataPoints: List.generate(
                         20,
-                        (i) => FusionDataPoint(i.toDouble(), (i * 5).toDouble()),
+                        (i) =>
+                            FusionDataPoint(i.toDouble(), (i * 5).toDouble()),
                       ),
                       color: Colors.blue,
                     ),
                   ],
                   config: const FusionChartConfiguration(
-                    enableTooltip: false, // Disable tooltip to avoid timer issues
+                    enableTooltip:
+                        false, // Disable tooltip to avoid timer issues
                     enablePanning: true,
                     enableZoom: true,
                     enableAnimation: false,
@@ -840,7 +853,8 @@ void main() {
                       name: 'Test',
                       dataPoints: List.generate(
                         20,
-                        (i) => FusionDataPoint(i.toDouble(), (i * 5).toDouble()),
+                        (i) =>
+                            FusionDataPoint(i.toDouble(), (i * 5).toDouble()),
                       ),
                       color: Colors.blue,
                     ),

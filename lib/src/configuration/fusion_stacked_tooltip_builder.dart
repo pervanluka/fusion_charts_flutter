@@ -62,7 +62,9 @@ class FusionStackedTooltipInfo {
 
   /// Gets the segment that was directly hit, if any.
   FusionStackedSegment? get hitSegment =>
-      hitSegmentIndex >= 0 && hitSegmentIndex < segments.length ? segments[hitSegmentIndex] : null;
+      hitSegmentIndex >= 0 && hitSegmentIndex < segments.length
+      ? segments[hitSegmentIndex]
+      : null;
 }
 
 /// Builder function type for custom stacked bar tooltips.
@@ -117,7 +119,11 @@ typedef FusionStackedTooltipBuilder =
 /// )
 /// ```
 typedef FusionStackedValueFormatter =
-    String Function(double value, FusionStackedSegment segment, FusionStackedTooltipInfo info);
+    String Function(
+      double value,
+      FusionStackedSegment segment,
+      FusionStackedTooltipInfo info,
+    );
 
 /// Formatter function for the total value line.
 ///
@@ -132,4 +138,5 @@ typedef FusionStackedValueFormatter =
 ///   },
 /// )
 /// ```
-typedef FusionStackedTotalFormatter = String? Function(double total, FusionStackedTooltipInfo info);
+typedef FusionStackedTotalFormatter =
+    String? Function(double total, FusionStackedTooltipInfo info);

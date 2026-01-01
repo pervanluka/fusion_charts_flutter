@@ -113,7 +113,8 @@ class FusionDarkTheme extends FusionChartTheme with FusionThemeUtils {
   double get tooltipBorderRadius => 8.0;
 
   @override
-  EdgeInsets get tooltipPadding => const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+  EdgeInsets get tooltipPadding =>
+      const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
 
   @override
   Color get tooltipBackgroundColor => const Color(0xEE2A2A2A); // Slightly lighter for dark theme
@@ -130,7 +131,8 @@ class FusionDarkTheme extends FusionChartTheme with FusionThemeUtils {
   );
 
   @override
-  EdgeInsets get dataLabelPadding => const EdgeInsets.symmetric(horizontal: 4, vertical: 2);
+  EdgeInsets get dataLabelPadding =>
+      const EdgeInsets.symmetric(horizontal: 4, vertical: 2);
 
   @override
   double get dataLabelBackgroundOpacity => 0.85; // Slightly lower for dark theme
@@ -259,7 +261,9 @@ class FusionDarkTheme extends FusionChartTheme with FusionThemeUtils {
   Color darken(Color color, [double amount = 0.1]) {
     assert(amount >= 0.0 && amount <= 1.0);
     final hsl = HSLColor.fromColor(color);
-    final darkened = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
+    final darkened = hsl.withLightness(
+      (hsl.lightness - amount).clamp(0.0, 1.0),
+    );
     return darkened.toColor();
   }
 
@@ -267,7 +271,9 @@ class FusionDarkTheme extends FusionChartTheme with FusionThemeUtils {
   Color lighten(Color color, [double amount = 0.1]) {
     assert(amount >= 0.0 && amount <= 1.0);
     final hsl = HSLColor.fromColor(color);
-    final lightened = hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
+    final lightened = hsl.withLightness(
+      (hsl.lightness + amount).clamp(0.0, 1.0),
+    );
     return lightened.toColor();
   }
 

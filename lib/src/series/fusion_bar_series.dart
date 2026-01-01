@@ -35,7 +35,11 @@ import 'series_with_data_points.dart';
 /// - Shadows for depth
 @immutable
 class FusionBarSeries extends FusionSeries
-    with FusionGradientSupport, FusionShadowSupport, FusionDataLabelSupport, FusionAnimationSupport
+    with
+        FusionGradientSupport,
+        FusionShadowSupport,
+        FusionDataLabelSupport,
+        FusionAnimationSupport
     implements SeriesWithDataPoints {
   /// Creates a bar series.
   const FusionBarSeries({
@@ -63,7 +67,10 @@ class FusionBarSeries extends FusionSeries
     this.trackBorderColor,
     this.trackPadding = 0.0,
     this.interaction = const FusionSeriesInteraction(),
-  }) : assert(barWidth > 0 && barWidth <= 1.0, 'Bar width must be between 0 and 1'),
+  }) : assert(
+         barWidth > 0 && barWidth <= 1.0,
+         'Bar width must be between 0 and 1',
+       ),
        assert(spacing >= 0 && spacing < 1.0, 'Spacing must be between 0 and 1'),
        assert(borderRadius >= 0, 'Border radius must be non-negative'),
        assert(borderWidth >= 0, 'Border width must be non-negative'),
@@ -300,7 +307,9 @@ class FusionBarSeries extends FusionSeries
 
   /// Filters data points within a range.
   FusionBarSeries filterByRange(double minX, double maxX) {
-    final filtered = dataPoints.where((p) => p.x >= minX && p.x <= maxX).toList();
+    final filtered = dataPoints
+        .where((p) => p.x >= minX && p.x <= maxX)
+        .toList();
     return copyWith(dataPoints: filtered);
   }
 
@@ -330,8 +339,15 @@ class FusionBarSeries extends FusionSeries
   }
 
   @override
-  int get hashCode =>
-      Object.hash(name, color, visible, barWidth, borderRadius, spacing, isVertical);
+  int get hashCode => Object.hash(
+    name,
+    color,
+    visible,
+    barWidth,
+    borderRadius,
+    spacing,
+    isVertical,
+  );
 
   @override
   String toString() {

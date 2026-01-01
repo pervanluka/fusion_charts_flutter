@@ -30,7 +30,7 @@ class FusionCategoryAxis extends FusionAxisBase {
 
   /// The list of category labels to display.
   ///
-  /// Example: ['Jan', 'Feb', 'Mar'], ['Product A', 'Product B']
+  /// Example: `['Jan', 'Feb', 'Mar']`, `['Product A', 'Product B']`
   final List<String> categories;
 
   /// Label alignment relative to category position.

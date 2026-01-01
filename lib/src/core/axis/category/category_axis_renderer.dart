@@ -79,9 +79,13 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
     final labels = <AxisLabel>[];
 
     for (int i = 0; i < categories.length; i++) {
-      final position = categories.length > 1 ? i / (categories.length - 1) : 0.5;
+      final position = categories.length > 1
+          ? i / (categories.length - 1)
+          : 0.5;
 
-      labels.add(AxisLabel(value: i.toDouble(), text: categories[i], position: position));
+      labels.add(
+        AxisLabel(value: i.toDouble(), text: categories[i], position: position),
+      );
     }
 
     _cachedLabels = labels;
@@ -107,7 +111,9 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
     double maxHeight = 0;
 
     final labelStyle =
-        configuration.labelStyle ?? theme?.axisLabelStyle ?? const TextStyle(fontSize: 12);
+        configuration.labelStyle ??
+        theme?.axisLabelStyle ??
+        const TextStyle(fontSize: 12);
 
     for (final label in labels) {
       textPainter.text = TextSpan(text: label.text, style: labelStyle);
@@ -203,10 +209,18 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
 
       if (isVertical) {
         final y = axisArea.bottom - (position * axisArea.height);
-        canvas.drawLine(Offset(axisArea.right, y), Offset(axisArea.right + tickLength, y), paint);
+        canvas.drawLine(
+          Offset(axisArea.right, y),
+          Offset(axisArea.right + tickLength, y),
+          paint,
+        );
       } else {
         final x = axisArea.left + (position * axisArea.width);
-        canvas.drawLine(Offset(x, axisArea.top), Offset(x, axisArea.top + tickLength), paint);
+        canvas.drawLine(
+          Offset(x, axisArea.top),
+          Offset(x, axisArea.top + tickLength),
+          paint,
+        );
       }
     }
   }
@@ -214,13 +228,20 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
   void _drawLabels(Canvas canvas, Rect axisArea) {
     final labels = _cachedLabels ?? generateLabels(_cachedBounds!);
 
-    final textPainter = TextPainter(textDirection: TextDirection.ltr, textAlign: TextAlign.center);
+    final textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
 
     final labelStyle =
-        configuration.labelStyle ?? theme?.axisLabelStyle ?? const TextStyle(fontSize: 12);
+        configuration.labelStyle ??
+        theme?.axisLabelStyle ??
+        const TextStyle(fontSize: 12);
 
     final needsRotation = _shouldRotateLabels(labels, axisArea, labelStyle);
-    final rotation = needsRotation ? (configuration.labelRotation ?? 45.0) : 0.0;
+    final rotation = needsRotation
+        ? (configuration.labelRotation ?? 45.0)
+        : 0.0;
 
     for (int i = 0; i < labels.length; i++) {
       final label = labels[i];
@@ -233,7 +254,10 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
       Offset labelPosition;
       if (isVertical) {
         final y = axisArea.bottom - (position * axisArea.height);
-        labelPosition = Offset(axisArea.left - textPainter.width - 8, y - (textPainter.height / 2));
+        labelPosition = Offset(
+          axisArea.left - textPainter.width - 8,
+          y - (textPainter.height / 2),
+        );
       } else {
         final x = axisArea.left + (position * axisArea.width);
 
@@ -252,7 +276,10 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
         if (!isVertical) {
           textPainter.paint(canvas, Offset.zero);
         } else {
-          textPainter.paint(canvas, Offset(-textPainter.width / 2, -textPainter.height / 2));
+          textPainter.paint(
+            canvas,
+            Offset(-textPainter.width / 2, -textPainter.height / 2),
+          );
         }
 
         canvas.restore();
@@ -268,7 +295,9 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
 
     final paint = Paint()
       ..color =
-          configuration.majorGridColor ?? theme?.gridColor ?? Colors.grey.withValues(alpha: 0.3)
+          configuration.majorGridColor ??
+          theme?.gridColor ??
+          Colors.grey.withValues(alpha: 0.3)
       ..strokeWidth = configuration.majorGridWidth ?? 0.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.square;
@@ -280,11 +309,19 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
       if (isVertical) {
         final y = plotArea.bottom - (position * plotArea.height);
         final snappedY = y.roundToDouble();
-        canvas.drawLine(Offset(plotArea.left, snappedY), Offset(plotArea.right, snappedY), paint);
+        canvas.drawLine(
+          Offset(plotArea.left, snappedY),
+          Offset(plotArea.right, snappedY),
+          paint,
+        );
       } else {
         final x = plotArea.left + (position * plotArea.width);
         final snappedX = x.roundToDouble();
-        canvas.drawLine(Offset(snappedX, plotArea.top), Offset(snappedX, plotArea.bottom), paint);
+        canvas.drawLine(
+          Offset(snappedX, plotArea.top),
+          Offset(snappedX, plotArea.bottom),
+          paint,
+        );
       }
     }
   }
@@ -298,7 +335,11 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
     return index / (total - 1);
   }
 
-  bool _shouldRotateLabels(List<AxisLabel> labels, Rect axisArea, TextStyle style) {
+  bool _shouldRotateLabels(
+    List<AxisLabel> labels,
+    Rect axisArea,
+    TextStyle style,
+  ) {
     if (isVertical || labels.length <= 1) return false;
 
     final textPainter = TextPainter(textDirection: TextDirection.ltr);

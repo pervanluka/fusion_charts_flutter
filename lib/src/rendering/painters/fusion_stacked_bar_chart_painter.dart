@@ -87,13 +87,15 @@ class FusionStackedBarChartPainter extends CustomPainter {
         FusionBackgroundLayer(color: theme.backgroundColor),
 
         // Grid
-        if (effectiveConfig.enableGrid) FusionGridLayer(showHorizontal: true, showVertical: true),
+        if (effectiveConfig.enableGrid)
+          FusionGridLayer(showHorizontal: true, showVertical: true),
 
         // Stacked bars
         _StackedBarSeriesLayer(series: series, isStacked100: isStacked100),
 
         // Axes
-        if (effectiveConfig.enableAxis) FusionAxisLayer(showXAxis: true, showYAxis: true),
+        if (effectiveConfig.enableAxis)
+          FusionAxisLayer(showXAxis: true, showYAxis: true),
 
         // Border
         if (effectiveConfig.enableBorder) FusionBorderLayer(),
@@ -152,7 +154,9 @@ class FusionStackedBarChartPainter extends CustomPainter {
         return p.label!;
       }
       // Use x value as label (format nicely)
-      return p.x == p.x.roundToDouble() ? p.x.round().toString() : p.x.toString();
+      return p.x == p.x.roundToDouble()
+          ? p.x.round().toString()
+          : p.x.toString();
     }).toList();
 
     return FusionCategoryAxis(categories: categories);
@@ -242,7 +246,12 @@ class _StackedBarSeriesLayer extends FusionRenderLayer {
     try {
       final visibleSeries = series.where((s) => s.visible).toList();
       if (visibleSeries.isNotEmpty) {
-        _renderer.render(canvas, context, visibleSeries, is100Percent: isStacked100);
+        _renderer.render(
+          canvas,
+          context,
+          visibleSeries,
+          is100Percent: isStacked100,
+        );
       }
     } finally {
       canvas.restore();

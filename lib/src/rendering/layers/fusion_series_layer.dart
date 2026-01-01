@@ -126,8 +126,15 @@ class FusionSeriesLayer extends FusionRenderLayer {
   /// 1. Area fill (if enabled) - rendered first so line appears on top
   /// 2. Shadow (if enabled)
   /// 3. Line stroke
-  void _renderLineSeries(Canvas canvas, FusionRenderContext context, FusionLineSeries series) {
-    final points = _getAnimatedPoints(series.dataPoints, context.animationProgress);
+  void _renderLineSeries(
+    Canvas canvas,
+    FusionRenderContext context,
+    FusionLineSeries series,
+  ) {
+    final points = _getAnimatedPoints(
+      series.dataPoints,
+      context.animationProgress,
+    );
     if (points.isEmpty) return;
 
     // Build the line path
@@ -152,7 +159,10 @@ class FusionSeriesLayer extends FusionRenderLayer {
     // 3. Apply dash pattern if specified
     var strokePath = linePath;
     if (series.lineDashArray != null && series.lineDashArray!.isNotEmpty) {
-      strokePath = FusionPathBuilder.createDashedPath(linePath, series.lineDashArray!);
+      strokePath = FusionPathBuilder.createDashedPath(
+        linePath,
+        series.lineDashArray!,
+      );
     }
 
     // 4. Draw the line stroke
@@ -164,7 +174,10 @@ class FusionSeriesLayer extends FusionRenderLayer {
 
     // Apply gradient to line if specified
     if (series.gradient != null) {
-      paint.shader = context.shaderCache.getLinearGradient(series.gradient!, context.chartArea);
+      paint.shader = context.shaderCache.getLinearGradient(
+        series.gradient!,
+        context.chartArea,
+      );
     }
 
     canvas.drawPath(strokePath, paint);
@@ -258,9 +271,16 @@ class FusionSeriesLayer extends FusionRenderLayer {
   /// - Track bars
   /// - Proper spacing and alignment
   /// - Animation from baseline
-  void _renderBarSeries(Canvas canvas, FusionRenderContext context, FusionBarSeries series) {
+  void _renderBarSeries(
+    Canvas canvas,
+    FusionRenderContext context,
+    FusionBarSeries series,
+  ) {
     // Collect all visible bar series for grouped rendering
-    final allBarSeries = this.series.whereType<FusionBarSeries>().where((s) => s.visible).toList();
+    final allBarSeries = this.series
+        .whereType<FusionBarSeries>()
+        .where((s) => s.visible)
+        .toList();
 
     // Only render once (when processing the first bar series)
     // The renderer handles all series together for proper grouping
@@ -279,7 +299,10 @@ class FusionSeriesLayer extends FusionRenderLayer {
   // ==========================================================================
 
   /// Returns animated subset of points based on animation progress.
-  List<FusionDataPoint> _getAnimatedPoints(List<FusionDataPoint> points, double animationProgress) {
+  List<FusionDataPoint> _getAnimatedPoints(
+    List<FusionDataPoint> points,
+    double animationProgress,
+  ) {
     if (animationProgress >= 1.0) return points;
     if (points.isEmpty) return points;
 

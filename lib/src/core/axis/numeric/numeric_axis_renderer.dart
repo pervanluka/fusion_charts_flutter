@@ -89,16 +89,19 @@ class NumericAxisRenderer extends FusionAxisRenderer {
 
   /// Gets the effective desired interval count.
   /// Priority: configuration.desiredIntervals → axis.desiredIntervals → 5
-  int get _effectiveDesiredIntervals =>
-      configuration.desiredIntervals != 5 ? configuration.desiredIntervals : axis.desiredIntervals;
+  int get _effectiveDesiredIntervals => configuration.desiredIntervals != 5
+      ? configuration.desiredIntervals
+      : axis.desiredIntervals;
 
   /// Gets whether to auto-calculate range.
   /// If min AND max are explicitly set, autoRange is effectively false.
   bool get _shouldAutoRange =>
-      configuration.autoRange && (_effectiveMin == null || _effectiveMax == null);
+      configuration.autoRange &&
+      (_effectiveMin == null || _effectiveMax == null);
 
   /// Gets whether to auto-calculate interval.
-  bool get _shouldAutoInterval => configuration.autoInterval && _effectiveInterval == null;
+  bool get _shouldAutoInterval =>
+      configuration.autoInterval && _effectiveInterval == null;
 
   /// Gets whether to include zero in the range.
   /// Priority: configuration.includeZero → false
@@ -145,7 +148,12 @@ class NumericAxisRenderer extends FusionAxisRenderer {
   AxisBounds calculateBounds(List<double> dataValues) {
     if (dataValues.isEmpty && _effectiveMin == null && _effectiveMax == null) {
       // No data and no explicit bounds - use safe defaults
-      _cachedBounds = AxisBounds(min: 0, max: 10, interval: 1, decimalPlaces: 0);
+      _cachedBounds = AxisBounds(
+        min: 0,
+        max: 10,
+        interval: 1,
+        decimalPlaces: 0,
+      );
       return _cachedBounds!;
     }
 
@@ -155,8 +163,12 @@ class NumericAxisRenderer extends FusionAxisRenderer {
 
     if (_shouldAutoRange || _effectiveMin == null || _effectiveMax == null) {
       // Auto-calculate from data
-      final dataMin = dataValues.isNotEmpty ? dataValues.reduce((a, b) => a < b ? a : b) : 0.0;
-      final dataMax = dataValues.isNotEmpty ? dataValues.reduce((a, b) => a > b ? a : b) : 10.0;
+      final dataMin = dataValues.isNotEmpty
+          ? dataValues.reduce((a, b) => a < b ? a : b)
+          : 0.0;
+      final dataMax = dataValues.isNotEmpty
+          ? dataValues.reduce((a, b) => a > b ? a : b)
+          : 10.0;
 
       min = _effectiveMin ?? dataMin;
       max = _effectiveMax ?? dataMax;
@@ -203,7 +215,11 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     // Step 5: Calculate interval
     double interval;
     if (_shouldAutoInterval) {
-      interval = AxisCalculator.calculateNiceInterval(min, max, _effectiveDesiredIntervals);
+      interval = AxisCalculator.calculateNiceInterval(
+        min,
+        max,
+        _effectiveDesiredIntervals,
+      );
     } else {
       interval = _effectiveInterval ?? 1.0;
     }
@@ -267,7 +283,13 @@ class NumericAxisRenderer extends FusionAxisRenderer {
       final text = _formatValue(cleanValue);
       final position = _calculatePrecisePosition(cleanValue, bounds);
 
-      labels.add(AxisLabel(value: cleanValue, text: text, position: position.clamp(0.0, 1.0)));
+      labels.add(
+        AxisLabel(
+          value: cleanValue,
+          text: text,
+          position: position.clamp(0.0, 1.0),
+        ),
+      );
     }
 
     _cachedLabels = labels;
@@ -311,7 +333,10 @@ class NumericAxisRenderer extends FusionAxisRenderer {
 
     // Priority 2: Abbreviation (K, M, B)
     if (configuration.useAbbreviation) {
-      return FusionDataFormatter.formatLargeNumber(value, decimals: _effectiveDecimalPlaces);
+      return FusionDataFormatter.formatLargeNumber(
+        value,
+        decimals: _effectiveDecimalPlaces,
+      );
     }
 
     // Priority 3: Scientific notation
@@ -344,7 +369,9 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     double maxHeight = 0;
 
     final labelStyle =
-        configuration.labelStyle ?? theme?.axisLabelStyle ?? const TextStyle(fontSize: 12);
+        configuration.labelStyle ??
+        theme?.axisLabelStyle ??
+        const TextStyle(fontSize: 12);
 
     for (final label in labels) {
       textPainter.text = TextSpan(text: label.text, style: labelStyle);
@@ -445,10 +472,15 @@ class NumericAxisRenderer extends FusionAxisRenderer {
   void _drawLabels(Canvas canvas, Rect axisArea, AxisBounds bounds) {
     final labels = _cachedLabels ?? generateLabels(bounds);
 
-    final textPainter = TextPainter(textDirection: TextDirection.ltr, textAlign: TextAlign.center);
+    final textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
 
     final labelStyle =
-        configuration.labelStyle ?? theme?.axisLabelStyle ?? const TextStyle(fontSize: 12);
+        configuration.labelStyle ??
+        theme?.axisLabelStyle ??
+        const TextStyle(fontSize: 12);
 
     final rotation = configuration.labelRotation ?? 0.0;
 
@@ -478,7 +510,10 @@ class NumericAxisRenderer extends FusionAxisRenderer {
           textPainter.paint(canvas, Offset(-textPainter.width / 2, 0));
           canvas.restore();
         } else {
-          final offset = Offset(snappedX - (textPainter.width / 2), axisArea.top + 8);
+          final offset = Offset(
+            snappedX - (textPainter.width / 2),
+            axisArea.top + 8,
+          );
           textPainter.paint(canvas, offset);
         }
       }
@@ -496,7 +531,9 @@ class NumericAxisRenderer extends FusionAxisRenderer {
 
     final paint = Paint()
       ..color =
-          configuration.majorGridColor ?? theme?.gridColor ?? Colors.grey.withValues(alpha: 0.3)
+          configuration.majorGridColor ??
+          theme?.gridColor ??
+          Colors.grey.withValues(alpha: 0.3)
       ..strokeWidth = configuration.majorGridWidth ?? 0.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.square;
@@ -509,11 +546,19 @@ class NumericAxisRenderer extends FusionAxisRenderer {
       if (isVertical) {
         final y = plotArea.bottom - (position * plotArea.height);
         final snappedY = y.roundToDouble();
-        canvas.drawLine(Offset(plotArea.left, snappedY), Offset(plotArea.right, snappedY), paint);
+        canvas.drawLine(
+          Offset(plotArea.left, snappedY),
+          Offset(plotArea.right, snappedY),
+          paint,
+        );
       } else {
         final x = plotArea.left + (position * plotArea.width);
         final snappedX = x.roundToDouble();
-        canvas.drawLine(Offset(snappedX, plotArea.top), Offset(snappedX, plotArea.bottom), paint);
+        canvas.drawLine(
+          Offset(snappedX, plotArea.top),
+          Offset(snappedX, plotArea.bottom),
+          paint,
+        );
       }
     }
   }

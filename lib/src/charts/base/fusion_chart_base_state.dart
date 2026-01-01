@@ -230,7 +230,9 @@ abstract class FusionChartBaseState<
     final config = effectiveConfig;
 
     _animationController = AnimationController(
-      duration: config.enableAnimation ? config.effectiveAnimationDuration : Duration.zero,
+      duration: config.enableAnimation
+          ? config.effectiveAnimationDuration
+          : Duration.zero,
       vsync: this,
     );
 
@@ -284,7 +286,8 @@ abstract class FusionChartBaseState<
   /// Override in subclass if custom change detection is needed.
   @protected
   bool _shouldReinitialize(W oldWidget) {
-    return widget.series != oldWidget.series || widget.config != oldWidget.config;
+    return widget.series != oldWidget.series ||
+        widget.config != oldWidget.config;
   }
 
   /// Invalidates the coordinate system cache.
@@ -316,7 +319,8 @@ abstract class FusionChartBaseState<
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (widget.title != null) FusionChartTitle(title: widget.title!, theme: theme),
+          if (widget.title != null)
+            FusionChartTitle(title: widget.title!, theme: theme),
           if (widget.subtitle != null)
             FusionChartSubtitle(subtitle: widget.subtitle!, theme: theme),
           Expanded(
@@ -324,7 +328,10 @@ abstract class FusionChartBaseState<
               animation: _animation,
               builder: (context, _) => LayoutBuilder(
                 builder: (context, constraints) {
-                  final size = Size(constraints.maxWidth, constraints.maxHeight);
+                  final size = Size(
+                    constraints.maxWidth,
+                    constraints.maxHeight,
+                  );
                   final dpr = MediaQuery.devicePixelRatioOf(context);
 
                   _updateCoordinateSystem(size, dpr);
@@ -384,7 +391,9 @@ abstract class FusionChartBaseState<
 
     // Check cache
     final seriesHash = calculateSeriesHash();
-    if (_cachedSize == size && _cachedSeriesHash == seriesHash && _cachedCoordSystem != null) {
+    if (_cachedSize == size &&
+        _cachedSeriesHash == seriesHash &&
+        _cachedCoordSystem != null) {
       _coordSystem = _cachedCoordSystem;
       return;
     }

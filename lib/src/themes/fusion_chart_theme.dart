@@ -13,7 +13,6 @@ import 'package:flutter/material.dart';
 ///
 /// - [FusionLightTheme] - Light color scheme (default)
 /// - [FusionDarkTheme] - Dark color scheme
-/// - [FusionEnterpriseTheme] - Professional business theme
 ///
 /// ## Creating Custom Themes
 ///
@@ -143,10 +142,12 @@ abstract class FusionChartTheme {
   double get tooltipBorderRadius => 8.0;
 
   /// Padding inside tooltips.
-  EdgeInsets get tooltipPadding => const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+  EdgeInsets get tooltipPadding =>
+      const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
 
   /// Default tooltip background color.
-  Color get tooltipBackgroundColor => const Color(0xDD000000); // Colors.black87 equivalent
+  Color get tooltipBackgroundColor =>
+      const Color(0xDD000000); // Colors.black87 equivalent
 
   /// Marker border color (usually white for contrast).
   Color get markerBorderColor => const Color(0xFFFFFFFF);
@@ -155,10 +156,12 @@ abstract class FusionChartTheme {
   ///
   /// Should be small enough not to clutter but readable.
   /// Recommended: 10-11px, weight 500
-  TextStyle get dataLabelStyle => axisLabelStyle.copyWith(fontWeight: FontWeight.w600);
+  TextStyle get dataLabelStyle =>
+      axisLabelStyle.copyWith(fontWeight: FontWeight.w600);
 
   /// Padding inside data label backgrounds.
-  EdgeInsets get dataLabelPadding => const EdgeInsets.symmetric(horizontal: 4, vertical: 2);
+  EdgeInsets get dataLabelPadding =>
+      const EdgeInsets.symmetric(horizontal: 4, vertical: 2);
 
   /// Background opacity for data labels.
   double get dataLabelBackgroundOpacity => 0.9;
@@ -167,7 +170,8 @@ abstract class FusionChartTheme {
   double get dataLabelBorderRadius => 3.0;
 
   /// Text style for subtitle or secondary text.
-  TextStyle get subtitleStyle => titleStyle.copyWith(fontSize: 14, fontWeight: FontWeight.w500);
+  TextStyle get subtitleStyle =>
+      titleStyle.copyWith(fontSize: 14, fontWeight: FontWeight.w500);
 
   // ==========================================================================
   // DIMENSIONS

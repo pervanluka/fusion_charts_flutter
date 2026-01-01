@@ -86,7 +86,8 @@ class FusionZoomConfiguration {
       enableZoomControls: enableZoomControls ?? this.enableZoomControls,
       zoomMode: zoomMode ?? this.zoomMode,
       animateZoom: animateZoom ?? this.animateZoom,
-      zoomAnimationDuration: zoomAnimationDuration ?? this.zoomAnimationDuration,
+      zoomAnimationDuration:
+          zoomAnimationDuration ?? this.zoomAnimationDuration,
       zoomAnimationCurve: zoomAnimationCurve ?? this.zoomAnimationCurve,
     );
   }

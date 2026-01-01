@@ -196,7 +196,8 @@ class FusionRenderPipeline {
     buffer.writeln('Layer Breakdown:');
 
     for (final entry in lastFrameStats!.layerTimes.entries) {
-      final percentage = (entry.value / lastFrameStats!.totalTime * 100).toStringAsFixed(1);
+      final percentage = (entry.value / lastFrameStats!.totalTime * 100)
+          .toStringAsFixed(1);
       buffer.writeln('  ${entry.key}: ${entry.value}μs ($percentage%)');
     }
 
@@ -265,6 +266,9 @@ class FusionRenderPipelineBuilder {
 
   /// Builds the pipeline.
   FusionRenderPipeline build() {
-    return FusionRenderPipeline(layers: _layers, enableProfiling: _enableProfiling);
+    return FusionRenderPipeline(
+      layers: _layers,
+      enableProfiling: _enableProfiling,
+    );
   }
 }

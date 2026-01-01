@@ -39,12 +39,20 @@ class FusionMarginCalculator {
     final xAxisPosition = xAxis?.position ?? AxisPosition.bottom;
 
     // Calculate Y-axis label metrics
-    final yLabelMetrics = _calculateYAxisLabelMetrics(minY: minY, maxY: maxY, yAxis: yAxis);
+    final yLabelMetrics = _calculateYAxisLabelMetrics(
+      minY: minY,
+      maxY: maxY,
+      yAxis: yAxis,
+    );
     // Margin = label width + tick length (5) + small gap (2)
     final yAxisMargin = yLabelMetrics.maxWidth + 7;
 
     // Calculate X-axis label metrics (height + first/last label overflow)
-    final xLabelMetrics = _calculateXAxisLabelMetrics(minX: minX, maxX: maxX, xAxis: xAxis);
+    final xLabelMetrics = _calculateXAxisLabelMetrics(
+      minX: minX,
+      maxX: maxX,
+      xAxis: xAxis,
+    );
     // Margin = label height + tick length (5) + gap (7)
     final xAxisMargin = xLabelMetrics.maxHeight + 12;
 
@@ -103,7 +111,10 @@ class FusionMarginCalculator {
     final useAbbreviation = yAxis?.useAbbreviation ?? true;
 
     // Calculate nice interval
-    final interval = _calculateNiceInterval(range, yAxis?.desiredTickCount ?? 5);
+    final interval = _calculateNiceInterval(
+      range,
+      yAxis?.desiredTickCount ?? 5,
+    );
     final decimalPlaces = _getDecimalPlaces(interval);
 
     // Generate all possible label values
@@ -167,7 +178,10 @@ class FusionMarginCalculator {
     final useAbbreviation = xAxis?.useAbbreviation ?? true;
 
     // Calculate nice interval
-    final interval = _calculateNiceInterval(range, xAxis?.desiredTickCount ?? 5);
+    final interval = _calculateNiceInterval(
+      range,
+      xAxis?.desiredTickCount ?? 5,
+    );
     final decimalPlaces = _getDecimalPlaces(interval);
 
     // Generate all possible label values

@@ -7,16 +7,36 @@ void main() {
   group('🔥 CRITICAL EDGE CASES - Axis Calculations', () {
     group('Zero and Near-Zero Ranges', () {
       test('handles identical values (zero range)', () {
-        final bounds = AxisBounds.fromDataRange(dataMin: 50.0, dataMax: 50.0, desiredTickCount: 5);
+        final bounds = AxisBounds.fromDataRange(
+          dataMin: 50.0,
+          dataMax: 50.0,
+          desiredTickCount: 5,
+        );
 
-        expect(bounds.range, greaterThan(0), reason: 'Should create non-zero range');
+        expect(
+          bounds.range,
+          greaterThan(0),
+          reason: 'Should create non-zero range',
+        );
         expect(bounds.min, lessThan(50.0), reason: 'Min should be below value');
-        expect(bounds.max, greaterThan(50.0), reason: 'Max should be above value');
-        expect(bounds.interval, greaterThan(0), reason: 'Interval must be positive');
+        expect(
+          bounds.max,
+          greaterThan(50.0),
+          reason: 'Max should be above value',
+        );
+        expect(
+          bounds.interval,
+          greaterThan(0),
+          reason: 'Interval must be positive',
+        );
       });
 
       test('handles zero to zero range', () {
-        final bounds = AxisBounds.fromDataRange(dataMin: 0.0, dataMax: 0.0, desiredTickCount: 5);
+        final bounds = AxisBounds.fromDataRange(
+          dataMin: 0.0,
+          dataMax: 0.0,
+          desiredTickCount: 5,
+        );
 
         expect(bounds.range, greaterThan(0));
         expect(bounds.min, lessThanOrEqualTo(0.0));
@@ -56,28 +76,52 @@ void main() {
 
     group('Extreme Value Ranges', () {
       test('handles very large positive values', () {
-        final bounds = AxisBounds.fromDataRange(dataMin: 1e9, dataMax: 5e9, desiredTickCount: 5);
+        final bounds = AxisBounds.fromDataRange(
+          dataMin: 1e9,
+          dataMax: 5e9,
+          desiredTickCount: 5,
+        );
 
-        expect(bounds.interval, greaterThan(1e8), reason: 'Interval should scale with data');
+        expect(
+          bounds.interval,
+          greaterThan(1e8),
+          reason: 'Interval should scale with data',
+        );
         // Account for padding which increases range
         expect(
           bounds.range,
           greaterThanOrEqualTo(4e9),
           reason: 'Range should be at least data range',
         );
-        expect(bounds.range, lessThan(1e10), reason: 'Range should be reasonable with padding');
+        expect(
+          bounds.range,
+          lessThan(1e10),
+          reason: 'Range should be reasonable with padding',
+        );
       });
 
       test('handles very small positive values', () {
-        final bounds = AxisBounds.fromDataRange(dataMin: 1e-9, dataMax: 5e-9, desiredTickCount: 5);
+        final bounds = AxisBounds.fromDataRange(
+          dataMin: 1e-9,
+          dataMax: 5e-9,
+          desiredTickCount: 5,
+        );
 
-        expect(bounds.interval, lessThan(1e-8), reason: 'Interval should be appropriately tiny');
+        expect(
+          bounds.interval,
+          lessThan(1e-8),
+          reason: 'Interval should be appropriately tiny',
+        );
         expect(bounds.min, lessThanOrEqualTo(1e-9));
         expect(bounds.max, greaterThanOrEqualTo(5e-9));
       });
 
       test('handles negative to positive crossing zero', () {
-        final bounds = AxisBounds.fromDataRange(dataMin: -50.0, dataMax: 50.0, desiredTickCount: 5);
+        final bounds = AxisBounds.fromDataRange(
+          dataMin: -50.0,
+          dataMax: 50.0,
+          desiredTickCount: 5,
+        );
 
         expect(bounds.min, lessThanOrEqualTo(-50.0));
         expect(bounds.max, greaterThanOrEqualTo(50.0));
@@ -86,7 +130,11 @@ void main() {
         // Should have a tick at or near zero
         final ticks = bounds.majorTicks;
         final hasZeroTick = ticks.any((tick) => tick.abs() < 0.001);
-        expect(hasZeroTick, true, reason: 'Should have tick near zero when crossing');
+        expect(
+          hasZeroTick,
+          true,
+          reason: 'Should have tick near zero when crossing',
+        );
       });
 
       test('handles asymmetric negative to positive', () {
@@ -105,7 +153,11 @@ void main() {
     group('Floating-Point Precision', () {
       test('handles 0.1 + 0.2 = 0.3 problem', () {
         // Should not break axis calculation
-        final bounds = AxisBounds.fromDataRange(dataMin: 0.1, dataMax: 0.3, desiredTickCount: 3);
+        final bounds = AxisBounds.fromDataRange(
+          dataMin: 0.1,
+          dataMax: 0.3,
+          desiredTickCount: 3,
+        );
 
         expect(bounds.min, isNotNaN);
         expect(bounds.max, isNotNaN);
@@ -116,7 +168,11 @@ void main() {
       test('handles repeated decimal division (0.3 / 3)', () {
         const value = 0.3 / 3; // 0.09999999999999999...
 
-        final bounds = AxisBounds.fromDataRange(dataMin: 0, dataMax: value, desiredTickCount: 3);
+        final bounds = AxisBounds.fromDataRange(
+          dataMin: 0,
+          dataMax: value,
+          desiredTickCount: 3,
+        );
 
         expect(bounds.interval, greaterThan(0));
         expect(bounds.majorTicks.length, greaterThanOrEqualTo(2));
@@ -131,7 +187,11 @@ void main() {
           desiredTickCount: 5,
         );
 
-        expect(bounds.range, greaterThan(0), reason: 'Should detect range despite precision');
+        expect(
+          bounds.range,
+          greaterThan(0),
+          reason: 'Should detect range despite precision',
+        );
         expect(bounds.interval, greaterThan(0));
       });
     });
@@ -140,13 +200,21 @@ void main() {
       test('handles majorTickCount with zero range', () {
         final bounds = AxisBounds(min: 10, max: 10, interval: 1);
 
-        expect(bounds.majorTickCount, equals(1), reason: 'Zero range should have 1 tick');
+        expect(
+          bounds.majorTickCount,
+          equals(1),
+          reason: 'Zero range should have 1 tick',
+        );
       });
 
       test('handles majorTickCount with fractional intervals', () {
         final bounds = AxisBounds(min: 0, max: 1, interval: 0.25);
 
-        expect(bounds.majorTickCount, equals(5), reason: '0, 0.25, 0.5, 0.75, 1.0');
+        expect(
+          bounds.majorTickCount,
+          equals(5),
+          reason: '0, 0.25, 0.5, 0.75, 1.0',
+        );
       });
 
       test('generates correct major ticks with tiny intervals', () {
@@ -289,9 +357,17 @@ void main() {
 
       final result = validator.validate(data);
 
-      expect(result.validCount, equals(2), reason: 'Should keep only first of each X');
+      expect(
+        result.validCount,
+        equals(2),
+        reason: 'Should keep only first of each X',
+      );
       expect(result.validData[0].x, equals(0));
-      expect(result.validData[0].y, equals(10), reason: 'Should keep first occurrence');
+      expect(
+        result.validData[0].y,
+        equals(10),
+        reason: 'Should keep first occurrence',
+      );
       expect(result.validData[1].x, equals(1));
     });
 
@@ -313,7 +389,11 @@ void main() {
 
   group('🔥 CRITICAL EDGE CASES - Series Data', () {
     test('handles empty series data', () {
-      final series = FusionLineSeries(name: 'Empty', dataPoints: [], color: Color(0xFF0000FF));
+      final series = FusionLineSeries(
+        name: 'Empty',
+        dataPoints: [],
+        color: Color(0xFF0000FF),
+      );
 
       expect(series.dataPoints.isEmpty, true);
       expect(series.visible, true);
@@ -429,7 +509,11 @@ void main() {
       const a = 1.0000000000001;
       const b = 1.0;
 
-      final bounds = AxisBounds.fromDataRange(dataMin: b, dataMax: a, desiredTickCount: 5);
+      final bounds = AxisBounds.fromDataRange(
+        dataMin: b,
+        dataMax: a,
+        desiredTickCount: 5,
+      );
 
       expect(bounds.range, greaterThan(0));
       expect(bounds.interval, greaterThan(0));
@@ -467,7 +551,11 @@ void main() {
         greaterThanOrEqualTo(0.1),
         reason: 'Range should be at least the data difference',
       );
-      expect(bounds.range, lessThan(1.0), reason: 'Range with padding should still be reasonable');
+      expect(
+        bounds.range,
+        lessThan(1.0),
+        reason: 'Range with padding should still be reasonable',
+      );
     });
   });
 
@@ -487,7 +575,11 @@ void main() {
       final start = DateTime(2024, 1, 1, 12, 0, 0, 0);
       final end = DateTime(2024, 1, 1, 12, 0, 0, 100); // 100ms difference
 
-      final axis = FusionDateTimeAxis(min: start, max: end, desiredIntervals: 5);
+      final axis = FusionDateTimeAxis(
+        min: start,
+        max: end,
+        desiredIntervals: 5,
+      );
 
       final startValue = axis.dateToValue(start);
       final endValue = axis.dateToValue(end);
@@ -499,7 +591,11 @@ void main() {
       final start = DateTime(2000, 1, 1);
       final end = DateTime(2100, 1, 1); // 100 years
 
-      final axis = FusionDateTimeAxis(min: start, max: end, desiredIntervals: 10);
+      final axis = FusionDateTimeAxis(
+        min: start,
+        max: end,
+        desiredIntervals: 10,
+      );
 
       final startValue = axis.dateToValue(start);
       final endValue = axis.dateToValue(end);
@@ -522,7 +618,11 @@ void main() {
 
   group('🔥 CRITICAL EDGE CASES - LTTB Downsampling', () {
     test('handles downsampling with more target points than data', () {
-      final data = [FusionDataPoint(0, 10), FusionDataPoint(1, 20), FusionDataPoint(2, 30)];
+      final data = [
+        FusionDataPoint(0, 10),
+        FusionDataPoint(1, 20),
+        FusionDataPoint(2, 30),
+      ];
 
       const downsampler = LTTBDownsampler();
       final result = downsampler.downsample(

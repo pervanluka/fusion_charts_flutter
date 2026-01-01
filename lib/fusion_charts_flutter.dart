@@ -309,7 +309,8 @@ const String fusionChartsDescription =
     'Professional Flutter charting library with stunning visuals and enterprise-grade features';
 
 /// Repository URL.
-const String fusionChartsRepository = 'https://github.com/pervanluka/fusion_charts_flutter';
+const String fusionChartsRepository =
+    'https://github.com/pervanluka/fusion_charts_flutter';
 
 /// License.
 const String fusionChartsLicense = 'MIT';
@@ -318,4 +319,5 @@ const String fusionChartsLicense = 'MIT';
 const String fusionChartsAuthor = 'Luka Pervan';
 
 /// Homepage.
-const String fusionChartsHomepage = 'https://github.com/pervanluka/fusion_charts_flutter';
+const String fusionChartsHomepage =
+    'https://github.com/pervanluka/fusion_charts_flutter';

@@ -89,7 +89,10 @@ class FusionStackedBarChartConfiguration extends FusionChartConfiguration {
     this.tooltipBuilder,
     this.tooltipValueFormatter,
     this.tooltipTotalFormatter,
-  }) : assert(barWidthRatio > 0 && barWidthRatio <= 1, 'barWidthRatio must be between 0 and 1'),
+  }) : assert(
+         barWidthRatio > 0 && barWidthRatio <= 1,
+         'barWidthRatio must be between 0 and 1',
+       ),
        assert(borderRadius >= 0, 'borderRadius must be non-negative');
 
   // ==========================================================================
@@ -214,8 +217,10 @@ class FusionStackedBarChartConfiguration extends FusionChartConfiguration {
       barWidthRatio: barWidthRatio ?? this.barWidthRatio,
       borderRadius: borderRadius ?? this.borderRadius,
       tooltipBuilder: tooltipBuilder ?? this.tooltipBuilder,
-      tooltipValueFormatter: tooltipValueFormatter ?? this.tooltipValueFormatter,
-      tooltipTotalFormatter: tooltipTotalFormatter ?? this.tooltipTotalFormatter,
+      tooltipValueFormatter:
+          tooltipValueFormatter ?? this.tooltipValueFormatter,
+      tooltipTotalFormatter:
+          tooltipTotalFormatter ?? this.tooltipTotalFormatter,
     );
   }
 

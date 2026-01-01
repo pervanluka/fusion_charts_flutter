@@ -42,18 +42,40 @@ class FusionBarSeriesRenderer {
     // First pass: Render track bars (if any series has them enabled)
     final hasTrackBars = visibleSeries.any((s) => s.isTrackVisible);
     if (hasTrackBars) {
-      for (int seriesIndex = 0; seriesIndex < visibleSeries.length; seriesIndex++) {
+      for (
+        int seriesIndex = 0;
+        seriesIndex < visibleSeries.length;
+        seriesIndex++
+      ) {
         final series = visibleSeries[seriesIndex];
         if (series.isTrackVisible) {
-          _renderTrackBars(canvas, context, series, seriesIndex, visibleSeries.length, layout);
+          _renderTrackBars(
+            canvas,
+            context,
+            series,
+            seriesIndex,
+            visibleSeries.length,
+            layout,
+          );
         }
       }
     }
 
     // Second pass: Render actual bars
-    for (int seriesIndex = 0; seriesIndex < visibleSeries.length; seriesIndex++) {
+    for (
+      int seriesIndex = 0;
+      seriesIndex < visibleSeries.length;
+      seriesIndex++
+    ) {
       final series = visibleSeries[seriesIndex];
-      _renderSeries(canvas, context, series, seriesIndex, visibleSeries.length, layout);
+      _renderSeries(
+        canvas,
+        context,
+        series,
+        seriesIndex,
+        visibleSeries.length,
+        layout,
+      );
     }
   }
 
@@ -120,7 +142,9 @@ class FusionBarSeriesRenderer {
     int pointCount, {
     bool enableSideBySideSeriesPlacement = true,
   }) {
-    final seriesCount = enableSideBySideSeriesPlacement ? visibleSeries.length : 1;
+    final seriesCount = enableSideBySideSeriesPlacement
+        ? visibleSeries.length
+        : 1;
 
     // Total available width for all categories
     final totalWidth = chartArea.width;
@@ -154,7 +178,8 @@ class FusionBarSeriesRenderer {
       final spacing = visibleSeries.first.spacing;
 
       // Total spacing between all bars
-      final totalSpacingSpace = groupWidth * spacing * (seriesCount - 1) / seriesCount;
+      final totalSpacingSpace =
+          groupWidth * spacing * (seriesCount - 1) / seriesCount;
 
       // Remaining space for bars after removing spacing
       final availableBarSpace = groupWidth - totalSpacingSpace;
@@ -190,7 +215,9 @@ class FusionBarSeriesRenderer {
     // Calculate bar width based on data density
     final firstSeries = visibleSeries.first;
     final pointCount = firstSeries.dataPoints.length;
-    final seriesCount = enableSideBySideSeriesPlacement ? visibleSeries.length : 1;
+    final seriesCount = enableSideBySideSeriesPlacement
+        ? visibleSeries.length
+        : 1;
 
     if (pointCount < 2) {
       // Single point: use fixed width
@@ -243,7 +270,11 @@ class FusionBarSeriesRenderer {
     final chartArea = context.chartArea;
     final trackColor = series.trackColor ?? Colors.grey.withValues(alpha: 0.2);
 
-    for (int pointIndex = 0; pointIndex < series.dataPoints.length; pointIndex++) {
+    for (
+      int pointIndex = 0;
+      pointIndex < series.dataPoints.length;
+      pointIndex++
+    ) {
       final point = series.dataPoints[pointIndex];
 
       // Calculate track rectangle (full height of chart area)
@@ -272,10 +303,16 @@ class FusionBarSeriesRenderer {
           : trackRect;
 
       // Draw track fill
-      final trackPaint = context.getPaint(color: trackColor, style: PaintingStyle.fill);
+      final trackPaint = context.getPaint(
+        color: trackColor,
+        style: PaintingStyle.fill,
+      );
 
       if (series.borderRadius > 0) {
-        final rRect = RRect.fromRectAndRadius(paddedRect, Radius.circular(series.borderRadius));
+        final rRect = RRect.fromRectAndRadius(
+          paddedRect,
+          Radius.circular(series.borderRadius),
+        );
         canvas.drawRRect(rRect, trackPaint);
       } else {
         canvas.drawRect(paddedRect, trackPaint);
@@ -292,7 +329,10 @@ class FusionBarSeriesRenderer {
         );
 
         if (series.borderRadius > 0) {
-          final rRect = RRect.fromRectAndRadius(paddedRect, Radius.circular(series.borderRadius));
+          final rRect = RRect.fromRectAndRadius(
+            paddedRect,
+            Radius.circular(series.borderRadius),
+          );
           canvas.drawRRect(rRect, borderPaint);
         } else {
           canvas.drawRect(paddedRect, borderPaint);
@@ -324,7 +364,8 @@ class FusionBarSeriesRenderer {
 
         if (totalSeriesCount > 1 && layout.enableSideBySideSeriesPlacement) {
           final totalGroupWidth =
-              totalSeriesCount * layout.barWidth + (totalSeriesCount - 1) * layout.barSpacing;
+              totalSeriesCount * layout.barWidth +
+              (totalSeriesCount - 1) * layout.barSpacing;
           final groupStartX = barCenterX - (totalGroupWidth / 2);
           final barOffset = seriesIndex * (layout.barWidth + layout.barSpacing);
           barCenterX = groupStartX + barOffset + (layout.barWidth / 2);
@@ -334,7 +375,8 @@ class FusionBarSeriesRenderer {
 
         if (totalSeriesCount > 1 && layout.enableSideBySideSeriesPlacement) {
           final totalGroupWidth =
-              totalSeriesCount * layout.barWidth + (totalSeriesCount - 1) * layout.barSpacing;
+              totalSeriesCount * layout.barWidth +
+              (totalSeriesCount - 1) * layout.barSpacing;
           final groupStartX = barCenterX - (totalGroupWidth / 2);
           final barOffset = seriesIndex * (layout.barWidth + layout.barSpacing);
           barCenterX = groupStartX + barOffset + (layout.barWidth / 2);
@@ -357,7 +399,8 @@ class FusionBarSeriesRenderer {
 
         if (totalSeriesCount > 1 && layout.enableSideBySideSeriesPlacement) {
           final totalGroupWidth =
-              totalSeriesCount * layout.barWidth + (totalSeriesCount - 1) * layout.barSpacing;
+              totalSeriesCount * layout.barWidth +
+              (totalSeriesCount - 1) * layout.barSpacing;
           final groupStartY = barCenterY - (totalGroupWidth / 2);
           final barOffset = seriesIndex * (layout.barWidth + layout.barSpacing);
           barCenterY = groupStartY + barOffset + (layout.barWidth / 2);
@@ -367,7 +410,8 @@ class FusionBarSeriesRenderer {
 
         if (totalSeriesCount > 1 && layout.enableSideBySideSeriesPlacement) {
           final totalGroupWidth =
-              totalSeriesCount * layout.barWidth + (totalSeriesCount - 1) * layout.barSpacing;
+              totalSeriesCount * layout.barWidth +
+              (totalSeriesCount - 1) * layout.barSpacing;
           final groupStartY = barCenterY - (totalGroupWidth / 2);
           final barOffset = seriesIndex * (layout.barWidth + layout.barSpacing);
           barCenterY = groupStartY + barOffset + (layout.barWidth / 2);
@@ -395,7 +439,11 @@ class FusionBarSeriesRenderer {
     final chartArea = context.chartArea;
     final animationProgress = context.animationProgress;
 
-    for (int pointIndex = 0; pointIndex < series.dataPoints.length; pointIndex++) {
+    for (
+      int pointIndex = 0;
+      pointIndex < series.dataPoints.length;
+      pointIndex++
+    ) {
       final point = series.dataPoints[pointIndex];
 
       // Calculate bar rectangle
@@ -478,7 +526,8 @@ class FusionBarSeriesRenderer {
       // Offset for grouped bars (only when side-by-side is enabled)
       if (totalSeriesCount > 1 && layout.enableSideBySideSeriesPlacement) {
         final totalGroupWidth =
-            totalSeriesCount * layout.barWidth + (totalSeriesCount - 1) * layout.barSpacing;
+            totalSeriesCount * layout.barWidth +
+            (totalSeriesCount - 1) * layout.barSpacing;
         final groupStartX = barCenterX - (totalGroupWidth / 2);
         final barOffset = seriesIndex * (layout.barWidth + layout.barSpacing);
         barCenterX = groupStartX + barOffset + (layout.barWidth / 2);
@@ -490,7 +539,8 @@ class FusionBarSeriesRenderer {
       // Offset for grouped bars (only when side-by-side is enabled)
       if (totalSeriesCount > 1 && layout.enableSideBySideSeriesPlacement) {
         final totalGroupWidth =
-            totalSeriesCount * layout.barWidth + (totalSeriesCount - 1) * layout.barSpacing;
+            totalSeriesCount * layout.barWidth +
+            (totalSeriesCount - 1) * layout.barSpacing;
         final groupStartX = barCenterX - (totalGroupWidth / 2);
         final barOffset = seriesIndex * (layout.barWidth + layout.barSpacing);
         barCenterX = groupStartX + barOffset + (layout.barWidth / 2);
@@ -537,7 +587,8 @@ class FusionBarSeriesRenderer {
       // Offset for grouped bars (only when side-by-side is enabled)
       if (totalSeriesCount > 1 && layout.enableSideBySideSeriesPlacement) {
         final totalGroupWidth =
-            totalSeriesCount * layout.barWidth + (totalSeriesCount - 1) * layout.barSpacing;
+            totalSeriesCount * layout.barWidth +
+            (totalSeriesCount - 1) * layout.barSpacing;
         final groupStartY = barCenterY - (totalGroupWidth / 2);
         final barOffset = seriesIndex * (layout.barWidth + layout.barSpacing);
         barCenterY = groupStartY + barOffset + (layout.barWidth / 2);
@@ -549,7 +600,8 @@ class FusionBarSeriesRenderer {
       // Offset for grouped bars (only when side-by-side is enabled)
       if (totalSeriesCount > 1 && layout.enableSideBySideSeriesPlacement) {
         final totalGroupWidth =
-            totalSeriesCount * layout.barWidth + (totalSeriesCount - 1) * layout.barSpacing;
+            totalSeriesCount * layout.barWidth +
+            (totalSeriesCount - 1) * layout.barSpacing;
         final groupStartY = barCenterY - (totalGroupWidth / 2);
         final barOffset = seriesIndex * (layout.barWidth + layout.barSpacing);
         barCenterY = groupStartY + barOffset + (layout.barWidth / 2);
@@ -585,11 +637,17 @@ class FusionBarSeriesRenderer {
     // Skip zero-height bars
     if (barRect.height <= 0 || barRect.width <= 0) return;
 
-    final paint = context.getPaint(color: series.color, style: PaintingStyle.fill);
+    final paint = context.getPaint(
+      color: series.color,
+      style: PaintingStyle.fill,
+    );
 
     // Apply gradient if specified
     if (series.gradient != null) {
-      paint.shader = context.shaderCache.getLinearGradient(series.gradient!, barRect);
+      paint.shader = context.shaderCache.getLinearGradient(
+        series.gradient!,
+        barRect,
+      );
     }
 
     // Draw shadow first (underneath bar)
@@ -599,7 +657,10 @@ class FusionBarSeriesRenderer {
 
     // Draw bar (with optional rounded corners)
     if (series.borderRadius > 0) {
-      final rRect = RRect.fromRectAndRadius(barRect, Radius.circular(series.borderRadius));
+      final rRect = RRect.fromRectAndRadius(
+        barRect,
+        Radius.circular(series.borderRadius),
+      );
       canvas.drawRRect(rRect, paint);
     } else {
       canvas.drawRect(barRect, paint);
@@ -614,7 +675,12 @@ class FusionBarSeriesRenderer {
   }
 
   /// Renders bar shadow.
-  void _renderShadow(Canvas canvas, Rect barRect, BoxShadow shadow, double borderRadius) {
+  void _renderShadow(
+    Canvas canvas,
+    Rect barRect,
+    BoxShadow shadow,
+    double borderRadius,
+  ) {
     final shadowPaint = Paint()
       ..color = shadow.color
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, shadow.blurRadius);
@@ -622,7 +688,10 @@ class FusionBarSeriesRenderer {
     final shadowRect = barRect.shift(shadow.offset);
 
     if (borderRadius > 0) {
-      final shadowRRect = RRect.fromRectAndRadius(shadowRect, Radius.circular(borderRadius));
+      final shadowRRect = RRect.fromRectAndRadius(
+        shadowRect,
+        Radius.circular(borderRadius),
+      );
       canvas.drawRRect(shadowRRect, shadowPaint);
     } else {
       canvas.drawRect(shadowRect, shadowPaint);
@@ -643,7 +712,10 @@ class FusionBarSeriesRenderer {
     );
 
     if (series.borderRadius > 0) {
-      final rRect = RRect.fromRectAndRadius(barRect, Radius.circular(series.borderRadius));
+      final rRect = RRect.fromRectAndRadius(
+        barRect,
+        Radius.circular(series.borderRadius),
+      );
       canvas.drawRRect(rRect, borderPaint);
     } else {
       canvas.drawRect(barRect, borderPaint);

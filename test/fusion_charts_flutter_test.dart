@@ -10,7 +10,12 @@ void main() {
     });
 
     test('creates point with label and metadata', () {
-      final point = FusionDataPoint(1.0, 2.0, label: 'Point 1', metadata: {'category': 'A'});
+      final point = FusionDataPoint(
+        1.0,
+        2.0,
+        label: 'Point 1',
+        metadata: {'category': 'A'},
+      );
       expect(point.label, 'Point 1');
       expect(point.metadata?['category'], 'A');
     });
@@ -38,7 +43,11 @@ void main() {
   group('DataValidator', () {
     test('removes NaN values and reports them', () {
       final validator = DataValidator();
-      final data = [FusionDataPoint(0, 10), FusionDataPoint(1, double.nan), FusionDataPoint(2, 30)];
+      final data = [
+        FusionDataPoint(0, 10),
+        FusionDataPoint(1, double.nan),
+        FusionDataPoint(2, 30),
+      ];
 
       final result = validator.validate(data);
 
@@ -88,7 +97,11 @@ void main() {
 
     test('validates clean data without errors', () {
       final validator = DataValidator();
-      final data = [FusionDataPoint(0, 10), FusionDataPoint(1, 20), FusionDataPoint(2, 30)];
+      final data = [
+        FusionDataPoint(0, 10),
+        FusionDataPoint(1, 20),
+        FusionDataPoint(2, 30),
+      ];
 
       final result = validator.validate(data);
 
@@ -115,7 +128,11 @@ void main() {
 
     test('sorts data by X when enabled', () {
       final validator = DataValidator(sortByX: true);
-      final data = [FusionDataPoint(2, 30), FusionDataPoint(0, 10), FusionDataPoint(1, 20)];
+      final data = [
+        FusionDataPoint(2, 30),
+        FusionDataPoint(0, 10),
+        FusionDataPoint(1, 20),
+      ];
 
       final result = validator.validate(data);
 
@@ -126,7 +143,11 @@ void main() {
 
     test('calculates statistics correctly', () {
       final validator = DataValidator();
-      final data = [FusionDataPoint(0, 10), FusionDataPoint(1, 20), FusionDataPoint(2, 30)];
+      final data = [
+        FusionDataPoint(0, 10),
+        FusionDataPoint(1, 20),
+        FusionDataPoint(2, 30),
+      ];
 
       final result = validator.validate(data);
 
@@ -140,7 +161,11 @@ void main() {
     });
 
     test('clamps values to range when enabled', () {
-      final validator = DataValidator(clampToRange: true, minValue: 15, maxValue: 85);
+      final validator = DataValidator(
+        clampToRange: true,
+        minValue: 15,
+        maxValue: 85,
+      );
       final data = [
         FusionDataPoint(0, 10), // Below min
         FusionDataPoint(1, 50), // Within range
@@ -159,7 +184,12 @@ void main() {
 
   group('AxisBounds', () {
     test('creates bounds with valid values', () {
-      final bounds = AxisBounds(min: 0, max: 100, interval: 20, decimalPlaces: 0);
+      final bounds = AxisBounds(
+        min: 0,
+        max: 100,
+        interval: 20,
+        decimalPlaces: 0,
+      );
 
       expect(bounds.min, 0);
       expect(bounds.max, 100);
@@ -218,10 +248,7 @@ void main() {
 
     test('copyWith creates modified line chart configuration', () {
       const config = FusionLineChartConfiguration();
-      final modified = config.copyWith(
-        enableMarkers: true,
-        lineWidth: 3.5,
-      );
+      final modified = config.copyWith(enableMarkers: true, lineWidth: 3.5);
 
       expect(modified.enableMarkers, true);
       expect(modified.lineWidth, 3.5);

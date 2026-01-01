@@ -79,8 +79,9 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
   // ==========================================================================
 
   /// Gets the effective desired interval count.
-  int get _effectiveDesiredIntervals =>
-      configuration.desiredIntervals != 5 ? configuration.desiredIntervals : axis.desiredIntervals;
+  int get _effectiveDesiredIntervals => configuration.desiredIntervals != 5
+      ? configuration.desiredIntervals
+      : axis.desiredIntervals;
 
   // ==========================================================================
   // BOUNDS CALCULATION
@@ -133,7 +134,10 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
   }
 
   /// Calculates auto interval and returns both ms value and detected unit.
-  _IntervalResult _calculateAutoIntervalWithUnit(double rangeMs, int desiredIntervals) {
+  _IntervalResult _calculateAutoIntervalWithUnit(
+    double rangeMs,
+    int desiredIntervals,
+  ) {
     final roughInterval = rangeMs / desiredIntervals;
 
     if (roughInterval < _msPerMinute) {
@@ -155,10 +159,16 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
       );
       return _IntervalResult(ms, _IntervalUnit.hour);
     } else if (roughInterval < _msPerWeek) {
-      final ms = _findNiceInterval(roughInterval, [1, 2, 3, 7].map((d) => d * _msPerDay).toList());
+      final ms = _findNiceInterval(
+        roughInterval,
+        [1, 2, 3, 7].map((d) => d * _msPerDay).toList(),
+      );
       return _IntervalResult(ms, _IntervalUnit.day);
     } else if (roughInterval < _msPerMonth) {
-      final ms = _findNiceInterval(roughInterval, [1, 2, 4].map((w) => w * _msPerWeek).toList());
+      final ms = _findNiceInterval(
+        roughInterval,
+        [1, 2, 4].map((w) => w * _msPerWeek).toList(),
+      );
       return _IntervalResult(ms, _IntervalUnit.week);
     } else if (roughInterval < _msPerYear) {
       final ms = _findNiceInterval(
@@ -196,7 +206,9 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
 
   double _findNiceInterval(double target, List<double> options) {
     return options.reduce((closest, current) {
-      return (current - target).abs() < (closest - target).abs() ? current : closest;
+      return (current - target).abs() < (closest - target).abs()
+          ? current
+          : closest;
     });
   }
 
@@ -259,7 +271,11 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
       // Only add label if within bounds
       if (position >= -_epsilon && position <= 1.0 + _epsilon) {
         labels.add(
-          AxisLabel(value: ms, text: format.format(current), position: position.clamp(0.0, 1.0)),
+          AxisLabel(
+            value: ms,
+            text: format.format(current),
+            position: position.clamp(0.0, 1.0),
+          ),
         );
       }
 
@@ -273,7 +289,10 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
   }
 
   /// Generates labels using millisecond arithmetic (for sub-day intervals).
-  List<AxisLabel> _generateMillisecondLabels(AxisBounds bounds, DateFormat format) {
+  List<AxisLabel> _generateMillisecondLabels(
+    AxisBounds bounds,
+    DateFormat format,
+  ) {
     final labels = <AxisLabel>[];
 
     final labelCount = _calculateLabelCount(bounds);
@@ -287,7 +306,13 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
       final text = format.format(date);
       final position = _calculatePrecisePosition(currentMs, bounds);
 
-      labels.add(AxisLabel(value: currentMs, text: text, position: position.clamp(0.0, 1.0)));
+      labels.add(
+        AxisLabel(
+          value: currentMs,
+          text: text,
+          position: position.clamp(0.0, 1.0),
+        ),
+      );
     }
 
     _cachedLabels = labels;
@@ -404,7 +429,9 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
     double maxHeight = 0;
 
     final labelStyle =
-        configuration.labelStyle ?? theme?.axisLabelStyle ?? const TextStyle(fontSize: 12);
+        configuration.labelStyle ??
+        theme?.axisLabelStyle ??
+        const TextStyle(fontSize: 12);
 
     for (final label in labels) {
       textPainter.text = TextSpan(text: label.text, style: labelStyle);
@@ -515,10 +542,15 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
 
   void _drawLabels(Canvas canvas, Rect axisArea, AxisBounds bounds) {
     final labels = _cachedLabels ?? generateLabels(bounds);
-    final textPainter = TextPainter(textDirection: TextDirection.ltr, textAlign: TextAlign.center);
+    final textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
 
     final labelStyle =
-        configuration.labelStyle ?? theme?.axisLabelStyle ?? const TextStyle(fontSize: 12);
+        configuration.labelStyle ??
+        theme?.axisLabelStyle ??
+        const TextStyle(fontSize: 12);
 
     for (final label in labels) {
       textPainter.text = TextSpan(text: label.text, style: labelStyle);
@@ -538,14 +570,18 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
         final x = axisArea.left + (position * axisArea.width);
         final snappedX = x.roundToDouble();
 
-        if (configuration.labelRotation != null && configuration.labelRotation!.abs() > 0) {
+        if (configuration.labelRotation != null &&
+            configuration.labelRotation!.abs() > 0) {
           canvas.save();
           canvas.translate(snappedX, axisArea.top + 8);
           canvas.rotate(configuration.labelRotation! * (math.pi / 180));
           textPainter.paint(canvas, Offset(-textPainter.width / 2, 0));
           canvas.restore();
         } else {
-          final offset = Offset(snappedX - (textPainter.width / 2), axisArea.top + 8);
+          final offset = Offset(
+            snappedX - (textPainter.width / 2),
+            axisArea.top + 8,
+          );
           textPainter.paint(canvas, offset);
         }
       }
@@ -558,7 +594,9 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
 
     final paint = Paint()
       ..color =
-          configuration.majorGridColor ?? theme?.gridColor ?? Colors.grey.withValues(alpha: 0.3)
+          configuration.majorGridColor ??
+          theme?.gridColor ??
+          Colors.grey.withValues(alpha: 0.3)
       ..strokeWidth = configuration.majorGridWidth ?? 0.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.square;
@@ -571,11 +609,19 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
       if (isVertical) {
         final y = plotArea.bottom - (position * plotArea.height);
         final snappedY = y.roundToDouble();
-        canvas.drawLine(Offset(plotArea.left, snappedY), Offset(plotArea.right, snappedY), paint);
+        canvas.drawLine(
+          Offset(plotArea.left, snappedY),
+          Offset(plotArea.right, snappedY),
+          paint,
+        );
       } else {
         final x = plotArea.left + (position * plotArea.width);
         final snappedX = x.roundToDouble();
-        canvas.drawLine(Offset(snappedX, plotArea.top), Offset(snappedX, plotArea.bottom), paint);
+        canvas.drawLine(
+          Offset(snappedX, plotArea.top),
+          Offset(snappedX, plotArea.bottom),
+          paint,
+        );
       }
     }
   }

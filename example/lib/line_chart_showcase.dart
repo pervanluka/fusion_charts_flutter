@@ -203,7 +203,9 @@ FusionChartConfiguration(
         actions: [
           IconButton(
             icon: const Icon(Icons.arrow_back_ios),
-            onPressed: _currentPage > 0 ? () => _goToPage(_currentPage - 1) : null,
+            onPressed: _currentPage > 0
+                ? () => _goToPage(_currentPage - 1)
+                : null,
           ),
           Center(
             child: Container(
@@ -238,7 +240,9 @@ FusionChartConfiguration(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               border: Border(
-                bottom: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+                bottom: BorderSide(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
               ),
             ),
             child: Column(
@@ -487,7 +491,10 @@ Widget _buildMarkersChart() {
         dataLabelDisplay: FusionDataLabelDisplay.maxAndMin,
       ),
     ],
-    config: const FusionLineChartConfiguration(enableMarkers: true, enableDataLabels: true),
+    config: const FusionLineChartConfiguration(
+      enableMarkers: true,
+      enableDataLabels: true,
+    ),
   );
 }
 
@@ -542,7 +549,10 @@ Widget _buildZoomPanChart() {
         maxZoomLevel: 5.0,
         zoomMode: FusionZoomMode.both,
       ),
-      panBehavior: FusionPanConfiguration(enabled: true, panMode: FusionPanMode.both),
+      panBehavior: FusionPanConfiguration(
+        enabled: true,
+        panMode: FusionPanMode.both,
+      ),
     ),
   );
 }
@@ -614,7 +624,9 @@ Widget _buildLargeDatasetChart() {
         decoration: BoxDecoration(
           color: const Color(0xFF10B981).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+          border: Border.all(
+            color: const Color(0xFF10B981).withValues(alpha: 0.3),
+          ),
         ),
         child: const Row(
           children: [
@@ -737,7 +749,10 @@ Widget _buildDarkThemeChart() {
           isCurved: true,
         ),
       ],
-      config: const FusionChartConfiguration(theme: FusionDarkTheme(), enableLegend: true),
+      config: const FusionChartConfiguration(
+        theme: FusionDarkTheme(),
+        enableLegend: true,
+      ),
     ),
   );
 }

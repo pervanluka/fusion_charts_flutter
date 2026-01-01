@@ -258,31 +258,46 @@ void main() {
                   series: [
                     FusionLineSeries(
                       name: 'Series 0',
-                      dataPoints: [FusionDataPoint(0, 10), FusionDataPoint(1, 20)],
+                      dataPoints: [
+                        FusionDataPoint(0, 10),
+                        FusionDataPoint(1, 20),
+                      ],
                       color: Colors.blue,
                       visible: true,
                     ),
                     FusionLineSeries(
                       name: 'Series 1',
-                      dataPoints: [FusionDataPoint(0, 15), FusionDataPoint(1, 25)],
+                      dataPoints: [
+                        FusionDataPoint(0, 15),
+                        FusionDataPoint(1, 25),
+                      ],
                       color: Colors.red,
                       visible: false,
                     ),
                     FusionLineSeries(
                       name: 'Series 2',
-                      dataPoints: [FusionDataPoint(0, 12), FusionDataPoint(1, 22)],
+                      dataPoints: [
+                        FusionDataPoint(0, 12),
+                        FusionDataPoint(1, 22),
+                      ],
                       color: Colors.green,
                       visible: true,
                     ),
                     FusionLineSeries(
                       name: 'Series 3',
-                      dataPoints: [FusionDataPoint(0, 18), FusionDataPoint(1, 28)],
+                      dataPoints: [
+                        FusionDataPoint(0, 18),
+                        FusionDataPoint(1, 28),
+                      ],
                       color: Colors.orange,
                       visible: false,
                     ),
                     FusionLineSeries(
                       name: 'Series 4',
-                      dataPoints: [FusionDataPoint(0, 14), FusionDataPoint(1, 24)],
+                      dataPoints: [
+                        FusionDataPoint(0, 14),
+                        FusionDataPoint(1, 24),
+                      ],
                       color: Colors.purple,
                       visible: true,
                     ),
@@ -300,7 +315,9 @@ void main() {
         expect(find.byType(FusionLineChart), findsOneWidget);
       });
 
-      testWidgets('handles empty visible series with data in hidden', (tester) async {
+      testWidgets('handles empty visible series with data in hidden', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(

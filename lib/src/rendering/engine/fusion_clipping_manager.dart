@@ -66,7 +66,11 @@ class FusionClippingManager {
   }
 
   /// Binary search for first visible point.
-  int _binarySearchStart<T>(List<T> points, double minX, double Function(T) getX) {
+  int _binarySearchStart<T>(
+    List<T> points,
+    double minX,
+    double Function(T) getX,
+  ) {
     int left = 0;
     int right = points.length - 1;
     int result = 0;
@@ -87,7 +91,11 @@ class FusionClippingManager {
   }
 
   /// Binary search for last visible point.
-  int _binarySearchEnd<T>(List<T> points, double maxX, double Function(T) getX) {
+  int _binarySearchEnd<T>(
+    List<T> points,
+    double maxX,
+    double Function(T) getX,
+  ) {
     int left = 0;
     int right = points.length - 1;
     int result = points.length - 1;

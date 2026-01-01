@@ -173,7 +173,7 @@ class FusionChartConfiguration {
   /// Whether to show a border around the chart area.
   ///
   /// When enabled, draws a rectangle around the plot area using
-  /// the theme's [borderColor].
+  /// the theme's border color.
   ///
   /// Default: `false`
   final bool enableBorder;
@@ -216,14 +216,19 @@ class FusionChartConfiguration {
   // ==========================================================================
 
   /// Gets the effective animation duration.
-  Duration get effectiveAnimationDuration => animationDuration ?? theme.animationDuration;
+  Duration get effectiveAnimationDuration =>
+      animationDuration ?? theme.animationDuration;
 
   /// Gets the effective animation curve.
   Curve get effectiveAnimationCurve => animationCurve ?? theme.animationCurve;
 
   /// Whether any interaction is enabled.
   bool get hasAnyInteraction =>
-      enableTooltip || enableCrosshair || enableZoom || enablePanning || enableSelection;
+      enableTooltip ||
+      enableCrosshair ||
+      enableZoom ||
+      enablePanning ||
+      enableSelection;
 
   // ==========================================================================
   // COPY WITH

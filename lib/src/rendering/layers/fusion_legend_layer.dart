@@ -114,7 +114,12 @@ class FusionLegendLayer extends FusionRenderLayer {
 
       switch (configuration.position) {
         case FusionLegendPosition.left:
-          return Rect.fromLTWH(10, (size.height - legendHeight) / 2, legendWidth, legendHeight);
+          return Rect.fromLTWH(
+            10,
+            (size.height - legendHeight) / 2,
+            legendWidth,
+            legendHeight,
+          );
 
         case FusionLegendPosition.right:
           return Rect.fromLTWH(
@@ -134,7 +139,12 @@ class FusionLegendLayer extends FusionRenderLayer {
 
       switch (configuration.position) {
         case FusionLegendPosition.top:
-          return Rect.fromLTWH((size.width - legendWidth) / 2, 10, legendWidth, legendHeight);
+          return Rect.fromLTWH(
+            (size.width - legendWidth) / 2,
+            10,
+            legendWidth,
+            legendHeight,
+          );
 
         case FusionLegendPosition.bottom:
           return Rect.fromLTWH(
@@ -155,27 +165,43 @@ class FusionLegendLayer extends FusionRenderLayer {
   // ==========================================================================
 
   /// Renders legend background.
-  void _renderBackground(Canvas canvas, FusionRenderContext context, Rect legendArea) {
+  void _renderBackground(
+    Canvas canvas,
+    FusionRenderContext context,
+    Rect legendArea,
+  ) {
     final backgroundPaint = context.getPaint(
-      color: configuration.backgroundColor ?? context.theme.backgroundColor.withValues(alpha: 0.95),
+      color:
+          configuration.backgroundColor ??
+          context.theme.backgroundColor.withValues(alpha: 0.95),
       style: PaintingStyle.fill,
     );
 
-    final rRect = RRect.fromRectAndRadius(legendArea, Radius.circular(configuration.borderRadius));
+    final rRect = RRect.fromRectAndRadius(
+      legendArea,
+      Radius.circular(configuration.borderRadius),
+    );
 
     canvas.drawRRect(rRect, backgroundPaint);
     context.returnPaint(backgroundPaint);
   }
 
   /// Renders legend border.
-  void _renderBorder(Canvas canvas, FusionRenderContext context, Rect legendArea) {
+  void _renderBorder(
+    Canvas canvas,
+    FusionRenderContext context,
+    Rect legendArea,
+  ) {
     final borderPaint = context.getPaint(
       color: configuration.borderColor ?? context.theme.gridColor,
       strokeWidth: configuration.borderWidth,
       style: PaintingStyle.stroke,
     );
 
-    final rRect = RRect.fromRectAndRadius(legendArea, Radius.circular(configuration.borderRadius));
+    final rRect = RRect.fromRectAndRadius(
+      legendArea,
+      Radius.circular(configuration.borderRadius),
+    );
 
     canvas.drawRRect(rRect, borderPaint);
     context.returnPaint(borderPaint);
@@ -186,22 +212,40 @@ class FusionLegendLayer extends FusionRenderLayer {
   // ==========================================================================
 
   /// Renders all legend items.
-  void _renderLegendItems(Canvas canvas, FusionRenderContext context, Rect legendArea) {
+  void _renderLegendItems(
+    Canvas canvas,
+    FusionRenderContext context,
+    Rect legendArea,
+  ) {
     final isVertical =
         configuration.position == FusionLegendPosition.left ||
         configuration.position == FusionLegendPosition.right;
 
     final padding = configuration.padding;
     final itemHeight = configuration.iconSize + configuration.iconPadding * 2;
-    var currentOffset = Offset(legendArea.left + padding.left, legendArea.top + padding.top);
+    var currentOffset = Offset(
+      legendArea.left + padding.left,
+      legendArea.top + padding.top,
+    );
 
     for (final seriesData in series) {
       if (isVertical) {
         _renderVerticalLegendItem(canvas, context, seriesData, currentOffset);
-        currentOffset = currentOffset.translate(0, itemHeight + configuration.itemSpacing);
+        currentOffset = currentOffset.translate(
+          0,
+          itemHeight + configuration.itemSpacing,
+        );
       } else {
-        final itemWidth = _renderHorizontalLegendItem(canvas, context, seriesData, currentOffset);
-        currentOffset = currentOffset.translate(itemWidth + configuration.itemSpacing, 0);
+        final itemWidth = _renderHorizontalLegendItem(
+          canvas,
+          context,
+          seriesData,
+          currentOffset,
+        );
+        currentOffset = currentOffset.translate(
+          itemWidth + configuration.itemSpacing,
+          0,
+        );
       }
     }
   }
@@ -217,7 +261,10 @@ class FusionLegendLayer extends FusionRenderLayer {
     final markerSize = configuration.iconSize;
     final markerCenter = position.translate(markerSize / 2, markerSize / 2);
 
-    final markerPaint = context.getPaint(color: series.color, style: PaintingStyle.fill);
+    final markerPaint = context.getPaint(
+      color: series.color,
+      style: PaintingStyle.fill,
+    );
 
     canvas.drawCircle(markerCenter, markerSize / 2, markerPaint);
     context.returnPaint(markerPaint);
@@ -244,9 +291,15 @@ class FusionLegendLayer extends FusionRenderLayer {
 
     // Render marker
     final markerSize = configuration.iconSize;
-    final markerCenter = Offset(currentX + markerSize / 2, position.dy + markerSize / 2);
+    final markerCenter = Offset(
+      currentX + markerSize / 2,
+      position.dy + markerSize / 2,
+    );
 
-    final markerPaint = context.getPaint(color: series.color, style: PaintingStyle.fill);
+    final markerPaint = context.getPaint(
+      color: series.color,
+      style: PaintingStyle.fill,
+    );
 
     canvas.drawCircle(markerCenter, markerSize / 2, markerPaint);
     context.returnPaint(markerPaint);

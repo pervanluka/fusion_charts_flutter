@@ -60,7 +60,8 @@ class FusionInteractionHandler {
   final void Function(FusionDataPoint point, Offset screenPosition)? onTap;
 
   /// Callback when user long-presses on a data point.
-  final void Function(FusionDataPoint point, Offset screenPosition)? onLongPress;
+  final void Function(FusionDataPoint point, Offset screenPosition)?
+  onLongPress;
 
   /// Callback when pan gesture starts.
   final void Function(Offset position)? onPanStart;
@@ -99,7 +100,10 @@ class FusionInteractionHandler {
   }
 
   /// Finds the nearest data point to a screen position.
-  FusionDataPoint? findNearestPoint(List<FusionDataPoint> points, Offset screenPosition) {
+  FusionDataPoint? findNearestPoint(
+    List<FusionDataPoint> points,
+    Offset screenPosition,
+  ) {
     if (points.isEmpty) return null;
 
     if (_spatialIndex != null) {
@@ -111,14 +115,20 @@ class FusionInteractionHandler {
 
   FusionDataPoint? _findNearestPointOptimized(Offset screenPosition) {
     if (_spatialIndex == null) return null;
-    return _spatialIndex!.findNearest(screenPosition, maxDistance: hitTestRadius);
+    return _spatialIndex!.findNearest(
+      screenPosition,
+      maxDistance: hitTestRadius,
+    );
   }
 
   /// Finds the nearest data point by X-coordinate only.
   ///
   /// Ideal for line charts - snaps to the point at the closest X position
   /// regardless of Y distance.
-  FusionDataPoint? findNearestPointByX(List<FusionDataPoint> points, Offset screenPosition) {
+  FusionDataPoint? findNearestPointByX(
+    List<FusionDataPoint> points,
+    Offset screenPosition,
+  ) {
     if (points.isEmpty) return null;
 
     if (_spatialIndex != null) {
@@ -143,7 +153,10 @@ class FusionInteractionHandler {
   }
 
   /// Finds the nearest data point by Y-coordinate only.
-  FusionDataPoint? findNearestPointByY(List<FusionDataPoint> points, Offset screenPosition) {
+  FusionDataPoint? findNearestPointByY(
+    List<FusionDataPoint> points,
+    Offset screenPosition,
+  ) {
     if (points.isEmpty) return null;
 
     if (_spatialIndex != null) {
@@ -167,7 +180,10 @@ class FusionInteractionHandler {
     return nearest;
   }
 
-  FusionDataPoint? _findNearestPointLinear(List<FusionDataPoint> points, Offset screenPosition) {
+  FusionDataPoint? _findNearestPointLinear(
+    List<FusionDataPoint> points,
+    Offset screenPosition,
+  ) {
     double minDistance = hitTestRadius;
     FusionDataPoint? nearestPoint;
 
@@ -250,11 +266,13 @@ class FusionInteractionHandler {
     double xShift = 0.0;
     double yShift = 0.0;
 
-    if (panConfig.panMode == FusionPanMode.x || panConfig.panMode == FusionPanMode.both) {
+    if (panConfig.panMode == FusionPanMode.x ||
+        panConfig.panMode == FusionPanMode.both) {
       xShift = -(delta.dx / chartWidth) * xRange;
     }
 
-    if (panConfig.panMode == FusionPanMode.y || panConfig.panMode == FusionPanMode.both) {
+    if (panConfig.panMode == FusionPanMode.y ||
+        panConfig.panMode == FusionPanMode.both) {
       yShift = (delta.dy / chartHeight) * yRange; // Y is inverted
     }
 
@@ -286,14 +304,16 @@ class FusionInteractionHandler {
     double newYMax = currentYMax;
 
     // Apply zoom based on mode
-    if (zoomConfig.zoomMode == FusionZoomMode.x || zoomConfig.zoomMode == FusionZoomMode.both) {
+    if (zoomConfig.zoomMode == FusionZoomMode.x ||
+        zoomConfig.zoomMode == FusionZoomMode.both) {
       final xRange = (currentXMax - currentXMin) / scaleFactor;
       final xRatio = (focalDataX - currentXMin) / (currentXMax - currentXMin);
       newXMin = focalDataX - (xRange * xRatio);
       newXMax = focalDataX + (xRange * (1 - xRatio));
     }
 
-    if (zoomConfig.zoomMode == FusionZoomMode.y || zoomConfig.zoomMode == FusionZoomMode.both) {
+    if (zoomConfig.zoomMode == FusionZoomMode.y ||
+        zoomConfig.zoomMode == FusionZoomMode.both) {
       final yRange = (currentYMax - currentYMin) / scaleFactor;
       final yRatio = (focalDataY - currentYMin) / (currentYMax - currentYMin);
       newYMin = focalDataY - (yRange * yRatio);
@@ -317,8 +337,10 @@ class FusionInteractionHandler {
     // Use configuration values for zoom limits
     // minZoomLevel = 0.5 means you can zoom out to see 200% of original range (1/0.5 = 2x)
     // maxZoomLevel = 5.0 means you can zoom in to see 20% of original range (1/5 = 0.2x)
-    final maxZoomOut = 1.0 / zoomConfig.minZoomLevel; // e.g., 1/0.5 = 2.0 (200% of range)
-    final minZoomIn = 1.0 / zoomConfig.maxZoomLevel; // e.g., 1/5.0 = 0.2 (20% of range)
+    final maxZoomOut =
+        1.0 / zoomConfig.minZoomLevel; // e.g., 1/0.5 = 2.0 (200% of range)
+    final minZoomIn =
+        1.0 / zoomConfig.maxZoomLevel; // e.g., 1/5.0 = 0.2 (20% of range)
 
     final originalXRange = dataXMax - dataXMin;
     final originalYRange = dataYMax - dataYMin;
@@ -369,7 +391,8 @@ class FusionInteractionHandler {
     // Negative delta = scroll up = zoom in
     // Positive delta = scroll down = zoom out
     const baseZoomFactor = 0.1;
-    final zoomDelta = -scrollDelta * baseZoomFactor * zoomConfig.zoomSpeed / 100;
+    final zoomDelta =
+        -scrollDelta * baseZoomFactor * zoomConfig.zoomSpeed / 100;
     return 1.0 + zoomDelta.clamp(-0.3, 0.3); // Clamp for smooth zooming
   }
 
@@ -387,17 +410,20 @@ class FusionInteractionHandler {
     return dataYMin + (normalized * (dataYMax - dataYMin));
   }
 
-  Map<Type, GestureRecognizerFactory> buildGestureRecognizers(List<FusionDataPoint> allPoints) {
+  Map<Type, GestureRecognizerFactory> buildGestureRecognizers(
+    List<FusionDataPoint> allPoints,
+  ) {
     return <Type, GestureRecognizerFactory>{
       if (onTap != null)
-        TapGestureRecognizer: GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
-          TapGestureRecognizer.new,
-          (instance) {
-            instance.onTapDown = (details) {
-              handleTapDown(details.localPosition, allPoints);
-            };
-          },
-        ),
+        TapGestureRecognizer:
+            GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
+              TapGestureRecognizer.new,
+              (instance) {
+                instance.onTapDown = (details) {
+                  handleTapDown(details.localPosition, allPoints);
+                };
+              },
+            ),
       if (onLongPress != null)
         LongPressGestureRecognizer:
             GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
@@ -411,40 +437,42 @@ class FusionInteractionHandler {
               },
             ),
       if (onPanStart != null || onPanUpdate != null || onPanEnd != null)
-        PanGestureRecognizer: GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(
-          PanGestureRecognizer.new,
-          (instance) {
-            instance
-              ..onStart = (details) {
-                _lastPanPosition = details.localPosition;
-                handlePanStart(details.localPosition);
-              }
-              ..onUpdate = (details) {
-                handlePanUpdate(details.delta);
-                _lastPanPosition = details.localPosition;
-              }
-              ..onEnd = (details) {
-                handlePanEnd();
-                _lastPanPosition = null;
-              };
-          },
-        ),
+        PanGestureRecognizer:
+            GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(
+              PanGestureRecognizer.new,
+              (instance) {
+                instance
+                  ..onStart = (details) {
+                    _lastPanPosition = details.localPosition;
+                    handlePanStart(details.localPosition);
+                  }
+                  ..onUpdate = (details) {
+                    handlePanUpdate(details.delta);
+                    _lastPanPosition = details.localPosition;
+                  }
+                  ..onEnd = (details) {
+                    handlePanEnd();
+                    _lastPanPosition = null;
+                  };
+              },
+            ),
       if (onScaleStart != null || onScaleUpdate != null || onScaleEnd != null)
-        ScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
-          ScaleGestureRecognizer.new,
-          (instance) {
-            instance
-              ..onStart = (details) {
-                handleScaleStart(details.localFocalPoint);
-              }
-              ..onUpdate = (details) {
-                handleScaleUpdate(details.scale, details.localFocalPoint);
-              }
-              ..onEnd = (details) {
-                handleScaleEnd();
-              };
-          },
-        ),
+        ScaleGestureRecognizer:
+            GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
+              ScaleGestureRecognizer.new,
+              (instance) {
+                instance
+                  ..onStart = (details) {
+                    handleScaleStart(details.localFocalPoint);
+                  }
+                  ..onUpdate = (details) {
+                    handleScaleUpdate(details.scale, details.localFocalPoint);
+                  }
+                  ..onEnd = (details) {
+                    handleScaleEnd();
+                  };
+              },
+            ),
     };
   }
 }

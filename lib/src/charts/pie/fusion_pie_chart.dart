@@ -110,7 +110,8 @@ class FusionPieChart extends StatefulWidget {
   State<FusionPieChart> createState() => _FusionPieChartState();
 }
 
-class _FusionPieChartState extends State<FusionPieChart> with SingleTickerProviderStateMixin {
+class _FusionPieChartState extends State<FusionPieChart>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
   late FusionPieInteractiveState _interactiveState;
@@ -118,13 +119,15 @@ class _FusionPieChartState extends State<FusionPieChart> with SingleTickerProvid
   final FusionPaintPool _paintPool = FusionPaintPool();
 
   /// Gets the effective configuration.
-  FusionPieChartConfiguration get _config => widget.config ?? const FusionPieChartConfiguration();
+  FusionPieChartConfiguration get _config =>
+      widget.config ?? const FusionPieChartConfiguration();
 
   /// Gets the theme.
   FusionChartTheme get _theme => _config.theme;
 
   /// Gets the color palette.
-  FusionColorPalette get _palette => widget.series.colorPalette ?? FusionColorPalette.material;
+  FusionColorPalette get _palette =>
+      widget.series.colorPalette ?? FusionColorPalette.material;
 
   @override
   void initState() {
@@ -134,7 +137,9 @@ class _FusionPieChartState extends State<FusionPieChart> with SingleTickerProvid
   }
 
   void _initAnimation() {
-    final duration = _config.enableAnimation ? _config.effectiveAnimationDuration : Duration.zero;
+    final duration = _config.enableAnimation
+        ? _config.effectiveAnimationDuration
+        : Duration.zero;
 
     _animationController = AnimationController(duration: duration, vsync: this);
 
@@ -171,7 +176,8 @@ class _FusionPieChartState extends State<FusionPieChart> with SingleTickerProvid
   void didUpdateWidget(FusionPieChart oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.series != oldWidget.series || widget.config != oldWidget.config) {
+    if (widget.series != oldWidget.series ||
+        widget.config != oldWidget.config) {
       _animationController.reset();
       _animationController.forward();
 
@@ -198,7 +204,8 @@ class _FusionPieChartState extends State<FusionPieChart> with SingleTickerProvid
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (title != null) FusionChartTitle(title: title, theme: _theme),
-          if (subtitle != null) FusionChartSubtitle(subtitle: subtitle, theme: _theme),
+          if (subtitle != null)
+            FusionChartSubtitle(subtitle: subtitle, theme: _theme),
           Expanded(child: _buildChartArea()),
         ],
       ),
@@ -315,7 +322,8 @@ class _FusionPieChartState extends State<FusionPieChart> with SingleTickerProvid
                     if (_config.centerSubLabelText != null)
                       Text(
                         _config.centerSubLabelText!,
-                        style: _config.centerSubLabelStyle ?? _theme.subtitleStyle,
+                        style:
+                            _config.centerSubLabelStyle ?? _theme.subtitleStyle,
                         textAlign: TextAlign.center,
                       ),
                   ],
@@ -345,7 +353,9 @@ class _FusionPieChartState extends State<FusionPieChart> with SingleTickerProvid
     }
 
     // 6. Custom tooltip builder (widget-based, topmost)
-    if (_config.enableTooltip && tooltipData != null && _config.tooltipBehavior.builder != null) {
+    if (_config.enableTooltip &&
+        tooltipData != null &&
+        _config.tooltipBehavior.builder != null) {
       layers.add(
         Positioned(
           left: tooltipData.screenPosition.dx,
@@ -383,7 +393,11 @@ class _FusionPieChartState extends State<FusionPieChart> with SingleTickerProvid
 
   /// Creates a fake FusionDataPoint for the custom builder API compatibility.
   FusionDataPoint _createFakeDataPoint(PieTooltipData data) {
-    return FusionDataPoint(data.index.toDouble(), data.value, label: data.label);
+    return FusionDataPoint(
+      data.index.toDouble(),
+      data.value,
+      label: data.label,
+    );
   }
 
   _PieLayout _calculateLayout(Size size) {
@@ -415,7 +429,9 @@ class _FusionPieChartState extends State<FusionPieChart> with SingleTickerProvid
 
     // Calculate what label space WOULD be needed
     final hasOutsideLabels = _config.labelPosition == PieLabelPosition.outside;
-    final idealLabelSpace = hasOutsideLabels ? _config.labelConnectorLength + 60 : 0.0;
+    final idealLabelSpace = hasOutsideLabels
+        ? _config.labelConnectorLength + 60
+        : 0.0;
 
     // Check if we can afford full label space while maintaining minimum chart size
     final availableWithLabels = math.min(
@@ -550,7 +566,9 @@ class _FusionPieChartState extends State<FusionPieChart> with SingleTickerProvid
                 children: items
                     .map(
                       (item) => Padding(
-                        padding: EdgeInsets.only(bottom: _config.legendItemSpacing),
+                        padding: EdgeInsets.only(
+                          bottom: _config.legendItemSpacing,
+                        ),
                         child: item,
                       ),
                     )
@@ -562,7 +580,9 @@ class _FusionPieChartState extends State<FusionPieChart> with SingleTickerProvid
                 children: items
                     .map(
                       (item) => Padding(
-                        padding: EdgeInsets.only(bottom: _config.legendItemSpacing),
+                        padding: EdgeInsets.only(
+                          bottom: _config.legendItemSpacing,
+                        ),
                         child: item,
                       ),
                     )
@@ -579,7 +599,9 @@ class _FusionPieChartState extends State<FusionPieChart> with SingleTickerProvid
                 children: items
                     .map(
                       (item) => Padding(
-                        padding: EdgeInsets.only(right: _config.legendItemSpacing),
+                        padding: EdgeInsets.only(
+                          right: _config.legendItemSpacing,
+                        ),
                         child: item,
                       ),
                     )
@@ -590,7 +612,9 @@ class _FusionPieChartState extends State<FusionPieChart> with SingleTickerProvid
                 children: items
                     .map(
                       (item) => Padding(
-                        padding: EdgeInsets.only(right: _config.legendItemSpacing),
+                        padding: EdgeInsets.only(
+                          right: _config.legendItemSpacing,
+                        ),
                         child: item,
                       ),
                     )
@@ -664,11 +688,18 @@ class _LegendItem extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
-        padding: EdgeInsets.symmetric(horizontal: isSelected ? 8 : 4, vertical: isSelected ? 4 : 2),
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 8 : 4,
+          vertical: isSelected ? 4 : 2,
+        ),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.15) : Colors.transparent,
+          color: isSelected
+              ? color.withValues(alpha: 0.15)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
-          border: isSelected ? Border.all(color: color.withValues(alpha: 0.4), width: 1.5) : null,
+          border: isSelected
+              ? Border.all(color: color.withValues(alpha: 0.4), width: 1.5)
+              : null,
         ),
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 200),
@@ -690,7 +721,9 @@ class _LegendItem extends StatelessWidget {
                     Text(
                       label,
                       style: textStyle.copyWith(
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -699,7 +732,9 @@ class _LegendItem extends StatelessWidget {
                       Text(
                         _formatValueText(),
                         style: valueTextStyle.copyWith(
-                          fontSize: (valueTextStyle.fontSize ?? 12) * valueFontSizeRatio,
+                          fontSize:
+                              (valueTextStyle.fontSize ?? 12) *
+                              valueFontSizeRatio,
                         ),
                       ),
                   ],
@@ -722,7 +757,13 @@ class _LegendItem extends StatelessWidget {
             color: color,
             shape: BoxShape.circle,
             boxShadow: isSelected
-                ? [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 6, spreadRadius: 1)]
+                ? [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.5),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                    ),
+                  ]
                 : null,
           ),
         );
@@ -733,7 +774,13 @@ class _LegendItem extends StatelessWidget {
           decoration: BoxDecoration(
             color: color,
             boxShadow: isSelected
-                ? [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 6, spreadRadius: 1)]
+                ? [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.5),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                    ),
+                  ]
                 : null,
           ),
         );
@@ -745,7 +792,13 @@ class _LegendItem extends StatelessWidget {
             color: color,
             borderRadius: BorderRadius.circular(iconCornerRadius),
             boxShadow: isSelected
-                ? [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 6, spreadRadius: 1)]
+                ? [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.5),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                    ),
+                  ]
                 : null,
           ),
         );
@@ -758,7 +811,13 @@ class _LegendItem extends StatelessWidget {
             decoration: BoxDecoration(
               color: color,
               boxShadow: isSelected
-                  ? [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 6, spreadRadius: 1)]
+                  ? [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.5),
+                        blurRadius: 6,
+                        spreadRadius: 1,
+                      ),
+                    ]
                   : null,
             ),
           ),

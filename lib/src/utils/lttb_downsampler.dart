@@ -82,7 +82,8 @@ class LTTBDownsampler {
 
       // Calculate next bucket average (for triangle calculation)
       final nextBucketStart = bucketEnd;
-      final nextBucketEnd = (((bucketIndex + 2) * bucketSize).floor() + 1).clamp(0, data.length);
+      final nextBucketEnd = (((bucketIndex + 2) * bucketSize).floor() + 1)
+          .clamp(0, data.length);
 
       FusionDataPoint nextAverage;
       if (bucketIndex == targetPoints - 3) {
@@ -91,7 +92,10 @@ class LTTBDownsampler {
       } else if (nextBucketStart < data.length) {
         // Calculate average of next bucket
         nextAverage = _calculateBucketAverage(
-          data.sublist(nextBucketStart, nextBucketEnd.clamp(nextBucketStart, data.length)),
+          data.sublist(
+            nextBucketStart,
+            nextBucketEnd.clamp(nextBucketStart, data.length),
+          ),
         );
       } else {
         nextAverage = data.last;
@@ -128,7 +132,11 @@ class LTTBDownsampler {
       sumY += point.y;
     }
 
-    return FusionDataPoint(sumX / bucket.length, sumY / bucket.length, label: 'Bucket average');
+    return FusionDataPoint(
+      sumX / bucket.length,
+      sumY / bucket.length,
+      label: 'Bucket average',
+    );
   }
 
   /// Selects the point from the bucket that forms the largest triangle.
@@ -166,10 +174,17 @@ class LTTBDownsampler {
   }
 
   /// Calculates the area of a triangle formed by three points.
-  double _calculateTriangleArea(FusionDataPoint p1, FusionDataPoint p2, FusionDataPoint p3) {
+  double _calculateTriangleArea(
+    FusionDataPoint p1,
+    FusionDataPoint p2,
+    FusionDataPoint p3,
+  ) {
     // Using the cross product formula
     // Area = 0.5 * |x1(y2-y3) + x2(y3-y1) + x3(y1-y2)|
-    final area = (p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y)).abs() * 0.5;
+    final area =
+        (p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y))
+            .abs() *
+        0.5;
 
     return area;
   }
@@ -272,11 +287,15 @@ class LTTBDownsampler {
 
     if (dx == 0 && dy == 0) {
       // Line segment is a point
-      return math.sqrt(math.pow(point.x - lineStart.x, 2) + math.pow(point.y - lineStart.y, 2));
+      return math.sqrt(
+        math.pow(point.x - lineStart.x, 2) + math.pow(point.y - lineStart.y, 2),
+      );
     }
 
     // Calculate parameter t for closest point on line
-    final t = ((point.x - lineStart.x) * dx + (point.y - lineStart.y) * dy) / (dx * dx + dy * dy);
+    final t =
+        ((point.x - lineStart.x) * dx + (point.y - lineStart.y) * dy) /
+        (dx * dx + dy * dy);
 
     // Clamp t to [0, 1] to stay within line segment
     final clampedT = t.clamp(0, 1);
@@ -286,7 +305,9 @@ class LTTBDownsampler {
     final closestY = lineStart.y + clampedT * dy;
 
     // Calculate distance
-    return math.sqrt(math.pow(point.x - closestX, 2) + math.pow(point.y - closestY, 2));
+    return math.sqrt(
+      math.pow(point.x - closestX, 2) + math.pow(point.y - closestY, 2),
+    );
   }
 
   /// Calculates Y value range of data.

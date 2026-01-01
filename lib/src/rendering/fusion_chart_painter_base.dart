@@ -133,7 +133,10 @@ abstract class FusionChartPainterBase extends CustomPainter {
 
   /// Converts screen coordinates to data point.
   FusionDataPoint screenToData(Offset screenPoint) {
-    return FusionDataPoint(screenXToDataX(screenPoint.dx), screenYToDataY(screenPoint.dy));
+    return FusionDataPoint(
+      screenXToDataX(screenPoint.dx),
+      screenYToDataY(screenPoint.dy),
+    );
   }
 
   // ==========================================================================
@@ -328,7 +331,8 @@ abstract class FusionChartPainterBase extends CustomPainter {
       final screenX = dataXToScreenX(currentX);
 
       // Format label
-      final labelText = xAxis!.labelFormatter?.call(currentX) ?? currentX.toStringAsFixed(0);
+      final labelText =
+          xAxis!.labelFormatter?.call(currentX) ?? currentX.toStringAsFixed(0);
 
       // Create text painter
       final textPainter = TextPainter(
@@ -337,7 +341,10 @@ abstract class FusionChartPainterBase extends CustomPainter {
       )..layout();
 
       // Draw label centered below axis
-      final offset = Offset(screenX - (textPainter.width / 2), _chartArea.bottom + 8);
+      final offset = Offset(
+        screenX - (textPainter.width / 2),
+        _chartArea.bottom + 8,
+      );
 
       textPainter.paint(canvas, offset);
 
@@ -355,7 +362,8 @@ abstract class FusionChartPainterBase extends CustomPainter {
       final screenY = dataYToScreenY(currentY);
 
       // Format label
-      final labelText = yAxis!.labelFormatter?.call(currentY) ?? currentY.toStringAsFixed(0);
+      final labelText =
+          yAxis!.labelFormatter?.call(currentY) ?? currentY.toStringAsFixed(0);
 
       // Create text painter
       final textPainter = TextPainter(

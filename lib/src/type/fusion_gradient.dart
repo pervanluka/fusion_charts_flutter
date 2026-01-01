@@ -27,7 +27,10 @@ class FusionGradient {
   }) : assert(colors.length >= 2, 'At least 2 colors required');
 
   /// Creates a horizontal linear gradient.
-  factory FusionGradient.horizontal({required List<Color> colors, List<double>? stops}) {
+  factory FusionGradient.horizontal({
+    required List<Color> colors,
+    List<double>? stops,
+  }) {
     return FusionGradient(
       colors: colors,
       stops: stops,
@@ -43,7 +46,10 @@ class FusionGradient {
   /// Creates a simple vertical linear gradient.
   ///
   /// Most common gradient type - colors from top to bottom.
-  factory FusionGradient.vertical({required List<Color> colors, List<double>? stops}) {
+  factory FusionGradient.vertical({
+    required List<Color> colors,
+    List<double>? stops,
+  }) {
     return FusionGradient(
       colors: colors,
       stops: stops,
@@ -53,7 +59,10 @@ class FusionGradient {
   }
 
   /// Creates a diagonal linear gradient.
-  factory FusionGradient.diagonal({required List<Color> colors, List<double>? stops}) {
+  factory FusionGradient.diagonal({
+    required List<Color> colors,
+    List<double>? stops,
+  }) {
     return FusionGradient(
       colors: colors,
       stops: stops,
@@ -182,7 +191,13 @@ class FusionGradient {
 
   /// Converts to Flutter's LinearGradient.
   LinearGradient toLinearGradient() {
-    return LinearGradient(colors: colors, stops: stops, begin: begin, end: end, tileMode: tileMode);
+    return LinearGradient(
+      colors: colors,
+      stops: stops,
+      begin: begin,
+      end: end,
+      tileMode: tileMode,
+    );
   }
 
   /// Converts to Flutter's RadialGradient.
@@ -259,12 +274,17 @@ class FusionGradient {
 
   /// Creates gradient with adjusted opacity.
   FusionGradient withOpacity(double opacity) {
-    return copyWith(colors: colors.map((c) => c.withValues(alpha: opacity)).toList());
+    return copyWith(
+      colors: colors.map((c) => c.withValues(alpha: opacity)).toList(),
+    );
   }
 
   /// Reverses the gradient direction.
   FusionGradient reversed() {
-    return copyWith(colors: colors.reversed.toList(), stops: stops?.reversed.toList());
+    return copyWith(
+      colors: colors.reversed.toList(),
+      stops: stops?.reversed.toList(),
+    );
   }
 
   @override
@@ -280,8 +300,13 @@ class FusionGradient {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(Object.hashAll(colors), Object.hashAll(stops ?? []), begin, end, type);
+  int get hashCode => Object.hash(
+    Object.hashAll(colors),
+    Object.hashAll(stops ?? []),
+    begin,
+    end,
+    type,
+  );
 }
 
 /// Type of gradient.

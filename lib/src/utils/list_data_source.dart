@@ -205,7 +205,9 @@ class ListDataSource {
 
     // Step 1: Handle null values
     if (nullHandler != null) {
-      processedData = nullHandler!.handle(processedData.cast<FusionDataPoint?>());
+      processedData = nullHandler!.handle(
+        processedData.cast<FusionDataPoint?>(),
+      );
     }
 
     // Step 2: Validate data

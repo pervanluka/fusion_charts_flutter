@@ -51,7 +51,11 @@ class FusionAxisRendererFactory {
 
     // Create renderer based on axis type
     if (axis is FusionNumericAxis) {
-      return NumericAxisRenderer(axis: axis, configuration: configuration, isVertical: isVertical);
+      return NumericAxisRenderer(
+        axis: axis,
+        configuration: configuration,
+        isVertical: isVertical,
+      );
     } else if (axis is FusionCategoryAxis) {
       return CategoryAxisRenderer(
         categories: axis.categories,
@@ -59,7 +63,11 @@ class FusionAxisRendererFactory {
         isVertical: isVertical,
       );
     } else if (axis is FusionDateTimeAxis) {
-      return DateTimeAxisRenderer(axis: axis, configuration: configuration, isVertical: isVertical);
+      return DateTimeAxisRenderer(
+        axis: axis,
+        configuration: configuration,
+        isVertical: isVertical,
+      );
     } else {
       // Fallback to numeric for unknown types
       return NumericAxisRenderer(

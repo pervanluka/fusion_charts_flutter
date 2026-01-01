@@ -78,7 +78,11 @@ abstract final class FusionPolarMath {
   ///
   /// Returns the (x, y) offset on the circle.
   @pragma('vm:prefer-inline')
-  static Offset pointOnCircle(Offset center, double radius, double angleDegrees) {
+  static Offset pointOnCircle(
+    Offset center,
+    double radius,
+    double angleDegrees,
+  ) {
     final radians = toRadians(angleDegrees);
     return Offset(
       center.dx + radius * cos(radians),
@@ -150,7 +154,8 @@ abstract final class FusionPolarMath {
   /// - `arcPoint` - Point on the outer arc
   /// - `labelPoint` - Point where label should be positioned
   /// - `alignment` - Suggested text alignment
-  static ({Offset arcPoint, Offset labelPoint, TextAlign alignment}) labelAnchor({
+  static ({Offset arcPoint, Offset labelPoint, TextAlign alignment})
+  labelAnchor({
     required Offset center,
     required double outerRadius,
     required double connectorLength,
@@ -161,7 +166,11 @@ abstract final class FusionPolarMath {
     final normalizedAngle = normalizeAngle(midAngle);
 
     final arcPoint = pointOnCircle(center, outerRadius, midAngle);
-    final labelPoint = pointOnCircle(center, outerRadius + connectorLength, midAngle);
+    final labelPoint = pointOnCircle(
+      center,
+      outerRadius + connectorLength,
+      midAngle,
+    );
 
     // Determine text alignment based on which side of the chart
     final alignment = (normalizedAngle > 90 && normalizedAngle < 270)
@@ -204,7 +213,8 @@ abstract final class FusionPolarMath {
     final outerRadiusSquared = outerRadius * outerRadius;
 
     // Outside radius bounds - quick reject
-    if (distanceSquared < innerRadiusSquared || distanceSquared > outerRadiusSquared) {
+    if (distanceSquared < innerRadiusSquared ||
+        distanceSquared > outerRadiusSquared) {
       return false;
     }
 
@@ -222,7 +232,8 @@ abstract final class FusionPolarMath {
     } else if (endAngle < 0) {
       // Negative sweep (counter-clockwise)
       return normalizedPointAngle <= normalizedStartAngle &&
-          normalizedPointAngle >= (normalizedStartAngle + sweepAngle + fullCircle) % fullCircle;
+          normalizedPointAngle >=
+              (normalizedStartAngle + sweepAngle + fullCircle) % fullCircle;
     } else {
       // Normal case
       return normalizedPointAngle >= normalizedStartAngle &&
@@ -248,7 +259,8 @@ abstract final class FusionPolarMath {
     final innerRadiusSquared = innerRadius * innerRadius;
     final outerRadiusSquared = outerRadius * outerRadius;
 
-    if (distanceSquared < innerRadiusSquared || distanceSquared > outerRadiusSquared) {
+    if (distanceSquared < innerRadiusSquared ||
+        distanceSquared > outerRadiusSquared) {
       return -1;
     }
 
@@ -263,7 +275,9 @@ abstract final class FusionPolarMath {
 
       bool inSegment;
       if (endAngle > fullCircle) {
-        inSegment = pointAngle >= normalizedStart || pointAngle <= (endAngle - fullCircle);
+        inSegment =
+            pointAngle >= normalizedStart ||
+            pointAngle <= (endAngle - fullCircle);
       } else {
         inSegment = pointAngle >= normalizedStart && pointAngle <= endAngle;
       }
@@ -297,7 +311,14 @@ abstract final class FusionPolarMath {
       // PIE mode: wedge from center
       if (cornerRadius > 0 && sweepAngle < 360) {
         // Rounded corners (complex path)
-        _addRoundedPieSegment(path, center, outerRadius, startRad, sweepRad, cornerRadius);
+        _addRoundedPieSegment(
+          path,
+          center,
+          outerRadius,
+          startRad,
+          sweepRad,
+          cornerRadius,
+        );
       } else {
         // Simple wedge
         path.moveTo(center.dx, center.dy);
@@ -314,7 +335,14 @@ abstract final class FusionPolarMath {
       if (cornerRadius > 0 && sweepAngle < 360) {
         // Rounded corners (complex path)
         _addRoundedDonutSegment(
-            path, center, innerRadius, outerRadius, startRad, sweepRad, cornerRadius);
+          path,
+          center,
+          innerRadius,
+          outerRadius,
+          startRad,
+          sweepRad,
+          cornerRadius,
+        );
       } else {
         // Simple ring segment
         path.arcTo(
@@ -337,7 +365,7 @@ abstract final class FusionPolarMath {
   }
 
   /// Adds a rounded pie segment to the path.
-  /// 
+  ///
   /// Rounds the two outer corners where radial lines meet the arc.
   /// The center point remains sharp.
   static void _addRoundedPieSegment(
@@ -353,7 +381,7 @@ abstract final class FusionPolarMath {
     final arcLength = radius * sweepRad.abs();
     final maxCorner = min(radius * 0.4, arcLength * 0.3);
     final cr = cornerRadius.clamp(0.0, maxCorner);
-    
+
     if (cr < 1.0) {
       // Corner radius too small, use simple path
       path.moveTo(center.dx, center.dy);
@@ -370,11 +398,11 @@ abstract final class FusionPolarMath {
     // Calculate angular offset for corner radius on outer arc
     // cornerAngle = cr / radius (in radians)
     final cornerAngle = cr / radius;
-    
+
     // Adjusted arc angles (shortened to make room for rounded corners)
     final adjustedStartRad = startRad + cornerAngle;
     final adjustedSweepRad = sweepRad - (cornerAngle * 2);
-    
+
     // Points for the rounded corners
     // Start corner: where radial line meets outer arc
     final startRadialEnd = Offset(
@@ -385,14 +413,14 @@ abstract final class FusionPolarMath {
       center.dx + radius * cos(adjustedStartRad),
       center.dy + radius * sin(adjustedStartRad),
     );
-    
+
     // End corner: where outer arc meets return radial line
     final endRad = startRad + sweepRad;
     final endRadialEnd = Offset(
       center.dx + (radius - cr) * cos(endRad),
       center.dy + (radius - cr) * sin(endRad),
     );
-    
+
     // Control points for quadratic curves (at the actual corner positions)
     final startCorner = Offset(
       center.dx + radius * cos(startRad),
@@ -405,16 +433,18 @@ abstract final class FusionPolarMath {
 
     // Build the path
     path.moveTo(center.dx, center.dy);
-    
+
     // Line to start of first corner
     path.lineTo(startRadialEnd.dx, startRadialEnd.dy);
-    
+
     // Rounded corner at start (quadratic bezier)
     path.quadraticBezierTo(
-      startCorner.dx, startCorner.dy,
-      startArcPoint.dx, startArcPoint.dy,
+      startCorner.dx,
+      startCorner.dy,
+      startArcPoint.dx,
+      startArcPoint.dy,
     );
-    
+
     // Main outer arc (shortened)
     if (adjustedSweepRad > 0.01) {
       path.arcTo(
@@ -424,19 +454,21 @@ abstract final class FusionPolarMath {
         false,
       );
     }
-    
+
     // Rounded corner at end (quadratic bezier)
     path.quadraticBezierTo(
-      endCorner.dx, endCorner.dy,
-      endRadialEnd.dx, endRadialEnd.dy,
+      endCorner.dx,
+      endCorner.dy,
+      endRadialEnd.dx,
+      endRadialEnd.dy,
     );
-    
+
     // Line back to center
     path.close();
   }
 
   /// Adds a rounded donut segment to the path.
-  /// 
+  ///
   /// Rounds all four corners:
   /// - 2 outer corners (where radial edges meet outer arc)
   /// - 2 inner corners (where radial edges meet inner arc)
@@ -454,7 +486,7 @@ abstract final class FusionPolarMath {
     final minArcLength = innerRadius * sweepRad.abs();
     final maxCorner = min(ringWidth * 0.4, minArcLength * 0.3);
     final cr = cornerRadius.clamp(0.0, maxCorner);
-    
+
     if (cr < 1.0) {
       // Corner radius too small, use simple path
       path.arcTo(
@@ -476,9 +508,9 @@ abstract final class FusionPolarMath {
     // Calculate angular offsets for corners on each arc
     final outerCornerAngle = cr / outerRadius;
     final innerCornerAngle = cr / innerRadius;
-    
+
     final endRad = startRad + sweepRad;
-    
+
     // === OUTER ARC POINTS ===
     // Start corner (outer)
     final outerStartCorner = Offset(
@@ -493,7 +525,7 @@ abstract final class FusionPolarMath {
       center.dx + (outerRadius - cr) * cos(startRad),
       center.dy + (outerRadius - cr) * sin(startRad),
     );
-    
+
     // End corner (outer)
     final outerEndCorner = Offset(
       center.dx + outerRadius * cos(endRad),
@@ -503,7 +535,7 @@ abstract final class FusionPolarMath {
       center.dx + (outerRadius - cr) * cos(endRad),
       center.dy + (outerRadius - cr) * sin(endRad),
     );
-    
+
     // === INNER ARC POINTS ===
     // End corner (inner) - we traverse inner arc in reverse
     final innerEndCorner = Offset(
@@ -518,7 +550,7 @@ abstract final class FusionPolarMath {
       center.dx + (innerRadius + cr) * cos(endRad),
       center.dy + (innerRadius + cr) * sin(endRad),
     );
-    
+
     // Start corner (inner)
     final innerStartCorner = Offset(
       center.dx + innerRadius * cos(startRad),
@@ -532,13 +564,15 @@ abstract final class FusionPolarMath {
     // === BUILD PATH ===
     // Start at the radial edge between inner and outer at startRad
     path.moveTo(outerStartRadial.dx, outerStartRadial.dy);
-    
+
     // 1. Outer start corner (quadratic bezier)
     path.quadraticBezierTo(
-      outerStartCorner.dx, outerStartCorner.dy,
-      outerStartArc.dx, outerStartArc.dy,
+      outerStartCorner.dx,
+      outerStartCorner.dy,
+      outerStartArc.dx,
+      outerStartArc.dy,
     );
-    
+
     // 2. Outer arc (main arc, shortened)
     final outerArcSweep = sweepRad - (outerCornerAngle * 2);
     if (outerArcSweep > 0.01) {
@@ -549,22 +583,26 @@ abstract final class FusionPolarMath {
         false,
       );
     }
-    
+
     // 3. Outer end corner (quadratic bezier)
     path.quadraticBezierTo(
-      outerEndCorner.dx, outerEndCorner.dy,
-      outerEndRadial.dx, outerEndRadial.dy,
+      outerEndCorner.dx,
+      outerEndCorner.dy,
+      outerEndRadial.dx,
+      outerEndRadial.dy,
     );
-    
+
     // 4. Radial line from outer to inner at endRad
     path.lineTo(innerEndRadial.dx, innerEndRadial.dy);
-    
+
     // 5. Inner end corner (quadratic bezier)
     path.quadraticBezierTo(
-      innerEndCorner.dx, innerEndCorner.dy,
-      innerEndArc.dx, innerEndArc.dy,
+      innerEndCorner.dx,
+      innerEndCorner.dy,
+      innerEndArc.dx,
+      innerEndArc.dy,
     );
-    
+
     // 6. Inner arc (reverse direction, shortened)
     final innerArcSweep = -(sweepRad - (innerCornerAngle * 2));
     if (innerArcSweep.abs() > 0.01) {
@@ -575,13 +613,15 @@ abstract final class FusionPolarMath {
         false,
       );
     }
-    
+
     // 7. Inner start corner (quadratic bezier)
     path.quadraticBezierTo(
-      innerStartCorner.dx, innerStartCorner.dy,
-      innerStartRadial.dx, innerStartRadial.dy,
+      innerStartCorner.dx,
+      innerStartCorner.dy,
+      innerStartRadial.dx,
+      innerStartRadial.dy,
     );
-    
+
     // 8. Close path (radial line from inner to outer at startRad)
     path.close();
   }
@@ -631,8 +671,12 @@ abstract final class FusionPolarMath {
     final drawHeight = availableSize.height - padding.vertical;
 
     // Account for label space
-    final effectiveWidth = hasOutsideLabels ? drawWidth - (labelSpace * 2) : drawWidth;
-    final effectiveHeight = hasOutsideLabels ? drawHeight - (labelSpace * 2) : drawHeight;
+    final effectiveWidth = hasOutsideLabels
+        ? drawWidth - (labelSpace * 2)
+        : drawWidth;
+    final effectiveHeight = hasOutsideLabels
+        ? drawHeight - (labelSpace * 2)
+        : drawHeight;
 
     // Maximum radius that fits
     final maxRadius = min(effectiveWidth, effectiveHeight) / 2;

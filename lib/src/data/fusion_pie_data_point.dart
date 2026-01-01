@@ -11,8 +11,8 @@ import 'package:flutter/material.dart';
 ///
 /// Colors are resolved in order (first non-null wins):
 /// 1. DataPoint.color (per-slice)
-/// 2. Series.colorPalette[index] (auto-assigned)
-/// 3. Theme.colorPalette[index] (fallback)
+/// 2. Series.colorPalette at index (auto-assigned)
+/// 3. Theme.colorPalette at index (fallback)
 ///
 /// ## Example
 ///
@@ -180,7 +180,8 @@ class FusionPieDataPoint {
   final void Function(FusionPieDataPoint point, int index)? onLongPress;
 
   /// Called when hover state changes (desktop/web).
-  final void Function(FusionPieDataPoint point, int index, bool isHovered)? onHover;
+  final void Function(FusionPieDataPoint point, int index, bool isHovered)?
+  onHover;
 
   // ===========================================================================
   // TOOLTIP
@@ -269,16 +270,16 @@ class FusionPieDataPoint {
 
   @override
   int get hashCode => Object.hash(
-        value,
-        label,
-        color,
-        gradient,
-        borderColor,
-        borderWidth,
-        cornerRadius,
-        explode,
-        visible,
-      );
+    value,
+    label,
+    color,
+    gradient,
+    borderColor,
+    borderWidth,
+    cornerRadius,
+    explode,
+    visible,
+  );
 
   @override
   String toString() => 'FusionPieDataPoint(value: $value, label: $label)';

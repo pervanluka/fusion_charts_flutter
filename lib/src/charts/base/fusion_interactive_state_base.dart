@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import '../../configuration/fusion_tooltip_configuration.dart' show FusionTooltipDataBase;
+import '../../configuration/fusion_tooltip_configuration.dart'
+    show FusionTooltipDataBase;
 import '../../data/fusion_data_point.dart';
 import '../../rendering/fusion_coordinate_system.dart';
 
@@ -20,14 +21,14 @@ import '../../rendering/fusion_coordinate_system.dart';
 /// ## Example
 ///
 /// ```dart
-/// class MyCustomInteractiveState extends ChangeNotifier 
+/// class MyCustomInteractiveState extends ChangeNotifier
 ///     implements FusionInteractiveStateBase {
 ///   @override
 ///   void initialize() { ... }
-///   
+///
 ///   @override
 ///   void updateCoordinateSystem(FusionCoordinateSystem system) { ... }
-///   
+///
 ///   // ... implement other members
 /// }
 /// ```

@@ -343,19 +343,24 @@ class FusionPieChartConfiguration extends FusionChartConfiguration {
   bool get isDonut => innerRadiusPercent > 0;
 
   /// Effective stroke color (falls back to theme).
-  Color effectiveStrokeColor(FusionChartTheme themeRef) => strokeColor ?? themeRef.pieStrokeColor;
+  Color effectiveStrokeColor(FusionChartTheme themeRef) =>
+      strokeColor ?? themeRef.pieStrokeColor;
 
   /// Effective shadow color (falls back to theme).
-  Color effectiveShadowColor(FusionChartTheme themeRef) => shadowColor ?? themeRef.pieShadowColor;
+  Color effectiveShadowColor(FusionChartTheme themeRef) =>
+      shadowColor ?? themeRef.pieShadowColor;
 
   /// Effective legend width (from theme).
-  double effectiveLegendWidth(FusionChartTheme themeRef) => themeRef.legendWidth;
+  double effectiveLegendWidth(FusionChartTheme themeRef) =>
+      themeRef.legendWidth;
 
   /// Effective legend height (from theme).
-  double effectiveLegendHeight(FusionChartTheme themeRef) => themeRef.legendHeight;
+  double effectiveLegendHeight(FusionChartTheme themeRef) =>
+      themeRef.legendHeight;
 
   /// Effective group color (falls back to theme.gridColor).
-  Color effectiveGroupColor(FusionChartTheme themeRef) => groupColor ?? themeRef.gridColor;
+  Color effectiveGroupColor(FusionChartTheme themeRef) =>
+      groupColor ?? themeRef.gridColor;
 
   // ===========================================================================
   // RESOLVED VALUES (Config overrides Series defaults)

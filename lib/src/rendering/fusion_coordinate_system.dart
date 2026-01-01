@@ -96,7 +96,9 @@ class FusionCoordinateSystem {
     if (dataXRange == 0) return _snapToPixel(chartArea.left);
 
     final normalizedX = (dataX - dataXMin) * scaleX;
-    final screenX = xInversed ? chartArea.right - normalizedX : chartArea.left + normalizedX;
+    final screenX = xInversed
+        ? chartArea.right - normalizedX
+        : chartArea.left + normalizedX;
 
     return _snapToPixel(screenX);
   }
@@ -106,7 +108,9 @@ class FusionCoordinateSystem {
     if (dataYRange == 0) return _snapToPixel(chartArea.bottom);
 
     final normalizedY = (dataY - dataYMin) * scaleY;
-    final screenY = yInversed ? chartArea.top + normalizedY : chartArea.bottom - normalizedY;
+    final screenY = yInversed
+        ? chartArea.top + normalizedY
+        : chartArea.bottom - normalizedY;
 
     return _snapToPixel(screenY);
   }
@@ -128,7 +132,9 @@ class FusionCoordinateSystem {
   double screenXToDataX(double screenX) {
     if (dataXRange == 0) return dataXMin;
 
-    final offsetX = xInversed ? chartArea.right - screenX : screenX - chartArea.left;
+    final offsetX = xInversed
+        ? chartArea.right - screenX
+        : screenX - chartArea.left;
 
     return dataXMin + (offsetX / scaleX);
   }
@@ -136,13 +142,18 @@ class FusionCoordinateSystem {
   double screenYToDataY(double screenY) {
     if (dataYRange == 0) return dataYMin;
 
-    final offsetY = yInversed ? screenY - chartArea.top : chartArea.bottom - screenY;
+    final offsetY = yInversed
+        ? screenY - chartArea.top
+        : chartArea.bottom - screenY;
 
     return dataYMin + (offsetY / scaleY);
   }
 
   FusionDataPoint screenToData(Offset screenPoint) {
-    return FusionDataPoint(screenXToDataX(screenPoint.dx), screenYToDataY(screenPoint.dy));
+    return FusionDataPoint(
+      screenXToDataX(screenPoint.dx),
+      screenYToDataY(screenPoint.dy),
+    );
   }
 
   // ==========================================================================
@@ -238,7 +249,13 @@ class FusionCoordinateSystem {
 
   List<FusionDataPoint> getVisiblePoints(List<FusionDataPoint> points) {
     return points
-        .where((p) => p.x >= dataXMin && p.x <= dataXMax && p.y >= dataYMin && p.y <= dataYMax)
+        .where(
+          (p) =>
+              p.x >= dataXMin &&
+              p.x <= dataXMax &&
+              p.y >= dataYMin &&
+              p.y <= dataYMax,
+        )
         .toList();
   }
 

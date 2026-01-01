@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../charts/fusion_stacked_bar_interactive_state.dart';
 import '../../configuration/fusion_stacked_tooltip_builder.dart';
-import '../../configuration/fusion_tooltip_configuration.dart' show FusionTooltipBehavior;
+import '../../configuration/fusion_tooltip_configuration.dart'
+    show FusionTooltipBehavior;
 import '../../themes/fusion_chart_theme.dart';
 import '../engine/fusion_render_context.dart';
 
@@ -30,11 +31,18 @@ class FusionStackedTooltipLayer {
     final info = _convertToPublicInfo(tooltipData);
 
     // Get styling from theme with fallbacks
-    final backgroundColor = tooltipConfig.color ?? _getTooltipBackgroundColor(theme);
-    final textColor = tooltipConfig.textStyle?.color ?? _getTooltipTextColor(theme);
-    final fontSize = tooltipConfig.textStyle?.fontSize ?? theme.tooltipStyle.fontSize ?? 12.0;
+    final backgroundColor =
+        tooltipConfig.color ?? _getTooltipBackgroundColor(theme);
+    final textColor =
+        tooltipConfig.textStyle?.color ?? _getTooltipTextColor(theme);
+    final fontSize =
+        tooltipConfig.textStyle?.fontSize ??
+        theme.tooltipStyle.fontSize ??
+        12.0;
     final fontWeight =
-        tooltipConfig.textStyle?.fontWeight ?? theme.tooltipStyle.fontWeight ?? FontWeight.w500;
+        tooltipConfig.textStyle?.fontWeight ??
+        theme.tooltipStyle.fontWeight ??
+        FontWeight.w500;
     final borderRadius = theme.borderRadius;
     final borderColor = tooltipConfig.borderColor ?? theme.borderColor;
     final borderWidth = tooltipConfig.borderWidth;
@@ -48,7 +56,11 @@ class FusionStackedTooltipLayer {
     const colorDotSpacing = 8.0;
 
     // Text styles from theme
-    final textStyle = TextStyle(color: textColor, fontSize: fontSize, fontWeight: fontWeight);
+    final textStyle = TextStyle(
+      color: textColor,
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+    );
     final boldTextStyle = textStyle.copyWith(fontWeight: FontWeight.bold);
 
     // Get formatted total text (may be null to hide)
@@ -72,7 +84,10 @@ class FusionStackedTooltipLayer {
       final valueText = _formatValue(segment, info, valueFormatter);
 
       final linePainter = TextPainter(
-        text: TextSpan(text: '${segment.seriesName}: $valueText', style: textStyle),
+        text: TextSpan(
+          text: '${segment.seriesName}: $valueText',
+          style: textStyle,
+        ),
         textDirection: TextDirection.ltr,
       )..layout();
 
@@ -91,12 +106,14 @@ class FusionStackedTooltipLayer {
 
     // Calculate tooltip size
     final hasLabel = tooltipData.categoryLabel != null;
-    final lineCount = segments.length + (hasLabel ? 1 : 0) + (showTotal ? 1 : 0);
+    final lineCount =
+        segments.length + (hasLabel ? 1 : 0) + (showTotal ? 1 : 0);
     final separatorHeight = showTotal ? 8.0 : 0.0;
     const arrowSize = 8.0;
 
     final tooltipWidth = maxTextWidth + (horizontalPadding * 2);
-    final tooltipHeight = (lineCount * lineHeight) + (verticalPadding * 2) + separatorHeight;
+    final tooltipHeight =
+        (lineCount * lineHeight) + (verticalPadding * 2) + separatorHeight;
 
     // Arrow position is at the horizontal center of the bar's top edge
     final arrowTargetX = tooltipData.screenPosition.dx;
@@ -133,7 +150,8 @@ class FusionStackedTooltipLayer {
     canvas.drawRRect(tooltipRect.shift(const Offset(0, 2)), shadowPaint);
 
     // Draw background
-    final bgPaint = Paint()..color = backgroundColor.withValues(alpha: tooltipConfig.opacity);
+    final bgPaint = Paint()
+      ..color = backgroundColor.withValues(alpha: tooltipConfig.opacity);
     canvas.drawRRect(tooltipRect, bgPaint);
 
     // Draw border
@@ -188,11 +206,17 @@ class FusionStackedTooltipLayer {
       final valueText = _formatValue(segment, info, valueFormatter);
 
       final segmentPainter = TextPainter(
-        text: TextSpan(text: '${segment.seriesName}: $valueText', style: textStyle),
+        text: TextSpan(
+          text: '${segment.seriesName}: $valueText',
+          style: textStyle,
+        ),
         textDirection: TextDirection.ltr,
       )..layout();
 
-      segmentPainter.paint(canvas, Offset(contentX + colorDotSize + colorDotSpacing, currentY));
+      segmentPainter.paint(
+        canvas,
+        Offset(contentX + colorDotSize + colorDotSpacing, currentY),
+      );
       currentY += lineHeight;
     }
 
@@ -263,7 +287,10 @@ class FusionStackedTooltipLayer {
 
   /// Formats total using custom formatter or default.
   /// Returns null to hide the total line.
-  String? _formatTotal(FusionStackedTooltipInfo info, FusionStackedTotalFormatter? formatter) {
+  String? _formatTotal(
+    FusionStackedTooltipInfo info,
+    FusionStackedTotalFormatter? formatter,
+  ) {
     if (formatter != null) {
       return formatter(info.totalValue, info);
     }

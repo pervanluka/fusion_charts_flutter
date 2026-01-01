@@ -121,13 +121,25 @@ class FusionPieSeries {
     // === VISIBILITY ===
     this.visible = true,
   }) : assert(dataPoints.length > 0, 'At least one data point required'),
-       assert(innerRadiusPercent >= 0 && innerRadiusPercent < 1, 'Inner radius must be 0-1'),
-       assert(outerRadiusPercent > 0 && outerRadiusPercent <= 1, 'Outer radius must be 0-1'),
-       assert(innerRadiusPercent < outerRadiusPercent, 'Inner must be less than outer'),
+       assert(
+         innerRadiusPercent >= 0 && innerRadiusPercent < 1,
+         'Inner radius must be 0-1',
+       ),
+       assert(
+         outerRadiusPercent > 0 && outerRadiusPercent <= 1,
+         'Outer radius must be 0-1',
+       ),
+       assert(
+         innerRadiusPercent < outerRadiusPercent,
+         'Inner must be less than outer',
+       ),
        assert(gapBetweenSlices >= 0, 'Gap must be non-negative'),
        assert(cornerRadius >= 0, 'Corner radius must be non-negative'),
        assert(explodeOffset >= 0, 'Explode offset must be non-negative'),
-       assert(groupThreshold > 0 && groupThreshold <= 100, 'Threshold must be 0-100%');
+       assert(
+         groupThreshold > 0 && groupThreshold <= 100,
+         'Threshold must be 0-100%',
+       );
 
   // ===========================================================================
   // CORE DATA
@@ -310,7 +322,8 @@ class FusionPieSeries {
   ///
   /// Called with current state (selection, hover, totals).
   /// Takes precedence over [centerWidget] if both are set.
-  final Widget Function(BuildContext context, PieCenterState state)? centerWidgetBuilder;
+  final Widget Function(BuildContext context, PieCenterState state)?
+  centerWidgetBuilder;
 
   // ===========================================================================
   // VISIBILITY
@@ -401,7 +414,9 @@ class FusionPieSeries {
     }
 
     if (otherValue > 0) {
-      main.add(FusionPieDataPoint(otherValue, label: groupLabel, color: groupColor));
+      main.add(
+        FusionPieDataPoint(otherValue, label: groupLabel, color: groupColor),
+      );
     }
 
     return main;

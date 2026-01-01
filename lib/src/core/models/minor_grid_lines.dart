@@ -11,6 +11,6 @@ class MinorGridLines {
   /// Color of minor grid lines.
   final Color? color;
 
-  /// Dash array for dashed lines (e.g., [5, 5] for dashes).
+  /// Dash array for dashed lines (e.g., `[5, 5]` for dashes).
   final List<double>? dashArray;
 }

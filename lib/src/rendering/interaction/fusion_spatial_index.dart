@@ -70,11 +70,18 @@ class FusionSpatialIndex {
   /// Finds the nearest point to a screen position using Euclidean distance.
   ///
   /// Returns null if no point within maxDistance.
-  FusionDataPoint? findNearest(Offset screenPosition, {double maxDistance = double.infinity}) {
+  FusionDataPoint? findNearest(
+    Offset screenPosition, {
+    double maxDistance = double.infinity,
+  }) {
     if (_root == null) return null;
 
     final candidates = _root!.query(
-      Rect.fromCenter(center: screenPosition, width: maxDistance * 2, height: maxDistance * 2),
+      Rect.fromCenter(
+        center: screenPosition,
+        width: maxDistance * 2,
+        height: maxDistance * 2,
+      ),
     );
 
     if (candidates.isEmpty) return null;
@@ -163,18 +170,26 @@ class FusionSpatialIndex {
   }
 
   /// Finds all points within a radius.
-  List<FusionDataPoint> findInRadius(Offset screenPosition, {required double radius}) {
+  List<FusionDataPoint> findInRadius(
+    Offset screenPosition, {
+    required double radius,
+  }) {
     if (_root == null) return [];
 
     final candidates = _root!.query(
-      Rect.fromCenter(center: screenPosition, width: radius * 2, height: radius * 2),
+      Rect.fromCenter(
+        center: screenPosition,
+        width: radius * 2,
+        height: radius * 2,
+      ),
     );
 
     final result = <FusionDataPoint>[];
     final radiusSq = radius * radius;
 
     for (final candidate in candidates) {
-      final distSq = (candidate.screenPosition - screenPosition).distanceSquared;
+      final distSq =
+          (candidate.screenPosition - screenPosition).distanceSquared;
       if (distSq <= radiusSq) {
         result.add(candidate.dataPoint);
       }
@@ -192,7 +207,11 @@ class FusionSpatialIndex {
   }
 
   /// Finds points along a line with tolerance.
-  List<FusionDataPoint> findAlongLine(Offset start, Offset end, {double tolerance = 10.0}) {
+  List<FusionDataPoint> findAlongLine(
+    Offset start,
+    Offset end, {
+    double tolerance = 10.0,
+  }) {
     if (_root == null) return [];
 
     // Create bounding box for line
@@ -218,7 +237,11 @@ class FusionSpatialIndex {
   }
 
   /// Finds the closest point on a line segment to a point.
-  double _distanceToLineSegment(Offset point, Offset lineStart, Offset lineEnd) {
+  double _distanceToLineSegment(
+    Offset point,
+    Offset lineStart,
+    Offset lineEnd,
+  ) {
     final dx = lineEnd.dx - lineStart.dx;
     final dy = lineEnd.dy - lineStart.dy;
 
@@ -227,10 +250,14 @@ class FusionSpatialIndex {
     }
 
     final t =
-        ((point.dx - lineStart.dx) * dx + (point.dy - lineStart.dy) * dy) / (dx * dx + dy * dy);
+        ((point.dx - lineStart.dx) * dx + (point.dy - lineStart.dy) * dy) /
+        (dx * dx + dy * dy);
 
     final clampedT = t.clamp(0.0, 1.0);
-    final closestPoint = Offset(lineStart.dx + clampedT * dx, lineStart.dy + clampedT * dy);
+    final closestPoint = Offset(
+      lineStart.dx + clampedT * dx,
+      lineStart.dy + clampedT * dy,
+    );
 
     return (point - closestPoint).distance;
   }
@@ -264,7 +291,12 @@ class FusionSpatialIndex {
   /// Gets statistics about the QuadTree.
   QuadTreeStatistics get statistics {
     if (_root == null) {
-      return QuadTreeStatistics(totalPoints: 0, nodeCount: 0, maxDepth: 0, avgPointsPerLeaf: 0);
+      return QuadTreeStatistics(
+        totalPoints: 0,
+        nodeCount: 0,
+        maxDepth: 0,
+        avgPointsPerLeaf: 0,
+      );
     }
 
     int nodeCount = 0;

@@ -22,8 +22,16 @@ void main() {
                 width: 800,
                 height: 400,
                 child: FusionLineChart(
-                  series: [FusionLineSeries(name: 'Large', dataPoints: data, color: Colors.blue)],
-                  config: const FusionChartConfiguration(enableAnimation: false),
+                  series: [
+                    FusionLineSeries(
+                      name: 'Large',
+                      dataPoints: data,
+                      color: Colors.blue,
+                    ),
+                  ],
+                  config: const FusionChartConfiguration(
+                    enableAnimation: false,
+                  ),
                 ),
               ),
             ),
@@ -48,9 +56,15 @@ void main() {
                 height: 400,
                 child: FusionLineChart(
                   series: [
-                    FusionLineSeries(name: 'VeryLarge', dataPoints: data, color: Colors.blue),
+                    FusionLineSeries(
+                      name: 'VeryLarge',
+                      dataPoints: data,
+                      color: Colors.blue,
+                    ),
                   ],
-                  config: const FusionChartConfiguration(enableAnimation: false),
+                  config: const FusionChartConfiguration(
+                    enableAnimation: false,
+                  ),
                 ),
               ),
             ),
@@ -74,8 +88,16 @@ void main() {
                 width: 800,
                 height: 400,
                 child: FusionLineChart(
-                  series: [FusionLineSeries(name: 'Massive', dataPoints: data, color: Colors.blue)],
-                  config: const FusionChartConfiguration(enableAnimation: false),
+                  series: [
+                    FusionLineSeries(
+                      name: 'Massive',
+                      dataPoints: data,
+                      color: Colors.blue,
+                    ),
+                  ],
+                  config: const FusionChartConfiguration(
+                    enableAnimation: false,
+                  ),
                 ),
               ),
             ),
@@ -118,7 +140,10 @@ void main() {
             name: 'Series $seriesIndex',
             dataPoints: List.generate(
               100,
-              (i) => FusionDataPoint(i.toDouble(), math.sin(i * 0.1 + seriesIndex) * 30 + 50),
+              (i) => FusionDataPoint(
+                i.toDouble(),
+                math.sin(i * 0.1 + seriesIndex) * 30 + 50,
+              ),
             ),
             color: Colors.primaries[seriesIndex % Colors.primaries.length],
           ),
@@ -132,7 +157,9 @@ void main() {
                 height: 400,
                 child: FusionLineChart(
                   series: series,
-                  config: const FusionChartConfiguration(enableAnimation: false),
+                  config: const FusionChartConfiguration(
+                    enableAnimation: false,
+                  ),
                 ),
               ),
             ),
@@ -168,7 +195,9 @@ void main() {
                 height: 400,
                 child: FusionBarChart(
                   series: series,
-                  config: const FusionBarChartConfiguration(enableAnimation: false),
+                  config: const FusionBarChartConfiguration(
+                    enableAnimation: false,
+                  ),
                 ),
               ),
             ),
@@ -198,7 +227,11 @@ void main() {
                 height: 400,
                 child: FusionLineChart(
                   series: [
-                    FusionLineSeries(name: 'Animated', dataPoints: data, color: Colors.blue),
+                    FusionLineSeries(
+                      name: 'Animated',
+                      dataPoints: data,
+                      color: Colors.blue,
+                    ),
                   ],
                   config: const FusionChartConfiguration(
                     enableAnimation: true,
@@ -237,8 +270,16 @@ void main() {
                 width: 400,
                 height: 300,
                 child: FusionLineChart(
-                  series: [FusionLineSeries(name: 'Resize', dataPoints: data, color: Colors.blue)],
-                  config: const FusionChartConfiguration(enableAnimation: false),
+                  series: [
+                    FusionLineSeries(
+                      name: 'Resize',
+                      dataPoints: data,
+                      color: Colors.blue,
+                    ),
+                  ],
+                  config: const FusionChartConfiguration(
+                    enableAnimation: false,
+                  ),
                 ),
               ),
             ),
@@ -255,9 +296,15 @@ void main() {
                   height: 300,
                   child: FusionLineChart(
                     series: [
-                      FusionLineSeries(name: 'Resize', dataPoints: data, color: Colors.blue),
+                      FusionLineSeries(
+                        name: 'Resize',
+                        dataPoints: data,
+                        color: Colors.blue,
+                      ),
                     ],
-                    config: const FusionChartConfiguration(enableAnimation: false),
+                    config: const FusionChartConfiguration(
+                      enableAnimation: false,
+                    ),
                   ),
                 ),
               ),
@@ -275,7 +322,10 @@ void main() {
     // ==========================================================================
     group('Data Update Performance', () {
       testWidgets('handles rapid data updates', (tester) async {
-        var data = List.generate(100, (i) => FusionDataPoint(i.toDouble(), 50.0));
+        var data = List.generate(
+          100,
+          (i) => FusionDataPoint(i.toDouble(), 50.0),
+        );
 
         await tester.pumpWidget(
           MaterialApp(
@@ -284,8 +334,16 @@ void main() {
                 width: 400,
                 height: 300,
                 child: FusionLineChart(
-                  series: [FusionLineSeries(name: 'Dynamic', dataPoints: data, color: Colors.blue)],
-                  config: const FusionChartConfiguration(enableAnimation: false),
+                  series: [
+                    FusionLineSeries(
+                      name: 'Dynamic',
+                      dataPoints: data,
+                      color: Colors.blue,
+                    ),
+                  ],
+                  config: const FusionChartConfiguration(
+                    enableAnimation: false,
+                  ),
                 ),
               ),
             ),
@@ -296,7 +354,10 @@ void main() {
         for (int update = 0; update < 20; update++) {
           data = List.generate(
             100,
-            (i) => FusionDataPoint(i.toDouble(), math.sin(i * 0.1 + update * 0.5) * 50 + 50),
+            (i) => FusionDataPoint(
+              i.toDouble(),
+              math.sin(i * 0.1 + update * 0.5) * 50 + 50,
+            ),
           );
 
           await tester.pumpWidget(
@@ -307,9 +368,15 @@ void main() {
                   height: 300,
                   child: FusionLineChart(
                     series: [
-                      FusionLineSeries(name: 'Dynamic', dataPoints: data, color: Colors.blue),
+                      FusionLineSeries(
+                        name: 'Dynamic',
+                        dataPoints: data,
+                        color: Colors.blue,
+                      ),
                     ],
-                    config: const FusionChartConfiguration(enableAnimation: false),
+                    config: const FusionChartConfiguration(
+                      enableAnimation: false,
+                    ),
                   ),
                 ),
               ),
@@ -340,7 +407,9 @@ void main() {
         for (int i = 0; i < 100000; i++) {
           final x = i % 1000;
           final y = i % 100;
-          final screen = coordSystem.dataToScreen(FusionDataPoint(x.toDouble(), y.toDouble()));
+          final screen = coordSystem.dataToScreen(
+            FusionDataPoint(x.toDouble(), y.toDouble()),
+          );
           coordSystem.screenToData(screen);
         }
 
@@ -382,7 +451,10 @@ void main() {
         final random = math.Random(42);
         final data = List.generate(
           50000,
-          (i) => FusionDataPoint(random.nextDouble() * 50000, random.nextDouble() * 100),
+          (i) => FusionDataPoint(
+            random.nextDouble() * 50000,
+            random.nextDouble() * 100,
+          ),
         );
 
         final validator = DataValidator(sortByX: true);
@@ -400,7 +472,10 @@ void main() {
 
         // Verify sorted
         for (int i = 0; i < result.validData.length - 1; i++) {
-          expect(result.validData[i].x, lessThanOrEqualTo(result.validData[i + 1].x));
+          expect(
+            result.validData[i].x,
+            lessThanOrEqualTo(result.validData[i + 1].x),
+          );
         }
       });
     });
@@ -412,7 +487,8 @@ void main() {
       test('calculates bounds for large dataset efficiently', () {
         final data = List.generate(
           100000,
-          (i) => FusionDataPoint(i.toDouble(), math.sin(i * 0.001) * 1000 + 500),
+          (i) =>
+              FusionDataPoint(i.toDouble(), math.sin(i * 0.001) * 1000 + 500),
         );
 
         final minY = data.map((p) => p.y).reduce(math.min);
@@ -421,7 +497,10 @@ void main() {
         final stopwatch = Stopwatch()..start();
 
         for (int i = 0; i < 1000; i++) {
-          ChartBoundsCalculator.calculateNiceYBounds(dataMinY: minY, dataMaxY: maxY);
+          ChartBoundsCalculator.calculateNiceYBounds(
+            dataMinY: minY,
+            dataMaxY: maxY,
+          );
         }
 
         stopwatch.stop();

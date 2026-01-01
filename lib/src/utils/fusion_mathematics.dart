@@ -30,7 +30,7 @@ class FusionMathematics {
   /// Where:
   /// - P₀, P₃ = endpoints
   /// - P₁, P₂ = control points
-  /// - t ∈ [0, 1]
+  /// - t ∈ `[0, 1]`
   ///
   /// Example:
   /// ```dart
@@ -96,9 +96,15 @@ class FusionMathematics {
       final t = i / segments;
       final oneMinusT = 1.0 - t;
 
-      final x = math.pow(oneMinusT, 2) * p0.dx + 2 * oneMinusT * t * p1.dx + math.pow(t, 2) * p2.dx;
+      final x =
+          math.pow(oneMinusT, 2) * p0.dx +
+          2 * oneMinusT * t * p1.dx +
+          math.pow(t, 2) * p2.dx;
 
-      final y = math.pow(oneMinusT, 2) * p0.dy + 2 * oneMinusT * t * p1.dy + math.pow(t, 2) * p2.dy;
+      final y =
+          math.pow(oneMinusT, 2) * p0.dy +
+          2 * oneMinusT * t * p1.dy +
+          math.pow(t, 2) * p2.dy;
 
       points.add(Offset(x, y));
     }
@@ -241,7 +247,10 @@ class FusionMathematics {
   /// final sma = FusionMathematics.simpleMovingAverage(data, window: 3);
   /// // Result: [20, 30, 40] (average of each 3-value window)
   /// ```
-  static List<double> simpleMovingAverage(List<double> data, {required int window}) {
+  static List<double> simpleMovingAverage(
+    List<double> data, {
+    required int window,
+  }) {
     assert(window > 0 && window <= data.length);
 
     if (data.length < window) return [];
@@ -270,7 +279,10 @@ class FusionMathematics {
   /// ```
   ///
   /// Used in financial charts and trend analysis.
-  static List<double> exponentialMovingAverage(List<double> data, {required int period}) {
+  static List<double> exponentialMovingAverage(
+    List<double> data, {
+    required int period,
+  }) {
     if (data.isEmpty) return [];
 
     final alpha = 2.0 / (period + 1);
@@ -303,7 +315,9 @@ class FusionMathematics {
   /// ```
   ///
   /// Returns slope and intercept.
-  static FusionTrendLine calculateLinearRegression(List<FusionDataPoint> dataPoints) {
+  static FusionTrendLine calculateLinearRegression(
+    List<FusionDataPoint> dataPoints,
+  ) {
     if (dataPoints.isEmpty) {
       return FusionTrendLine(slope: 0, intercept: 0);
     }
@@ -344,10 +358,14 @@ class FusionMathematics {
   /// Returns value between 0 and 1:
   /// - 1.0 = perfect fit
   /// - 0.0 = no correlation
-  static double calculateRSquared(List<FusionDataPoint> dataPoints, FusionTrendLine trendLine) {
+  static double calculateRSquared(
+    List<FusionDataPoint> dataPoints,
+    FusionTrendLine trendLine,
+  ) {
     if (dataPoints.isEmpty) return 0;
 
-    final meanY = dataPoints.map((p) => p.y).reduce((a, b) => a + b) / dataPoints.length;
+    final meanY =
+        dataPoints.map((p) => p.y).reduce((a, b) => a + b) / dataPoints.length;
 
     double ssRes = 0; // Sum of squares of residuals
     double ssTot = 0; // Total sum of squares
@@ -404,7 +422,9 @@ class FusionMathematics {
     if (data.isEmpty) return 0;
 
     final mean = data.reduce((a, b) => a + b) / data.length;
-    final variance = data.map((x) => math.pow(x - mean, 2)).reduce((a, b) => a + b) / data.length;
+    final variance =
+        data.map((x) => math.pow(x - mean, 2)).reduce((a, b) => a + b) /
+        data.length;
 
     return math.sqrt(variance);
   }
@@ -519,5 +539,6 @@ class FusionTrendLine {
   }
 
   @override
-  String toString() => 'y = ${slope.toStringAsFixed(2)}x + ${intercept.toStringAsFixed(2)}';
+  String toString() =>
+      'y = ${slope.toStringAsFixed(2)}x + ${intercept.toStringAsFixed(2)}';
 }

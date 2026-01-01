@@ -68,13 +68,22 @@ class FusionLineChartConfiguration extends FusionChartConfiguration {
     this.areaFillOpacity = 0.3,
     this.enableCurveSmoothing = false,
     this.curveTension = 0.4,
-  }) : assert(lineWidth > 0 && lineWidth <= 10, 'lineWidth must be between 0 and 10'),
-       assert(markerSize > 0 && markerSize <= 20, 'markerSize must be between 0 and 20'),
+  }) : assert(
+         lineWidth > 0 && lineWidth <= 10,
+         'lineWidth must be between 0 and 10',
+       ),
+       assert(
+         markerSize > 0 && markerSize <= 20,
+         'markerSize must be between 0 and 20',
+       ),
        assert(
          areaFillOpacity >= 0 && areaFillOpacity <= 1,
          'areaFillOpacity must be between 0 and 1',
        ),
-       assert(curveTension >= 0 && curveTension <= 1, 'curveTension must be between 0 and 1');
+       assert(
+         curveTension >= 0 && curveTension <= 1,
+         'curveTension must be between 0 and 1',
+       );
 
   // ==========================================================================
   // LINE-SPECIFIC SETTINGS

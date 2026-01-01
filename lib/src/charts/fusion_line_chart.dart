@@ -34,13 +34,15 @@ class FusionLineChart extends StatefulWidget {
   final String? title;
   final String? subtitle;
   final void Function(FusionDataPoint point, String seriesName)? onPointTap;
-  final void Function(FusionDataPoint point, String seriesName)? onPointLongPress;
+  final void Function(FusionDataPoint point, String seriesName)?
+  onPointLongPress;
 
   @override
   State<FusionLineChart> createState() => _FusionLineChartState();
 }
 
-class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProviderStateMixin {
+class _FusionLineChartState extends State<FusionLineChart>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
   late FusionInteractiveChartState _interactiveState;
@@ -60,7 +62,9 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
     final config = widget.config ?? const FusionChartConfiguration();
 
     _animationController = AnimationController(
-      duration: config.enableAnimation ? config.effectiveAnimationDuration : Duration.zero,
+      duration: config.enableAnimation
+          ? config.effectiveAnimationDuration
+          : Duration.zero,
       vsync: this,
     );
 
@@ -79,7 +83,10 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
   void _initInteractiveState() {
     // Create initial coord system from data bounds
     // This will be updated with proper chartArea in first build
-    final allPoints = widget.series.where((s) => s.visible).expand((s) => s.dataPoints).toList();
+    final allPoints = widget.series
+        .where((s) => s.visible)
+        .expand((s) => s.dataPoints)
+        .toList();
 
     double minX = 0;
     double maxX = 10;
@@ -87,10 +94,18 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
     double maxY = 100;
 
     if (allPoints.isNotEmpty) {
-      final dataMinX = allPoints.map((p) => p.x).reduce((a, b) => a < b ? a : b);
-      final dataMaxX = allPoints.map((p) => p.x).reduce((a, b) => a > b ? a : b);
-      final dataMinY = allPoints.map((p) => p.y).reduce((a, b) => a < b ? a : b);
-      final dataMaxY = allPoints.map((p) => p.y).reduce((a, b) => a > b ? a : b);
+      final dataMinX = allPoints
+          .map((p) => p.x)
+          .reduce((a, b) => a < b ? a : b);
+      final dataMaxX = allPoints
+          .map((p) => p.x)
+          .reduce((a, b) => a > b ? a : b);
+      final dataMinY = allPoints
+          .map((p) => p.y)
+          .reduce((a, b) => a < b ? a : b);
+      final dataMaxY = allPoints
+          .map((p) => p.y)
+          .reduce((a, b) => a > b ? a : b);
 
       // Use ChartBoundsCalculator for consistent bounds calculation
       final xBounds = ChartBoundsCalculator.calculateNiceXBounds(
@@ -173,14 +188,18 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (title != null) FusionChartTitle(title: title, theme: theme),
-          if (subtitle != null) FusionChartSubtitle(subtitle: subtitle, theme: theme),
+          if (subtitle != null)
+            FusionChartSubtitle(subtitle: subtitle, theme: theme),
           Expanded(
             child: AnimatedBuilder(
               animation: _animation,
               builder: (context, child) {
                 return LayoutBuilder(
                   builder: (context, constraints) {
-                    final size = Size(constraints.maxWidth, constraints.maxHeight);
+                    final size = Size(
+                      constraints.maxWidth,
+                      constraints.maxHeight,
+                    );
                     final dpr = MediaQuery.devicePixelRatioOf(context);
                     _updateCoordinateSystem(size, dpr);
 
@@ -215,7 +234,8 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
                             yAxis: widget.yAxis,
                             animationProgress: _animation.value,
                             tooltipData: _interactiveState.tooltipData,
-                            crosshairPosition: _interactiveState.crosshairPosition,
+                            crosshairPosition:
+                                _interactiveState.crosshairPosition,
                             crosshairPoint: _interactiveState.crosshairPoint,
                             config: config,
                             paintPool: _paintPool,
@@ -239,7 +259,10 @@ class _FusionLineChartState extends State<FusionLineChart> with SingleTickerProv
     if (size.width <= 0 || size.height <= 0) return;
 
     // Calculate data bounds from all series
-    final allPoints = widget.series.where((s) => s.visible).expand((s) => s.dataPoints).toList();
+    final allPoints = widget.series
+        .where((s) => s.visible)
+        .expand((s) => s.dataPoints)
+        .toList();
 
     if (allPoints.isEmpty) return;
 

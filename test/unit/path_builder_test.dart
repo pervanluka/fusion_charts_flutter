@@ -65,10 +65,16 @@ void main() {
           FusionDataPoint(3, 65),
         ];
 
-        final path = FusionPathBuilder.createSmoothPath(dataPoints, coordSystem, smoothness: 0.35);
+        final path = FusionPathBuilder.createSmoothPath(
+          dataPoints,
+          coordSystem,
+          smoothness: 0.35,
+        );
 
         // Convert data points to expected screen coordinates
-        final expectedScreenPoints = dataPoints.map(coordSystem.dataToScreen).toList();
+        final expectedScreenPoints = dataPoints
+            .map(coordSystem.dataToScreen)
+            .toList();
 
         // The path should contain all data points
         // We verify by checking that the path contains points very close to our data points
@@ -91,7 +97,11 @@ void main() {
           FusionDataPoint(4, 40), // Down
         ];
 
-        final path = FusionPathBuilder.createSmoothPath(dataPoints, coordSystem, smoothness: 0.35);
+        final path = FusionPathBuilder.createSmoothPath(
+          dataPoints,
+          coordSystem,
+          smoothness: 0.35,
+        );
 
         // Path should be valid and non-empty
         expect(path, isNotNull);
@@ -103,7 +113,11 @@ void main() {
       test('handles two points with straight line', () {
         final dataPoints = [FusionDataPoint(0, 20), FusionDataPoint(10, 80)];
 
-        final path = FusionPathBuilder.createSmoothPath(dataPoints, coordSystem, smoothness: 0.35);
+        final path = FusionPathBuilder.createSmoothPath(
+          dataPoints,
+          coordSystem,
+          smoothness: 0.35,
+        );
 
         expect(path, isNotNull);
         // Should still contain both endpoints
@@ -145,10 +159,26 @@ void main() {
         ];
 
         // Test different smoothness values
-        final path0 = FusionPathBuilder.createSmoothPath(dataPoints, coordSystem, smoothness: 0.0);
-        final path3 = FusionPathBuilder.createSmoothPath(dataPoints, coordSystem, smoothness: 0.3);
-        final path5 = FusionPathBuilder.createSmoothPath(dataPoints, coordSystem, smoothness: 0.5);
-        final path10 = FusionPathBuilder.createSmoothPath(dataPoints, coordSystem, smoothness: 1.0);
+        final path0 = FusionPathBuilder.createSmoothPath(
+          dataPoints,
+          coordSystem,
+          smoothness: 0.0,
+        );
+        final path3 = FusionPathBuilder.createSmoothPath(
+          dataPoints,
+          coordSystem,
+          smoothness: 0.3,
+        );
+        final path5 = FusionPathBuilder.createSmoothPath(
+          dataPoints,
+          coordSystem,
+          smoothness: 0.5,
+        );
+        final path10 = FusionPathBuilder.createSmoothPath(
+          dataPoints,
+          coordSystem,
+          smoothness: 1.0,
+        );
 
         // All should be valid paths
         expect(path0.getBounds().height, greaterThan(0));
@@ -182,9 +212,16 @@ void main() {
       });
 
       test('handles monotonically increasing data', () {
-        final dataPoints = List.generate(5, (i) => FusionDataPoint(i.toDouble(), i * 20.0));
+        final dataPoints = List.generate(
+          5,
+          (i) => FusionDataPoint(i.toDouble(), i * 20.0),
+        );
 
-        final path = FusionPathBuilder.createSmoothPath(dataPoints, coordSystem, smoothness: 0.35);
+        final path = FusionPathBuilder.createSmoothPath(
+          dataPoints,
+          coordSystem,
+          smoothness: 0.35,
+        );
 
         expect(path, isNotNull);
         // All original points should be on the curve
@@ -195,9 +232,16 @@ void main() {
       });
 
       test('handles monotonically decreasing data', () {
-        final dataPoints = List.generate(5, (i) => FusionDataPoint(i.toDouble(), 80 - i * 15.0));
+        final dataPoints = List.generate(
+          5,
+          (i) => FusionDataPoint(i.toDouble(), 80 - i * 15.0),
+        );
 
-        final path = FusionPathBuilder.createSmoothPath(dataPoints, coordSystem, smoothness: 0.35);
+        final path = FusionPathBuilder.createSmoothPath(
+          dataPoints,
+          coordSystem,
+          smoothness: 0.35,
+        );
 
         expect(path, isNotNull);
         for (final point in dataPoints) {
@@ -236,7 +280,11 @@ void main() {
           FusionDataPoint(10, 30),
         ];
 
-        final path = FusionPathBuilder.createAreaPath(dataPoints, coordSystem, isCurved: false);
+        final path = FusionPathBuilder.createAreaPath(
+          dataPoints,
+          coordSystem,
+          isCurved: false,
+        );
 
         expect(path, isNotNull);
       });
@@ -246,8 +294,14 @@ void main() {
       test('creates dashed version of path', () {
         final dataPoints = [FusionDataPoint(0, 20), FusionDataPoint(10, 80)];
 
-        final originalPath = FusionPathBuilder.createLinePath(dataPoints, coordSystem);
-        final dashedPath = FusionPathBuilder.createDashedPath(originalPath, [5, 3]);
+        final originalPath = FusionPathBuilder.createLinePath(
+          dataPoints,
+          coordSystem,
+        );
+        final dashedPath = FusionPathBuilder.createDashedPath(originalPath, [
+          5,
+          3,
+        ]);
 
         expect(dashedPath, isNotNull);
       });
@@ -255,7 +309,10 @@ void main() {
       test('returns original path for invalid dash array', () {
         final dataPoints = [FusionDataPoint(0, 20), FusionDataPoint(10, 80)];
 
-        final originalPath = FusionPathBuilder.createLinePath(dataPoints, coordSystem);
+        final originalPath = FusionPathBuilder.createLinePath(
+          dataPoints,
+          coordSystem,
+        );
 
         // Odd-length dash array is invalid
         final result = FusionPathBuilder.createDashedPath(originalPath, [5]);

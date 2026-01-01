@@ -103,7 +103,11 @@ class FusionDataLabelLayer extends FusionRenderLayer {
       if (seriesData is FusionDataLabelSupport) {
         final labelSeries = seriesData as FusionDataLabelSupport;
         if (labelSeries.showDataLabels) {
-          final labels = _collectLabelsForSeries(context, seriesData, labelSeries);
+          final labels = _collectLabelsForSeries(
+            context,
+            seriesData,
+            labelSeries,
+          );
           allLabels.addAll(labels);
         }
       }
@@ -164,7 +168,9 @@ class FusionDataLabelLayer extends FusionRenderLayer {
       }
 
       // Format label text
-      final labelText = labelSeries.dataLabelFormatter?.call(point.y) ?? point.y.toStringAsFixed(1);
+      final labelText =
+          labelSeries.dataLabelFormatter?.call(point.y) ??
+          point.y.toStringAsFixed(1);
 
       // Get or create text painter
       final textPainter = _getTextPainter(
@@ -199,7 +205,10 @@ class FusionDataLabelLayer extends FusionRenderLayer {
   /// Returns the indices of points that should display labels based on display mode.
   ///
   /// Uses indices instead of points to handle multiple points with same Y value.
-  Set<int> _getIndicesToShow(List<FusionDataPoint> dataPoints, FusionDataLabelDisplay displayMode) {
+  Set<int> _getIndicesToShow(
+    List<FusionDataPoint> dataPoints,
+    FusionDataLabelDisplay displayMode,
+  ) {
     if (dataPoints.isEmpty) return {};
 
     switch (displayMode) {
@@ -389,7 +398,12 @@ class FusionDataLabelLayer extends FusionRenderLayer {
       }
 
       // Try alternative positions
-      final newPosition = _findValidPosition(label, grid, gridSize, maxAttempts: 8);
+      final newPosition = _findValidPosition(
+        label,
+        grid,
+        gridSize,
+        maxAttempts: 8,
+      );
 
       if (newPosition != null) {
         label.position = newPosition;
@@ -460,7 +474,11 @@ class FusionDataLabelLayer extends FusionRenderLayer {
   }
 
   /// Checks if a bounds rectangle collides with any placed labels in grid.
-  bool _hasCollisionInGrid(Rect bounds, Map<String, List<_LabelInfo>> grid, double gridSize) {
+  bool _hasCollisionInGrid(
+    Rect bounds,
+    Map<String, List<_LabelInfo>> grid,
+    double gridSize,
+  ) {
     final cellKeys = _getGridCells(bounds, gridSize);
 
     for (final key in cellKeys) {
@@ -478,7 +496,11 @@ class FusionDataLabelLayer extends FusionRenderLayer {
   }
 
   /// Adds a label to the spatial grid.
-  void _addToGrid(_LabelInfo label, Map<String, List<_LabelInfo>> grid, double gridSize) {
+  void _addToGrid(
+    _LabelInfo label,
+    Map<String, List<_LabelInfo>> grid,
+    double gridSize,
+  ) {
     final cellKeys = _getGridCells(label.bounds, gridSize);
 
     for (final key in cellKeys) {
@@ -509,7 +531,11 @@ class FusionDataLabelLayer extends FusionRenderLayer {
   // ==========================================================================
 
   /// Renders a single data label.
-  void _renderLabel(Canvas canvas, FusionRenderContext context, _LabelInfo label) {
+  void _renderLabel(
+    Canvas canvas,
+    FusionRenderContext context,
+    _LabelInfo label,
+  ) {
     final theme = context.theme;
     final padding = theme.dataLabelPadding;
     final borderRadius = theme.dataLabelBorderRadius;
@@ -555,7 +581,10 @@ class FusionDataLabelLayer extends FusionRenderLayer {
       style: PaintingStyle.fill,
     );
 
-    final rRect = RRect.fromRectAndRadius(bounds, Radius.circular(borderRadius));
+    final rRect = RRect.fromRectAndRadius(
+      bounds,
+      Radius.circular(borderRadius),
+    );
     canvas.drawRRect(rRect, backgroundPaint);
 
     context.returnPaint(backgroundPaint);
@@ -574,7 +603,10 @@ class FusionDataLabelLayer extends FusionRenderLayer {
       style: PaintingStyle.stroke,
     );
 
-    final rRect = RRect.fromRectAndRadius(bounds, Radius.circular(borderRadius));
+    final rRect = RRect.fromRectAndRadius(
+      bounds,
+      Radius.circular(borderRadius),
+    );
     canvas.drawRRect(rRect, borderPaint);
 
     context.returnPaint(borderPaint);

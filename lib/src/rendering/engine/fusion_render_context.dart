@@ -138,7 +138,8 @@ class FusionRenderContext {
   // ==========================================================================
 
   /// Gets the effective viewport (zoomed or full data bounds).
-  Rect get effectiveViewport => viewportBounds ?? dataBounds ?? coordSystem.dataBounds;
+  Rect get effectiveViewport =>
+      viewportBounds ?? dataBounds ?? coordSystem.dataBounds;
 
   /// Chart width in pixels.
   double get chartWidth => chartArea.width;
@@ -240,7 +241,9 @@ class FusionRenderContext {
   /// Creates a clipping path for the chart area.
   Path createChartClipPath({double cornerRadius = 0.0}) {
     if (cornerRadius > 0) {
-      return Path()..addRRect(RRect.fromRectAndRadius(chartArea, Radius.circular(cornerRadius)));
+      return Path()..addRRect(
+        RRect.fromRectAndRadius(chartArea, Radius.circular(cornerRadius)),
+      );
     }
     return Path()..addRect(chartArea);
   }
@@ -278,7 +281,8 @@ class FusionRenderContext {
       devicePixelRatio: devicePixelRatio ?? this.devicePixelRatio,
       dataBounds: dataBounds ?? this.dataBounds,
       viewportBounds: viewportBounds ?? this.viewportBounds,
-      useDiscreteBucketGridX: useDiscreteBucketGridX ?? this.useDiscreteBucketGridX,
+      useDiscreteBucketGridX:
+          useDiscreteBucketGridX ?? this.useDiscreteBucketGridX,
     );
   }
 
@@ -315,7 +319,9 @@ class FusionRenderContextBuilder {
     return this;
   }
 
-  FusionRenderContextBuilder withCoordinateSystem(FusionCoordinateSystem system) {
+  FusionRenderContextBuilder withCoordinateSystem(
+    FusionCoordinateSystem system,
+  ) {
     _coordSystem = system;
     return this;
   }

@@ -198,7 +198,9 @@ class NullHandler {
         // Interpolate
         if (prev != null && next != null) {
           // Linear interpolation
-          final t = (i - data.indexOf(prev)) / (data.indexOf(next) - data.indexOf(prev));
+          final t =
+              (i - data.indexOf(prev)) /
+              (data.indexOf(next) - data.indexOf(prev));
           final interpolatedY = prev.y + (next.y - prev.y) * t;
           final x = point?.x ?? (prev.x + (next.x - prev.x) * t);
 
@@ -250,7 +252,10 @@ class NullHandler {
 
   /// Backward fill (use next non-null value).
   List<FusionDataPoint> _backwardFill(List<FusionDataPoint?> data) {
-    final result = List<FusionDataPoint>.filled(data.length, FusionDataPoint(0, defaultValue));
+    final result = List<FusionDataPoint>.filled(
+      data.length,
+      FusionDataPoint(0, defaultValue),
+    );
     FusionDataPoint? nextValid;
 
     // Process in reverse

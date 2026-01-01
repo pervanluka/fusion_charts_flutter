@@ -46,7 +46,7 @@ enum FusionAxisType {
   /// - Discrete groups
   /// - Qualitative data
   ///
-  /// Requires [categories] list in [FusionAxisConfiguration].
+  /// Requires `categories` list in [FusionAxisConfiguration].
   category,
 
   /// DateTime axis for time-based data.

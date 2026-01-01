@@ -45,9 +45,7 @@ void main() {
                 series: [
                   FusionBarSeries(
                     name: 'Single',
-                    dataPoints: [
-                      FusionDataPoint(0, 50, label: 'Only'),
-                    ],
+                    dataPoints: [FusionDataPoint(0, 50, label: 'Only')],
                     color: Colors.blue,
                   ),
                 ],

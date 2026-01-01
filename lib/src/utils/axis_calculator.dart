@@ -26,7 +26,11 @@ class AxisCalculator {
   // ==========================================================================
 
   /// Calculates "nice" interval with robust edge case handling.
-  static double calculateNiceInterval(double min, double max, int desiredIntervals) {
+  static double calculateNiceInterval(
+    double min,
+    double max,
+    int desiredIntervals,
+  ) {
     assert(desiredIntervals > 0, 'Desired intervals must be positive');
 
     final range = (max - min).abs();
@@ -152,14 +156,19 @@ class AxisCalculator {
     }
 
     // Calculate or use provided interval
-    final effectiveInterval = interval ?? calculateNiceInterval(dataMin, dataMax, desiredIntervals);
+    final effectiveInterval =
+        interval ?? calculateNiceInterval(dataMin, dataMax, desiredIntervals);
 
     // Apply padding strategy
     return _applyPadding(dataMin, dataMax, effectiveInterval, padding);
   }
 
   /// Better zero-range handling with magnitude awareness.
-  static AxisBounds _handleZeroRange(double value, double value2, ChartRangePadding padding) {
+  static AxisBounds _handleZeroRange(
+    double value,
+    double value2,
+    ChartRangePadding padding,
+  ) {
     // Check if both values are truly zero
     if (value.abs() < _epsilon && value2.abs() < _epsilon) {
       return AxisBounds(min: -1.0, max: 1.0, interval: 0.5, decimalPlaces: 1);
@@ -253,13 +262,19 @@ class AxisCalculator {
     return (value / interval).ceil() * interval;
   }
 
-  static double _roundToNiceNumber(double value, double interval, {required bool roundDown}) {
+  static double _roundToNiceNumber(
+    double value,
+    double interval, {
+    required bool roundDown,
+  }) {
     final magnitude = math.pow(10, log10(interval).floor()).toDouble();
     final normalized = value / magnitude;
 
     final rounded = roundDown
-        ? (normalized / _getNiceFraction(normalized)).floor() * _getNiceFraction(normalized)
-        : (normalized / _getNiceFraction(normalized)).ceil() * _getNiceFraction(normalized);
+        ? (normalized / _getNiceFraction(normalized)).floor() *
+              _getNiceFraction(normalized)
+        : (normalized / _getNiceFraction(normalized)).ceil() *
+              _getNiceFraction(normalized);
 
     return rounded * magnitude;
   }
@@ -269,7 +284,11 @@ class AxisCalculator {
   // ==========================================================================
 
   /// Generates axis label values with clean floating-point handling.
-  static List<double> generateLabelValues(double min, double max, double interval) {
+  static List<double> generateLabelValues(
+    double min,
+    double max,
+    double interval,
+  ) {
     assert(interval > 0, 'Interval must be positive');
     assert(min <= max, 'Min must be <= Max');
 
@@ -317,7 +336,8 @@ class AxisCalculator {
     while (current < max - _epsilon) {
       final distanceToNearestMajor = (current % interval).abs();
 
-      if (distanceToNearestMajor > _epsilon && (interval - distanceToNearestMajor) > _epsilon) {
+      if (distanceToNearestMajor > _epsilon &&
+          (interval - distanceToNearestMajor) > _epsilon) {
         minorTicks.add(_cleanFloatingPoint(current, minorInterval));
       }
 

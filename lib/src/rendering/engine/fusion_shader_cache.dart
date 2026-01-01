@@ -123,7 +123,9 @@ class FusionShaderCache {
     buffer.write('_');
 
     // Common gradient properties
-    if (gradient is LinearGradient || gradient is RadialGradient || gradient is SweepGradient) {
+    if (gradient is LinearGradient ||
+        gradient is RadialGradient ||
+        gradient is SweepGradient) {
       // Colors
       final colors = gradient.colors;
       for (final color in colors) {
@@ -147,7 +149,9 @@ class FusionShaderCache {
     } else if (gradient is RadialGradient) {
       buffer.write('${gradient.center}_${gradient.radius}_');
     } else if (gradient is SweepGradient) {
-      buffer.write('${gradient.center}_${gradient.startAngle}_${gradient.endAngle}_');
+      buffer.write(
+        '${gradient.center}_${gradient.startAngle}_${gradient.endAngle}_',
+      );
     }
 
     // Bounds (rounded to avoid floating point issues)
@@ -232,7 +236,9 @@ class FusionShaderCache {
     totalShaders: _cache.length,
     cacheHits: _cacheHits,
     cacheMisses: _cacheMisses,
-    hitRate: (_cacheHits + _cacheMisses) > 0 ? (_cacheHits / (_cacheHits + _cacheMisses)) : 0.0,
+    hitRate: (_cacheHits + _cacheMisses) > 0
+        ? (_cacheHits / (_cacheHits + _cacheMisses))
+        : 0.0,
   );
 
   /// Prints cache statistics.

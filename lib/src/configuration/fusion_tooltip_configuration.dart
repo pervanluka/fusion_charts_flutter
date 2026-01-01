@@ -265,7 +265,9 @@ class FusionTooltipBehavior {
   // ========================================================================
 
   /// Get effective activation mode for current platform
-  FusionTooltipActivationMode getEffectiveActivationMode(TargetPlatform platform) {
+  FusionTooltipActivationMode getEffectiveActivationMode(
+    TargetPlatform platform,
+  ) {
     if (activationMode != FusionTooltipActivationMode.auto) {
       return activationMode;
     }
@@ -362,14 +364,16 @@ class FusionTooltipBehavior {
       showTrackballLine: showTrackballLine ?? this.showTrackballLine,
       trackballLineColor: trackballLineColor ?? this.trackballLineColor,
       trackballLineWidth: trackballLineWidth ?? this.trackballLineWidth,
-      trackballLineDashPattern: trackballLineDashPattern ?? this.trackballLineDashPattern,
+      trackballLineDashPattern:
+          trackballLineDashPattern ?? this.trackballLineDashPattern,
       activationMode: activationMode ?? this.activationMode,
       activationDelay: activationDelay ?? this.activationDelay,
       dismissStrategy: dismissStrategy ?? this.dismissStrategy,
       dismissDelay: dismissDelay ?? this.dismissDelay,
       duration: duration ?? this.duration,
       trackballMode: trackballMode ?? this.trackballMode,
-      trackballUpdateThreshold: trackballUpdateThreshold ?? this.trackballUpdateThreshold,
+      trackballUpdateThreshold:
+          trackballUpdateThreshold ?? this.trackballUpdateThreshold,
       trackballSnapRadius: trackballSnapRadius ?? this.trackballSnapRadius,
       animationDuration: animationDuration ?? this.animationDuration,
       animationCurve: animationCurve ?? this.animationCurve,
@@ -408,7 +412,7 @@ enum ChartAlignment { near, center, far }
 /// ## Implementations
 ///
 /// - [TooltipRenderData] - Single point tooltip (line/bar charts)
-/// - [StackedTooltipData] - Multi-segment tooltip (stacked bar charts)
+/// - Stacked Tooltip Data - Multi-segment tooltip (stacked bar charts)
 ///
 /// ## Usage
 ///
@@ -450,7 +454,7 @@ class TooltipRenderData extends FusionTooltipDataBase {
   final Offset screenPosition;
   final bool wasLongPress;
   final DateTime? activationTime;
-  
+
   /// Additional points at the same X position for shared tooltip
   final List<SharedTooltipPoint>? sharedPoints;
 

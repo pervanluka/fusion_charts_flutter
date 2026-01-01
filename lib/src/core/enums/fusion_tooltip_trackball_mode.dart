@@ -17,7 +17,7 @@ enum FusionTooltipTrackballMode {
   /// horizontally, the tooltip jumps between points regardless of Y position.
   snapToX,
 
-  /// Snap to nearest point only when within [trackballSnapRadius].
+  /// Snap to nearest point only when within `trackballSnapRadius`.
   ///
   /// When outside the radius, tooltip stays at last valid point.
   snap,

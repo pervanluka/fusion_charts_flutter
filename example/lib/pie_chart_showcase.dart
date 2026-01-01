@@ -246,7 +246,9 @@ FusionPieDataPoint(
         actions: [
           IconButton(
             icon: const Icon(Icons.arrow_back_ios),
-            onPressed: _currentPage > 0 ? () => _goToPage(_currentPage - 1) : null,
+            onPressed: _currentPage > 0
+                ? () => _goToPage(_currentPage - 1)
+                : null,
           ),
           Center(
             child: Container(
@@ -281,7 +283,9 @@ FusionPieDataPoint(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               border: Border(
-                bottom: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+                bottom: BorderSide(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
               ),
             ),
             child: Column(
@@ -353,7 +357,10 @@ FusionPieDataPoint(
         onTap: (index) => _goToPage(index * 4),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.pie_chart), label: 'Basic'),
-          BottomNavigationBarItem(icon: Icon(Icons.touch_app), label: 'Interactive'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.touch_app),
+            label: 'Interactive',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.label), label: 'Labels'),
           BottomNavigationBarItem(icon: Icon(Icons.palette), label: 'Styling'),
         ],
@@ -460,7 +467,12 @@ Widget _buildExplodedChart() {
           title: 'Single Exploded',
           series: FusionPieSeries(
             dataPoints: [
-              FusionPieDataPoint(35, label: 'Winner', color: Colors.green, explode: true),
+              FusionPieDataPoint(
+                35,
+                label: 'Winner',
+                color: Colors.green,
+                explode: true,
+              ),
               FusionPieDataPoint(25, label: 'Second', color: Colors.blue),
               FusionPieDataPoint(20, label: 'Third', color: Colors.orange),
               FusionPieDataPoint(20, label: 'Fourth', color: Colors.purple),
@@ -534,7 +546,9 @@ Widget _buildSortedGroupedChart() {
         child: FusionPieChart(
           title: 'Sorted Descending',
           series: FusionPieSeries(dataPoints: _detailedData),
-          config: const FusionPieChartConfiguration(sortMode: PieSortMode.descending),
+          config: const FusionPieChartConfiguration(
+            sortMode: PieSortMode.descending,
+          ),
         ),
       ),
       const SizedBox(height: 8),
@@ -559,7 +573,9 @@ Widget _buildLabelChart() {
   return Builder(
     builder: (context) {
       final isDark = Theme.of(context).brightness == Brightness.dark;
-      final FusionChartTheme theme = isDark ? const FusionDarkTheme() : const FusionLightTheme();
+      final FusionChartTheme theme = isDark
+          ? const FusionDarkTheme()
+          : const FusionLightTheme();
       final labelColor = isDark ? Colors.grey.shade300 : Colors.grey.shade700;
 
       return Column(
@@ -592,7 +608,9 @@ Widget _buildLabelChart() {
                 labelPosition: PieLabelPosition.outside,
                 labelConnectorLength: 15,
                 labelConnectorWidth: 1.0,
-                labelConnectorColor: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+                labelConnectorColor: isDark
+                    ? Colors.grey.shade600
+                    : Colors.grey.shade400,
                 showPercentages: true,
                 showValues: false,
                 enableLegend: false,
@@ -610,17 +628,39 @@ Widget _buildLegendChart() {
   return Builder(
     builder: (context) {
       final isDark = Theme.of(context).brightness == Brightness.dark;
-      final FusionChartTheme theme = isDark ? const FusionDarkTheme() : const FusionLightTheme();
+      final FusionChartTheme theme = isDark
+          ? const FusionDarkTheme()
+          : const FusionLightTheme();
 
       return GridView.count(
         crossAxisCount: 2,
         mainAxisSpacing: 8,
         crossAxisSpacing: 8,
         children: [
-          _buildLegendVariant('Right', LegendPosition.right, LegendIconShape.circle, theme),
-          _buildLegendVariant('Left', LegendPosition.left, LegendIconShape.roundedSquare, theme),
-          _buildLegendVariant('Top', LegendPosition.top, LegendIconShape.square, theme),
-          _buildLegendVariant('Bottom', LegendPosition.bottom, LegendIconShape.diamond, theme),
+          _buildLegendVariant(
+            'Right',
+            LegendPosition.right,
+            LegendIconShape.circle,
+            theme,
+          ),
+          _buildLegendVariant(
+            'Left',
+            LegendPosition.left,
+            LegendIconShape.roundedSquare,
+            theme,
+          ),
+          _buildLegendVariant(
+            'Top',
+            LegendPosition.top,
+            LegendIconShape.square,
+            theme,
+          ),
+          _buildLegendVariant(
+            'Bottom',
+            LegendPosition.bottom,
+            LegendIconShape.diamond,
+            theme,
+          ),
         ],
       );
     },
@@ -694,10 +734,26 @@ Widget _buildStyledChart() {
           title: 'Rounded Corners (Pie)',
           series: FusionPieSeries(
             dataPoints: [
-              FusionPieDataPoint(35, label: 'Premium', color: const Color(0xFF6366F1)),
-              FusionPieDataPoint(25, label: 'Standard', color: const Color(0xFF22C55E)),
-              FusionPieDataPoint(20, label: 'Basic', color: const Color(0xFFF59E0B)),
-              FusionPieDataPoint(20, label: 'Free', color: const Color(0xFFA855F7)),
+              FusionPieDataPoint(
+                35,
+                label: 'Premium',
+                color: const Color(0xFF6366F1),
+              ),
+              FusionPieDataPoint(
+                25,
+                label: 'Standard',
+                color: const Color(0xFF22C55E),
+              ),
+              FusionPieDataPoint(
+                20,
+                label: 'Basic',
+                color: const Color(0xFFF59E0B),
+              ),
+              FusionPieDataPoint(
+                20,
+                label: 'Free',
+                color: const Color(0xFFA855F7),
+              ),
             ],
             strokeWidth: 2,
             strokeColor: Colors.white,
@@ -719,17 +775,23 @@ Widget _buildStyledChart() {
               FusionPieDataPoint(
                 35,
                 label: 'Premium',
-                gradient: const RadialGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)]),
+                gradient: const RadialGradient(
+                  colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                ),
               ),
               FusionPieDataPoint(
                 25,
                 label: 'Standard',
-                gradient: const RadialGradient(colors: [Color(0xFF22C55E), Color(0xFF16A34A)]),
+                gradient: const RadialGradient(
+                  colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
+                ),
               ),
               FusionPieDataPoint(
                 20,
                 label: 'Basic',
-                gradient: const RadialGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
+                gradient: const RadialGradient(
+                  colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                ),
               ),
               FusionPieDataPoint(
                 20,
@@ -812,10 +874,26 @@ Widget _buildDarkThemeChart() {
       title: 'Dark Theme Portfolio',
       series: FusionPieSeries(
         dataPoints: [
-          FusionPieDataPoint(35, label: 'Crypto', color: const Color(0xFF8B5CF6)),
-          FusionPieDataPoint(25, label: 'Stocks', color: const Color(0xFF06B6D4)),
-          FusionPieDataPoint(20, label: 'Bonds', color: const Color(0xFF10B981)),
-          FusionPieDataPoint(15, label: 'Real Estate', color: const Color(0xFFF59E0B)),
+          FusionPieDataPoint(
+            35,
+            label: 'Crypto',
+            color: const Color(0xFF8B5CF6),
+          ),
+          FusionPieDataPoint(
+            25,
+            label: 'Stocks',
+            color: const Color(0xFF06B6D4),
+          ),
+          FusionPieDataPoint(
+            20,
+            label: 'Bonds',
+            color: const Color(0xFF10B981),
+          ),
+          FusionPieDataPoint(
+            15,
+            label: 'Real Estate',
+            color: const Color(0xFFF59E0B),
+          ),
           FusionPieDataPoint(5, label: 'Cash', color: const Color(0xFF6B7280)),
         ],
       ),
@@ -854,7 +932,9 @@ Widget _buildCallbackChart() {
             ),
             child: Text(
               message,
-              style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
             ),
           ),
           Expanded(
@@ -862,7 +942,8 @@ Widget _buildCallbackChart() {
               series: FusionPieSeries(dataPoints: _sampleData),
               onSegmentTap: (index, series) {
                 setState(() {
-                  message = 'Tapped: ${series.dataPoints[index].label} (index $index)';
+                  message =
+                      'Tapped: ${series.dataPoints[index].label} (index $index)';
                 });
               },
               onSelectionChanged: (indices) {
@@ -870,7 +951,9 @@ Widget _buildCallbackChart() {
                   message = 'Selection changed: $indices';
                 });
               },
-              config: const FusionPieChartConfiguration(selectionMode: PieSelectionMode.single),
+              config: const FusionPieChartConfiguration(
+                selectionMode: PieSelectionMode.single,
+              ),
             ),
           ),
         ],
@@ -895,7 +978,9 @@ Widget _buildPerSegmentCallbackChart() {
             ),
             child: Text(
               message,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSecondaryContainer),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSecondaryContainer,
+              ),
             ),
           ),
           Expanded(

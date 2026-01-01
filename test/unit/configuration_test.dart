@@ -6,7 +6,10 @@ void main() {
     group('calculateNiceInterval', () {
       test('returns nice interval for typical range', () {
         // Import the internal utility via ChartBoundsCalculator
-        final bounds = ChartBoundsCalculator.calculateNiceYBounds(dataMinY: 0, dataMaxY: 100);
+        final bounds = ChartBoundsCalculator.calculateNiceYBounds(
+          dataMinY: 0,
+          dataMaxY: 100,
+        );
 
         // Should produce nice intervals like 20, 25, etc.
         final interval = bounds.maxY / 5; // Rough estimate
@@ -14,7 +17,10 @@ void main() {
       });
 
       test('handles very small ranges', () {
-        final bounds = ChartBoundsCalculator.calculateNiceYBounds(dataMinY: 0.001, dataMaxY: 0.005);
+        final bounds = ChartBoundsCalculator.calculateNiceYBounds(
+          dataMinY: 0.001,
+          dataMaxY: 0.005,
+        );
 
         expect(bounds.maxY, greaterThan(bounds.minY));
         expect(bounds.maxY - bounds.minY, greaterThan(0));
@@ -131,7 +137,11 @@ void main() {
 
     group('copyWith', () {
       test('creates copy with modified values', () {
-        const original = FusionAxisConfiguration(min: 0, max: 100, interval: 20);
+        const original = FusionAxisConfiguration(
+          min: 0,
+          max: 100,
+          interval: 20,
+        );
 
         final copy = original.copyWith(max: 200);
 
@@ -178,7 +188,9 @@ void main() {
   group('FusionTooltipBehavior', () {
     group('dismiss strategy helpers', () {
       test('shouldDismissOnRelease returns true for onRelease', () {
-        const behavior = FusionTooltipBehavior(dismissStrategy: FusionDismissStrategy.onRelease);
+        const behavior = FusionTooltipBehavior(
+          dismissStrategy: FusionDismissStrategy.onRelease,
+        );
 
         expect(behavior.shouldDismissOnRelease(), true);
       });
@@ -192,19 +204,25 @@ void main() {
       });
 
       test('shouldDismissOnRelease returns false for never', () {
-        const behavior = FusionTooltipBehavior(dismissStrategy: FusionDismissStrategy.never);
+        const behavior = FusionTooltipBehavior(
+          dismissStrategy: FusionDismissStrategy.never,
+        );
 
         expect(behavior.shouldDismissOnRelease(), false);
       });
 
       test('shouldUseTimer returns true for onTimer', () {
-        const behavior = FusionTooltipBehavior(dismissStrategy: FusionDismissStrategy.onTimer);
+        const behavior = FusionTooltipBehavior(
+          dismissStrategy: FusionDismissStrategy.onTimer,
+        );
 
         expect(behavior.shouldUseTimer(), true);
       });
 
       test('shouldUseTimer returns false for onRelease', () {
-        const behavior = FusionTooltipBehavior(dismissStrategy: FusionDismissStrategy.onRelease);
+        const behavior = FusionTooltipBehavior(
+          dismissStrategy: FusionDismissStrategy.onRelease,
+        );
 
         expect(behavior.shouldUseTimer(), false);
       });
@@ -212,7 +230,9 @@ void main() {
 
     group('getDismissDelay', () {
       test('returns zero for onRelease strategy', () {
-        const behavior = FusionTooltipBehavior(dismissStrategy: FusionDismissStrategy.onRelease);
+        const behavior = FusionTooltipBehavior(
+          dismissStrategy: FusionDismissStrategy.onRelease,
+        );
 
         expect(behavior.getDismissDelay(false), Duration.zero);
       });
@@ -223,7 +243,10 @@ void main() {
           dismissDelay: Duration(milliseconds: 500),
         );
 
-        expect(behavior.getDismissDelay(false), const Duration(milliseconds: 500));
+        expect(
+          behavior.getDismissDelay(false),
+          const Duration(milliseconds: 500),
+        );
       });
 
       test('returns duration for onTimer strategy', () {
@@ -236,7 +259,9 @@ void main() {
       });
 
       test('returns long duration for never strategy', () {
-        const behavior = FusionTooltipBehavior(dismissStrategy: FusionDismissStrategy.never);
+        const behavior = FusionTooltipBehavior(
+          dismissStrategy: FusionDismissStrategy.never,
+        );
 
         final delay = behavior.getDismissDelay(false);
         expect(delay.inDays, greaterThanOrEqualTo(365));
@@ -259,7 +284,10 @@ void main() {
           dismissDelay: Duration(milliseconds: 300),
         );
 
-        expect(behavior.getDismissDelay(false), const Duration(milliseconds: 300));
+        expect(
+          behavior.getDismissDelay(false),
+          const Duration(milliseconds: 300),
+        );
       });
     });
 
@@ -270,7 +298,9 @@ void main() {
           dismissStrategy: FusionDismissStrategy.onRelease,
         );
 
-        final copy = original.copyWith(dismissStrategy: FusionDismissStrategy.never);
+        final copy = original.copyWith(
+          dismissStrategy: FusionDismissStrategy.never,
+        );
 
         expect(copy.enable, true);
         expect(copy.dismissStrategy, FusionDismissStrategy.never);
@@ -331,7 +361,9 @@ void main() {
 
     group('effectiveAnimationDuration', () {
       test('returns custom duration when set', () {
-        const config = FusionChartConfiguration(animationDuration: Duration(seconds: 2));
+        const config = FusionChartConfiguration(
+          animationDuration: Duration(seconds: 2),
+        );
 
         expect(config.effectiveAnimationDuration, const Duration(seconds: 2));
       });
@@ -340,7 +372,10 @@ void main() {
         const config = FusionChartConfiguration();
 
         // Default from FusionLightTheme is 1500ms
-        expect(config.effectiveAnimationDuration, const Duration(milliseconds: 1500));
+        expect(
+          config.effectiveAnimationDuration,
+          const Duration(milliseconds: 1500),
+        );
       });
     });
 
@@ -416,7 +451,11 @@ void main() {
     });
 
     test('defaults to visible true', () {
-      final series = FusionLineSeries(name: 'Test', dataPoints: [], color: const Color(0xFF0000FF));
+      final series = FusionLineSeries(
+        name: 'Test',
+        dataPoints: [],
+        color: const Color(0xFF0000FF),
+      );
 
       expect(series.visible, true);
     });
@@ -487,7 +526,9 @@ void main() {
         name: 'Gradient',
         dataPoints: [FusionDataPoint(0, 30)],
         color: const Color(0xFF0000FF),
-        gradient: const LinearGradient(colors: [Color(0xFF0000FF), Color(0xFFFF0000)]),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0000FF), Color(0xFFFF0000)],
+        ),
       );
 
       expect(series.gradient, isNotNull);
@@ -496,7 +537,11 @@ void main() {
 
   group('FusionPieDataPoint', () {
     test('creates point with value and label', () {
-      final point = FusionPieDataPoint(30, label: 'Slice A', color: const Color(0xFF0000FF));
+      final point = FusionPieDataPoint(
+        30,
+        label: 'Slice A',
+        color: const Color(0xFF0000FF),
+      );
 
       expect(point.value, 30);
       expect(point.label, 'Slice A');

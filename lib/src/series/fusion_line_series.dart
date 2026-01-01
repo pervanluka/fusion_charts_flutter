@@ -70,10 +70,22 @@ class FusionLineSeries extends FusionSeries
     this.animationDuration,
     this.animationCurve,
     this.interaction = const FusionSeriesInteraction(),
-  }) : assert(lineWidth > 0 && lineWidth <= 10, 'Line width must be between 0 and 10'),
-       assert(smoothness >= 0 && smoothness <= 1, 'Curve smoothness must be between 0 and 1'),
-       assert(markerSize > 0 && markerSize <= 20, 'Marker size must be between 0 and 20'),
-       assert(areaOpacity >= 0 && areaOpacity <= 1, 'Area opacity must be between 0 and 1');
+  }) : assert(
+         lineWidth > 0 && lineWidth <= 10,
+         'Line width must be between 0 and 10',
+       ),
+       assert(
+         smoothness >= 0 && smoothness <= 1,
+         'Curve smoothness must be between 0 and 1',
+       ),
+       assert(
+         markerSize > 0 && markerSize <= 20,
+         'Marker size must be between 0 and 20',
+       ),
+       assert(
+         areaOpacity >= 0 && areaOpacity <= 1,
+         'Area opacity must be between 0 and 1',
+       );
 
   /// The data points to be displayed in this series.
   ///
@@ -304,7 +316,9 @@ class FusionLineSeries extends FusionSeries
   ///
   /// Useful for viewport culling and zoom operations.
   FusionLineSeries filterByRange(double minX, double maxX) {
-    final filtered = dataPoints.where((p) => p.x >= minX && p.x <= maxX).toList();
+    final filtered = dataPoints
+        .where((p) => p.x >= minX && p.x <= maxX)
+        .toList();
     return copyWith(dataPoints: filtered);
   }
 

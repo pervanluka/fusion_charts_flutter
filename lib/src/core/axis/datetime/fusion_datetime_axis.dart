@@ -116,8 +116,15 @@ class FusionDateTimeAxis extends FusionAxisBase {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(name, title, min, max, interval, desiredIntervals, labelAlignment);
+  int get hashCode => Object.hash(
+    name,
+    title,
+    min,
+    max,
+    interval,
+    desiredIntervals,
+    labelAlignment,
+  );
 
   @override
   String toString() => 'FusionDateTimeAxis(min: $min, max: $max)';

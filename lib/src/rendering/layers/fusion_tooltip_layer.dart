@@ -37,7 +37,9 @@ class FusionTooltipLayer extends FusionRenderLayer {
 
     // Handle anchored positions (top/bottom)
     if (tooltipBehavior.position != FusionTooltipPosition.floating) {
-      if (tooltipBehavior.shared && sharedPoints != null && sharedPoints.isNotEmpty) {
+      if (tooltipBehavior.shared &&
+          sharedPoints != null &&
+          sharedPoints.isNotEmpty) {
         _paintAnchoredSharedTooltip(
           canvas,
           size,
@@ -49,13 +51,23 @@ class FusionTooltipLayer extends FusionRenderLayer {
           sharedPoints,
         );
       } else {
-        _paintAnchoredTooltip(canvas, size, context, point, screenPos, seriesName, seriesColor);
+        _paintAnchoredTooltip(
+          canvas,
+          size,
+          context,
+          point,
+          screenPos,
+          seriesName,
+          seriesColor,
+        );
       }
       return;
     }
 
     // Floating tooltip (original behavior)
-    if (tooltipBehavior.shared && sharedPoints != null && sharedPoints.isNotEmpty) {
+    if (tooltipBehavior.shared &&
+        sharedPoints != null &&
+        sharedPoints.isNotEmpty) {
       _paintSharedTooltip(
         canvas,
         size,
@@ -67,7 +79,15 @@ class FusionTooltipLayer extends FusionRenderLayer {
         sharedPoints,
       );
     } else {
-      _paintDefaultTooltip(canvas, size, context, point, screenPos, seriesName, seriesColor);
+      _paintDefaultTooltip(
+        canvas,
+        size,
+        context,
+        point,
+        screenPos,
+        seriesName,
+        seriesColor,
+      );
     }
   }
 
@@ -83,7 +103,10 @@ class FusionTooltipLayer extends FusionRenderLayer {
     final theme = context.theme;
     final valueText = tooltipBehavior.format != null
         ? tooltipBehavior.format!(point, seriesName)
-        : FusionDataFormatter.formatPrecise(point.y, maxDecimals: tooltipBehavior.decimalPlaces);
+        : FusionDataFormatter.formatPrecise(
+            point.y,
+            maxDecimals: tooltipBehavior.decimalPlaces,
+          );
 
     final labelText = point.label != null ? '${point.label}\n' : '';
     // Handle empty series name gracefully
@@ -140,15 +163,30 @@ class FusionTooltipLayer extends FusionRenderLayer {
       _paintShadow(canvas, tooltipRect, tooltipBehavior, borderRadius);
     }
 
-    _paintBackground(canvas, tooltipRect, bgColor, tooltipBehavior, borderRadius);
+    _paintBackground(
+      canvas,
+      tooltipRect,
+      bgColor,
+      tooltipBehavior,
+      borderRadius,
+    );
 
     if (tooltipBehavior.borderWidth > 0) {
-      _paintBorder(canvas, tooltipRect, seriesColor, tooltipBehavior, borderRadius);
+      _paintBorder(
+        canvas,
+        tooltipRect,
+        seriesColor,
+        tooltipBehavior,
+        borderRadius,
+      );
     }
 
     textPainter.paint(
       canvas,
-      Offset(tooltipPosition.dx + padding.left, tooltipPosition.dy + padding.top),
+      Offset(
+        tooltipPosition.dx + padding.left,
+        tooltipPosition.dy + padding.top,
+      ),
     );
 
     if (tooltipBehavior.canShowMarker) {
@@ -226,18 +264,23 @@ class FusionTooltipLayer extends FusionRenderLayer {
         text: TextSpan(text: text, style: textStyle),
         textDirection: TextDirection.ltr,
       )..layout();
-      maxTextWidth = maxTextWidth > painter.width ? maxTextWidth : painter.width;
+      maxTextWidth = maxTextWidth > painter.width
+          ? maxTextWidth
+          : painter.width;
     }
 
     // Add space for color indicator
     const colorIndicatorSize = 8.0;
     const colorIndicatorMargin = 8.0;
-    final contentWidth = maxTextWidth + colorIndicatorSize + colorIndicatorMargin;
+    final contentWidth =
+        maxTextWidth + colorIndicatorSize + colorIndicatorMargin;
 
     // Calculate tooltip dimensions
     final tooltipWidth = contentWidth + padding.horizontal;
     final tooltipHeight =
-        (entries.length * (lineHeight + rowSpacing)) - rowSpacing + padding.vertical;
+        (entries.length * (lineHeight + rowSpacing)) -
+        rowSpacing +
+        padding.vertical;
     final tooltipSize = Size(tooltipWidth, tooltipHeight);
 
     // Calculate center position (average X, topmost Y for positioning)
@@ -270,7 +313,12 @@ class FusionTooltipLayer extends FusionRenderLayer {
     // FIRST: Draw markers for all points (BEFORE tooltip so they don't overlap)
     if (tooltipBehavior.canShowMarker) {
       for (final entry in entries) {
-        _paintMarker(canvas, entry.screenPosition, entry.color, theme.markerBorderColor);
+        _paintMarker(
+          canvas,
+          entry.screenPosition,
+          entry.color,
+          theme.markerBorderColor,
+        );
       }
     }
 
@@ -279,10 +327,22 @@ class FusionTooltipLayer extends FusionRenderLayer {
       _paintShadow(canvas, tooltipRect, tooltipBehavior, borderRadius);
     }
 
-    _paintBackground(canvas, tooltipRect, bgColor, tooltipBehavior, borderRadius);
+    _paintBackground(
+      canvas,
+      tooltipRect,
+      bgColor,
+      tooltipBehavior,
+      borderRadius,
+    );
 
     if (tooltipBehavior.borderWidth > 0) {
-      _paintBorder(canvas, tooltipRect, primarySeriesColor, tooltipBehavior, borderRadius);
+      _paintBorder(
+        canvas,
+        tooltipRect,
+        primarySeriesColor,
+        tooltipBehavior,
+        borderRadius,
+      );
     }
 
     // Draw each entry
@@ -311,7 +371,10 @@ class FusionTooltipLayer extends FusionRenderLayer {
       textPainter.paint(
         canvas,
         Offset(
-          tooltipPosition.dx + padding.left + colorIndicatorSize + colorIndicatorMargin,
+          tooltipPosition.dx +
+              padding.left +
+              colorIndicatorSize +
+              colorIndicatorMargin,
           currentY + (lineHeight - textPainter.height) / 2,
         ),
       );
@@ -346,7 +409,10 @@ class FusionTooltipLayer extends FusionRenderLayer {
 
     final valueText = tooltipBehavior.format != null
         ? tooltipBehavior.format!(point, seriesName)
-        : FusionDataFormatter.formatPrecise(point.y, maxDecimals: tooltipBehavior.decimalPlaces);
+        : FusionDataFormatter.formatPrecise(
+            point.y,
+            maxDecimals: tooltipBehavior.decimalPlaces,
+          );
 
     final labelText = point.label != null ? '${point.label}\n' : '';
     // Handle empty series name gracefully
@@ -409,15 +475,30 @@ class FusionTooltipLayer extends FusionRenderLayer {
     if (tooltipBehavior.elevation > 0) {
       _paintShadow(canvas, tooltipRect, tooltipBehavior, borderRadius);
     }
-    _paintBackground(canvas, tooltipRect, bgColor, tooltipBehavior, borderRadius);
+    _paintBackground(
+      canvas,
+      tooltipRect,
+      bgColor,
+      tooltipBehavior,
+      borderRadius,
+    );
     if (tooltipBehavior.borderWidth > 0) {
-      _paintBorder(canvas, tooltipRect, seriesColor, tooltipBehavior, borderRadius);
+      _paintBorder(
+        canvas,
+        tooltipRect,
+        seriesColor,
+        tooltipBehavior,
+        borderRadius,
+      );
     }
 
     // Draw text
     textPainter.paint(
       canvas,
-      Offset(tooltipPosition.dx + padding.left, tooltipPosition.dy + padding.top),
+      Offset(
+        tooltipPosition.dx + padding.left,
+        tooltipPosition.dy + padding.top,
+      ),
     );
   }
 
@@ -486,19 +567,25 @@ class FusionTooltipLayer extends FusionRenderLayer {
         text: TextSpan(text: text, style: textStyle),
         textDirection: TextDirection.ltr,
       )..layout();
-      maxTextWidth = maxTextWidth > painter.width ? maxTextWidth : painter.width;
+      maxTextWidth = maxTextWidth > painter.width
+          ? maxTextWidth
+          : painter.width;
     }
 
     const colorIndicatorSize = 8.0;
     const colorIndicatorMargin = 8.0;
-    final contentWidth = maxTextWidth + colorIndicatorSize + colorIndicatorMargin;
+    final contentWidth =
+        maxTextWidth + colorIndicatorSize + colorIndicatorMargin;
     final tooltipWidth = contentWidth + padding.horizontal;
     final tooltipHeight =
-        (entries.length * (lineHeight + rowSpacing)) - rowSpacing + padding.vertical;
+        (entries.length * (lineHeight + rowSpacing)) -
+        rowSpacing +
+        padding.vertical;
 
     // Use average X position for tooltip placement
     final double avgX =
-        entries.map((e) => e.screenPosition.dx).reduce((a, b) => a + b) / entries.length;
+        entries.map((e) => e.screenPosition.dx).reduce((a, b) => a + b) /
+        entries.length;
 
     final tooltipPosition = _calculateAnchoredPosition(
       dataPointScreenX: avgX,
@@ -529,7 +616,12 @@ class FusionTooltipLayer extends FusionRenderLayer {
     // Draw markers for all points
     if (tooltipBehavior.canShowMarker) {
       for (final entry in entries) {
-        _paintMarker(canvas, entry.screenPosition, entry.color, theme.markerBorderColor);
+        _paintMarker(
+          canvas,
+          entry.screenPosition,
+          entry.color,
+          theme.markerBorderColor,
+        );
       }
     }
 
@@ -537,9 +629,21 @@ class FusionTooltipLayer extends FusionRenderLayer {
     if (tooltipBehavior.elevation > 0) {
       _paintShadow(canvas, tooltipRect, tooltipBehavior, borderRadius);
     }
-    _paintBackground(canvas, tooltipRect, bgColor, tooltipBehavior, borderRadius);
+    _paintBackground(
+      canvas,
+      tooltipRect,
+      bgColor,
+      tooltipBehavior,
+      borderRadius,
+    );
     if (tooltipBehavior.borderWidth > 0) {
-      _paintBorder(canvas, tooltipRect, primarySeriesColor, tooltipBehavior, borderRadius);
+      _paintBorder(
+        canvas,
+        tooltipRect,
+        primarySeriesColor,
+        tooltipBehavior,
+        borderRadius,
+      );
     }
 
     // Draw entries
@@ -565,7 +669,10 @@ class FusionTooltipLayer extends FusionRenderLayer {
       textPainter.paint(
         canvas,
         Offset(
-          tooltipPosition.dx + padding.left + colorIndicatorSize + colorIndicatorMargin,
+          tooltipPosition.dx +
+              padding.left +
+              colorIndicatorSize +
+              colorIndicatorMargin,
           currentY + (lineHeight - textPainter.height) / 2,
         ),
       );
@@ -675,7 +782,10 @@ class FusionTooltipLayer extends FusionRenderLayer {
         final nextDistance = distance + dashLength;
 
         if (draw) {
-          final extractPath = metric.extractPath(distance, nextDistance.clamp(0, metric.length));
+          final extractPath = metric.extractPath(
+            distance,
+            nextDistance.clamp(0, metric.length),
+          );
           dashedPath.addPath(extractPath, Offset.zero);
         }
 
@@ -713,12 +823,14 @@ class FusionTooltipLayer extends FusionRenderLayer {
     final spaceAbove = dataPointScreen.dy - chartArea.top;
     final spaceBelow = chartArea.bottom - dataPointScreen.dy;
 
-    final requiredVerticalSpace = tooltipSize.height + markerRadius + verticalGap;
+    final requiredVerticalSpace =
+        tooltipSize.height + markerRadius + verticalGap;
 
     // Determine vertical position
     double tooltipY;
     if (spaceAbove >= requiredVerticalSpace) {
-      tooltipY = dataPointScreen.dy - markerRadius - verticalGap - tooltipSize.height;
+      tooltipY =
+          dataPointScreen.dy - markerRadius - verticalGap - tooltipSize.height;
     } else if (spaceBelow >= requiredVerticalSpace) {
       tooltipY = dataPointScreen.dy + markerRadius + verticalGap;
     } else {
@@ -727,7 +839,10 @@ class FusionTooltipLayer extends FusionRenderLayer {
       if (maxY < minY) {
         tooltipY = chartArea.top;
       } else {
-        tooltipY = (dataPointScreen.dy - tooltipSize.height / 2).clamp(minY, maxY);
+        tooltipY = (dataPointScreen.dy - tooltipSize.height / 2).clamp(
+          minY,
+          maxY,
+        );
       }
     }
 
@@ -777,7 +892,10 @@ class FusionTooltipLayer extends FusionRenderLayer {
       RRect.fromRectAndRadius(tooltipRect, Radius.circular(borderRadius)),
       Paint()
         ..color = (behavior.shadowColor ?? Colors.black).withValues(alpha: 0.2)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, behavior.elevation * 2),
+        ..maskFilter = MaskFilter.blur(
+          BlurStyle.normal,
+          behavior.elevation * 2,
+        ),
     );
   }
 
@@ -812,7 +930,12 @@ class FusionTooltipLayer extends FusionRenderLayer {
     );
   }
 
-  void _paintMarker(Canvas canvas, Offset position, Color color, Color borderColor) {
+  void _paintMarker(
+    Canvas canvas,
+    Offset position,
+    Color color,
+    Color borderColor,
+  ) {
     final markerPaint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
@@ -827,7 +950,12 @@ class FusionTooltipLayer extends FusionRenderLayer {
   }
 
   /// Paints arrow pointing toward the data point, or no arrow if point is under tooltip.
-  void _paintSmartArrow(Canvas canvas, Rect tooltipRect, Offset dataPointScreen, Color bgColor) {
+  void _paintSmartArrow(
+    Canvas canvas,
+    Rect tooltipRect,
+    Offset dataPointScreen,
+    Color bgColor,
+  ) {
     const arrowSize = 6.0;
     const overlapTolerance = 4.0;
 
@@ -847,13 +975,33 @@ class FusionTooltipLayer extends FusionRenderLayer {
 
     // Corner cases
     if (isLeft && isBelow) {
-      _drawCornerArrow(path, tooltipRect.bottomLeft, ArrowDirection.bottomLeft, arrowSize);
+      _drawCornerArrow(
+        path,
+        tooltipRect.bottomLeft,
+        ArrowDirection.bottomLeft,
+        arrowSize,
+      );
     } else if (isRight && isBelow) {
-      _drawCornerArrow(path, tooltipRect.bottomRight, ArrowDirection.bottomRight, arrowSize);
+      _drawCornerArrow(
+        path,
+        tooltipRect.bottomRight,
+        ArrowDirection.bottomRight,
+        arrowSize,
+      );
     } else if (isLeft && isAbove) {
-      _drawCornerArrow(path, tooltipRect.topLeft, ArrowDirection.topLeft, arrowSize);
+      _drawCornerArrow(
+        path,
+        tooltipRect.topLeft,
+        ArrowDirection.topLeft,
+        arrowSize,
+      );
     } else if (isRight && isAbove) {
-      _drawCornerArrow(path, tooltipRect.topRight, ArrowDirection.topRight, arrowSize);
+      _drawCornerArrow(
+        path,
+        tooltipRect.topRight,
+        ArrowDirection.topRight,
+        arrowSize,
+      );
     }
     // Edge cases
     else if (isAbove) {
@@ -896,7 +1044,12 @@ class FusionTooltipLayer extends FusionRenderLayer {
     canvas.drawPath(path, paint);
   }
 
-  void _drawCornerArrow(Path path, Offset corner, ArrowDirection direction, double size) {
+  void _drawCornerArrow(
+    Path path,
+    Offset corner,
+    ArrowDirection direction,
+    double size,
+  ) {
     final diagOffset = size * 0.85;
 
     switch (direction) {

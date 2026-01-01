@@ -5,7 +5,8 @@ import '../../data/fusion_data_point.dart';
 import '../../series/series_with_data_points.dart';
 
 /// Callback type for data point interactions.
-typedef FusionPointCallback = void Function(FusionDataPoint point, String seriesName);
+typedef FusionPointCallback =
+    void Function(FusionDataPoint point, String seriesName);
 
 /// Abstract base class for all Fusion Chart widgets.
 ///
@@ -41,7 +42,8 @@ typedef FusionPointCallback = void Function(FusionDataPoint point, String series
 ///   State<FusionLineChart> createState() => _FusionLineChartState();
 /// }
 /// ```
-abstract class FusionChartBase<S extends SeriesWithDataPoints> extends StatefulWidget {
+abstract class FusionChartBase<S extends SeriesWithDataPoints>
+    extends StatefulWidget {
   const FusionChartBase({
     required this.series,
     super.key,

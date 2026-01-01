@@ -48,7 +48,11 @@ import 'series_with_data_points.dart';
 /// This allows multiple independent stacks in the same chart.
 @immutable
 class FusionStackedBarSeries extends FusionSeries
-    with FusionGradientSupport, FusionShadowSupport, FusionDataLabelSupport, FusionAnimationSupport
+    with
+        FusionGradientSupport,
+        FusionShadowSupport,
+        FusionDataLabelSupport,
+        FusionAnimationSupport
     implements SeriesWithDataPoints {
   /// Creates a stacked bar series.
   const FusionStackedBarSeries({
@@ -72,7 +76,10 @@ class FusionStackedBarSeries extends FusionSeries
     this.animationCurve,
     this.isVertical = true,
     this.interaction = const FusionSeriesInteraction(),
-  }) : assert(barWidth > 0 && barWidth <= 1.0, 'Bar width must be between 0 and 1'),
+  }) : assert(
+         barWidth > 0 && barWidth <= 1.0,
+         'Bar width must be between 0 and 1',
+       ),
        assert(borderRadius >= 0, 'Border radius must be non-negative'),
        assert(borderWidth >= 0, 'Border width must be non-negative');
 

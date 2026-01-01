@@ -49,7 +49,11 @@ class FusionDataFormatter {
   /// formatLargeNumber(2500000);    // "2.5M"
   /// formatLargeNumber(1200000000); // "1.2B"
   /// ```
-  static String formatLargeNumber(double number, {int decimals = 1, bool showDecimals = true}) {
+  static String formatLargeNumber(
+    double number, {
+    int decimals = 1,
+    bool showDecimals = true,
+  }) {
     final abs = number.abs();
     String suffix = '';
     double value = abs;
@@ -87,7 +91,11 @@ class FusionDataFormatter {
   /// formatWithThousands(1234);      // "1,234"
   /// formatWithThousands(1234567.89); // "1,234,567.89"
   /// ```
-  static String formatWithThousands(double number, {int decimals = 2, String separator = ','}) {
+  static String formatWithThousands(
+    double number, {
+    int decimals = 2,
+    String separator = ',',
+  }) {
     final parts = number.toStringAsFixed(decimals).split('.');
     final intPart = parts[0];
     final decPart = parts.length > 1 ? parts[1] : '';
@@ -140,7 +148,11 @@ class FusionDataFormatter {
   /// formatPercentage(1.0);    // "100.0%"
   /// formatPercentage(0.005);  // "0.5%"
   /// ```
-  static String formatPercentage(double value, {int decimals = 1, bool includeSymbol = true}) {
+  static String formatPercentage(
+    double value, {
+    int decimals = 1,
+    bool includeSymbol = true,
+  }) {
     final percent = value * 100;
     final formatted = percent.toStringAsFixed(decimals);
     return includeSymbol ? '$formatted%' : formatted;
@@ -201,7 +213,11 @@ class FusionDataFormatter {
   /// ```dart
   /// formatCurrencyCompact(1500000); // "$1.5M"
   /// ```
-  static String formatCurrencyCompact(double value, {String symbol = '\$', int decimals = 1}) {
+  static String formatCurrencyCompact(
+    double value, {
+    String symbol = '\$',
+    int decimals = 1,
+  }) {
     final formatted = formatLargeNumber(value.abs(), decimals: decimals);
     final withSymbol = '$symbol$formatted';
     return value < 0 ? '-$withSymbol' : withSymbol;
@@ -220,7 +236,10 @@ class FusionDataFormatter {
   /// formatDate(DateTime(2024, 1, 15));  // "Jan 15"
   /// formatDate(DateTime(2024, 12, 25)); // "Dec 25"
   /// ```
-  static String formatDate(DateTime date, {DateFormat format = DateFormat.monthDay}) {
+  static String formatDate(
+    DateTime date, {
+    DateFormat format = DateFormat.monthDay,
+  }) {
     switch (format) {
       case DateFormat.monthDay:
         return '${_getMonthAbbr(date.month)} ${date.day}';
@@ -245,7 +264,9 @@ class FusionDataFormatter {
   /// formatTime(DateTime(2024, 1, 1, 9, 5));   // "09:05"
   /// ```
   static String formatTime(DateTime time, {bool use24Hour = true}) {
-    final hour = use24Hour ? time.hour : (time.hour % 12 == 0 ? 12 : time.hour % 12);
+    final hour = use24Hour
+        ? time.hour
+        : (time.hour % 12 == 0 ? 12 : time.hour % 12);
     final minute = time.minute.toString().padLeft(2, '0');
     final formatted = '${hour.toString().padLeft(2, '0')}:$minute';
 
@@ -300,10 +321,15 @@ class FusionDataFormatter {
 
     final intPart = value.truncate().toString();
     final decPart = decPattern.isNotEmpty
-        ? (value - value.truncate()).toStringAsFixed(decPattern.length).substring(2)
+        ? (value - value.truncate())
+              .toStringAsFixed(decPattern.length)
+              .substring(2)
         : '';
 
-    final formattedInt = intPart.padLeft(intPattern.replaceAll('#', '').length, '0');
+    final formattedInt = intPart.padLeft(
+      intPattern.replaceAll('#', '').length,
+      '0',
+    );
 
     return decPattern.isNotEmpty ? '$formattedInt.$decPart' : formattedInt;
   }

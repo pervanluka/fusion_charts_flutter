@@ -78,11 +78,17 @@ class FusionPerformanceOptimizer {
     for (int i = 0; i < targetPoints - 2; i++) {
       // Calculate bucket range
       final bucketStart = ((i + 1) * bucketSize).floor() + 1;
-      final bucketEnd = math.min(((i + 2) * bucketSize).floor() + 1, data.length);
+      final bucketEnd = math.min(
+        ((i + 2) * bucketSize).floor() + 1,
+        data.length,
+      );
 
       // Calculate average point of NEXT bucket (for triangle calculation)
       final nextBucketStart = bucketEnd;
-      final nextBucketEnd = math.min(((i + 3) * bucketSize).floor() + 1, data.length);
+      final nextBucketEnd = math.min(
+        ((i + 3) * bucketSize).floor() + 1,
+        data.length,
+      );
 
       double avgX = 0;
       double avgY = 0;
@@ -215,7 +221,10 @@ class FusionPerformanceOptimizer {
   /// - Data is already very uniform
   /// - You need absolute maximum speed
   /// - Visual quality is not important
-  static List<FusionDataPoint> decimateEveryNth(List<FusionDataPoint> data, {required int n}) {
+  static List<FusionDataPoint> decimateEveryNth(
+    List<FusionDataPoint> data, {
+    required int n,
+  }) {
     assert(n > 0, 'n must be positive');
 
     if (data.length <= n) return List.from(data);
@@ -247,7 +256,10 @@ class FusionPerformanceOptimizer {
   /// - Keeps both
   ///
   /// This preserves extreme values but doubles the target point count.
-  static List<FusionDataPoint> decimateMinMax(List<FusionDataPoint> data, {required int buckets}) {
+  static List<FusionDataPoint> decimateMinMax(
+    List<FusionDataPoint> data, {
+    required int buckets,
+  }) {
     if (data.length <= buckets * 2) return List.from(data);
 
     final result = <FusionDataPoint>[];
@@ -361,7 +373,9 @@ class FusionPerformanceOptimizer {
   /// - 1,000-5,000 points: Consider downsampling
   /// - 5,000-10,000 points: Recommend downsampling
   /// - > 10,000 points: Strongly recommend downsampling
-  static FusionDownsampleRecommendation getDownsampleRecommendation(int dataPointCount) {
+  static FusionDownsampleRecommendation getDownsampleRecommendation(
+    int dataPointCount,
+  ) {
     if (dataPointCount < 1000) {
       return FusionDownsampleRecommendation(
         shouldDownsample: false,
@@ -374,14 +388,16 @@ class FusionPerformanceOptimizer {
         shouldDownsample: true,
         recommendedTargetPoints: 1000,
         severity: FusionPerformanceSeverity.warning,
-        message: 'Consider downsampling to ~1000 points for better performance.',
+        message:
+            'Consider downsampling to ~1000 points for better performance.',
       );
     } else if (dataPointCount < 10000) {
       return FusionDownsampleRecommendation(
         shouldDownsample: true,
         recommendedTargetPoints: 1000,
         severity: FusionPerformanceSeverity.critical,
-        message: 'Recommend downsampling to ~1000 points. Current count may cause lag.',
+        message:
+            'Recommend downsampling to ~1000 points. Current count may cause lag.',
       );
     } else {
       return FusionDownsampleRecommendation(
@@ -468,7 +484,10 @@ enum FusionPerformanceSeverity {
 extension FusionDataPointPerformanceExtension on List<FusionDataPoint> {
   /// Downsamples using LTTB algorithm.
   List<FusionDataPoint> downsample(int targetPoints) {
-    return FusionPerformanceOptimizer.downsampleLTTB(this, targetPoints: targetPoints);
+    return FusionPerformanceOptimizer.downsampleLTTB(
+      this,
+      targetPoints: targetPoints,
+    );
   }
 
   /// Culls to viewport.

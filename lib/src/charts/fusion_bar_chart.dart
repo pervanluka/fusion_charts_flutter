@@ -108,7 +108,8 @@ class FusionBarChart extends StatefulWidget {
   State<FusionBarChart> createState() => _FusionBarChartState();
 }
 
-class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProviderStateMixin {
+class _FusionBarChartState extends State<FusionBarChart>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
   late FusionBarInteractiveState _interactiveState;
@@ -131,7 +132,8 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
     return FusionBarChartConfiguration(
       theme: config?.theme,
       tooltipBehavior: config?.tooltipBehavior ?? const FusionTooltipBehavior(),
-      crosshairBehavior: config?.crosshairBehavior ?? const FusionCrosshairConfiguration(),
+      crosshairBehavior:
+          config?.crosshairBehavior ?? const FusionCrosshairConfiguration(),
       zoomBehavior: config?.zoomBehavior ?? const FusionZoomConfiguration(),
       panBehavior: config?.panBehavior ?? const FusionPanConfiguration(),
       enableAnimation: config?.enableAnimation ?? true,
@@ -161,7 +163,9 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
     final config = _barConfig;
 
     _animationController = AnimationController(
-      duration: config.enableAnimation ? config.effectiveAnimationDuration : Duration.zero,
+      duration: config.enableAnimation
+          ? config.effectiveAnimationDuration
+          : Duration.zero,
       vsync: this,
     );
 
@@ -237,7 +241,8 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
   void didUpdateWidget(FusionBarChart oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.series != oldWidget.series || widget.config != oldWidget.config) {
+    if (widget.series != oldWidget.series ||
+        widget.config != oldWidget.config) {
       _cachedCoordSystem = null;
       _cachedSeriesHash = null;
 
@@ -269,14 +274,18 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (title != null) FusionChartTitle(title: title, theme: theme),
-          if (subtitle != null) FusionChartSubtitle(subtitle: subtitle, theme: theme),
+          if (subtitle != null)
+            FusionChartSubtitle(subtitle: subtitle, theme: theme),
           Expanded(
             child: AnimatedBuilder(
               animation: _animation,
               builder: (context, child) {
                 return LayoutBuilder(
                   builder: (context, constraints) {
-                    final size = Size(constraints.maxWidth, constraints.maxHeight);
+                    final size = Size(
+                      constraints.maxWidth,
+                      constraints.maxHeight,
+                    );
                     _updateCoordinateSystem(size);
 
                     if (_coordSystem != null) {
@@ -302,7 +311,8 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
                             yAxis: widget.yAxis,
                             animationProgress: _animation.value,
                             tooltipData: _interactiveState.tooltipData,
-                            crosshairPosition: _interactiveState.crosshairPosition,
+                            crosshairPosition:
+                                _interactiveState.crosshairPosition,
                             crosshairPoint: _interactiveState.crosshairPoint,
                             config: config,
                             paintPool: _paintPool,
@@ -324,14 +334,19 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
   void _updateCoordinateSystem(Size size) {
     final seriesHash = _calculateSeriesHash(widget.series);
 
-    if (_cachedSize == size && _cachedSeriesHash == seriesHash && _cachedCoordSystem != null) {
+    if (_cachedSize == size &&
+        _cachedSeriesHash == seriesHash &&
+        _cachedCoordSystem != null) {
       _coordSystem = _cachedCoordSystem;
       return;
     }
 
     final config = _barConfig;
 
-    final allPoints = widget.series.where((s) => s.visible).expand((s) => s.dataPoints).toList();
+    final allPoints = widget.series
+        .where((s) => s.visible)
+        .expand((s) => s.dataPoints)
+        .toList();
 
     if (allPoints.isEmpty) {
       _coordSystem = FusionCoordinateSystem(
@@ -357,7 +372,9 @@ class _FusionBarChartState extends State<FusionBarChart> with SingleTickerProvid
     final firstPoint = widget.series.first.dataPoints.first;
     final lastPoint = widget.series.first.dataPoints.last;
     final marginMinX = firstPoint.label != null ? 0.0 : firstPoint.x;
-    final marginMaxX = lastPoint.label != null ? (pointCount - 1).toDouble() : lastPoint.x;
+    final marginMaxX = lastPoint.label != null
+        ? (pointCount - 1).toDouble()
+        : lastPoint.x;
 
     // Calculate nice Y-axis bounds using shared utility
     final yBounds = ChartBoundsCalculator.calculateNiceYBounds(

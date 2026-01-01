@@ -74,7 +74,8 @@ class FusionAxisAlignment {
   static FusionAxisLabelAlignment calculate({
     required List<FusionDataPoint> dataPoints,
     required int desiredLabelCount,
-    FusionLabelAlignmentStrategy strategy = FusionLabelAlignmentStrategy.evenDistribution,
+    FusionLabelAlignmentStrategy strategy =
+        FusionLabelAlignmentStrategy.evenDistribution,
   }) {
     if (dataPoints.isEmpty) {
       return const FusionAxisLabelAlignment.empty();
@@ -222,7 +223,11 @@ class FusionAxisAlignment {
     final periodType = _detectPeriodType(dataPoints, desiredLabelCount);
 
     // Step 2: Calculate the target interval for this period type
-    final targetInterval = _getTargetIntervalForPeriod(periodType, totalPoints, desiredLabelCount);
+    final targetInterval = _getTargetIntervalForPeriod(
+      periodType,
+      totalPoints,
+      desiredLabelCount,
+    );
 
     // Step 3: Find data points that align with period boundaries
     final indices = <int>[];
@@ -280,7 +285,10 @@ class FusionAxisAlignment {
   /// - Desired label count
   ///
   /// Returns the most appropriate period type for labeling.
-  static _PeriodType _detectPeriodType(List<FusionDataPoint> dataPoints, int desiredLabelCount) {
+  static _PeriodType _detectPeriodType(
+    List<FusionDataPoint> dataPoints,
+    int desiredLabelCount,
+  ) {
     final totalPoints = dataPoints.length;
     final roughInterval = totalPoints / desiredLabelCount;
 
@@ -297,16 +305,24 @@ class FusionAxisAlignment {
     if (totalPoints <= 24 && roughInterval <= 4) {
       // Hourly data (e.g., 24 hours, want ~6 labels)
       return _PeriodType.hourly;
-    } else if (totalPoints >= 28 && totalPoints <= 31 && desiredLabelCount <= 8) {
+    } else if (totalPoints >= 28 &&
+        totalPoints <= 31 &&
+        desiredLabelCount <= 8) {
       // Daily data for a month (want weekly labels)
       return _PeriodType.weekly;
-    } else if (totalPoints >= 90 && totalPoints <= 366 && desiredLabelCount <= 12) {
+    } else if (totalPoints >= 90 &&
+        totalPoints <= 366 &&
+        desiredLabelCount <= 12) {
       // Daily data for a year (want monthly labels)
       return _PeriodType.monthly;
-    } else if (totalPoints >= 48 && totalPoints <= 56 && desiredLabelCount <= 6) {
+    } else if (totalPoints >= 48 &&
+        totalPoints <= 56 &&
+        desiredLabelCount <= 6) {
       // Weekly data for a year (want quarterly labels)
       return _PeriodType.quarterly;
-    } else if (totalPoints >= 12 && totalPoints <= 15 && desiredLabelCount <= 4) {
+    } else if (totalPoints >= 12 &&
+        totalPoints <= 15 &&
+        desiredLabelCount <= 4) {
       // Monthly data for a year (want quarterly labels)
       return _PeriodType.quarterly;
     } else if (totalPoints >= 10 && totalPoints <= 100 && roughInterval >= 10) {
@@ -380,7 +396,9 @@ class FusionAxisAlignment {
     }
 
     final avgSpacing = spacings.reduce((a, b) => a + b) / spacings.length;
-    final maxDeviation = spacings.map((s) => (s - avgSpacing).abs()).reduce(math.max);
+    final maxDeviation = spacings
+        .map((s) => (s - avgSpacing).abs())
+        .reduce(math.max);
 
     // If deviation is less than 20% of average, consider it sequential
     return maxDeviation < avgSpacing * 0.2;
@@ -435,8 +453,13 @@ class FusionAxisAlignment {
   }
 
   /// Validates that all label indices are within bounds.
-  static bool validateAlignment(FusionAxisLabelAlignment alignment, int dataPointCount) {
-    return alignment.labelIndices.every((index) => index >= 0 && index < dataPointCount);
+  static bool validateAlignment(
+    FusionAxisLabelAlignment alignment,
+    int dataPointCount,
+  ) {
+    return alignment.labelIndices.every(
+      (index) => index >= 0 && index < dataPointCount,
+    );
   }
 
   // ==========================================================================
@@ -660,7 +683,8 @@ class FusionAxisLabelAlignment {
   }
 
   @override
-  int get hashCode => Object.hash(labelIndices, labelValues, dataPointCount, interval);
+  int get hashCode =>
+      Object.hash(labelIndices, labelValues, dataPointCount, interval);
 }
 
 // =============================================================================
@@ -680,7 +704,8 @@ extension FusionDataPointAlignmentExtension on List<FusionDataPoint> {
   /// ```
   FusionAxisLabelAlignment calculateAlignment({
     required int desiredLabelCount,
-    FusionLabelAlignmentStrategy strategy = FusionLabelAlignmentStrategy.evenDistribution,
+    FusionLabelAlignmentStrategy strategy =
+        FusionLabelAlignmentStrategy.evenDistribution,
   }) {
     return FusionAxisAlignment.calculate(
       dataPoints: this,
@@ -691,11 +716,17 @@ extension FusionDataPointAlignmentExtension on List<FusionDataPoint> {
 
   /// Gets alignment with specific interval.
   FusionAxisLabelAlignment alignmentWithInterval(int interval) {
-    return FusionAxisAlignment.withInterval(dataPoints: this, interval: interval);
+    return FusionAxisAlignment.withInterval(
+      dataPoints: this,
+      interval: interval,
+    );
   }
 
   /// Gets alignment for specific x-values.
   FusionAxisLabelAlignment alignmentForValues(List<double> targetValues) {
-    return FusionAxisAlignment.forValues(dataPoints: this, targetValues: targetValues);
+    return FusionAxisAlignment.forValues(
+      dataPoints: this,
+      targetValues: targetValues,
+    );
   }
 }

@@ -126,7 +126,7 @@ class FusionCrosshairConfiguration {
 
   /// Dash pattern for the crosshair lines.
   ///
-  /// Example: [5, 5] creates dashed lines (5px line, 5px gap).
+  /// Example: `[5, 5]` creates dashed lines (5px line, 5px gap).
   final List<double>? lineDashArray;
 
   // ==========================================================================
@@ -223,7 +223,11 @@ class FusionCrosshairConfiguration {
   /// Gets the effective label text style.
   TextStyle getEffectiveLabelTextStyle(BuildContext context) {
     return labelTextStyle ??
-        const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500);
+        const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+        );
   }
 
   // ==========================================================================

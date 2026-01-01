@@ -22,7 +22,11 @@ class FusionDateTimeUtils {
   /// final interval = calculateInterval(start, end, desiredIntervals: 6);
   /// // Returns monthly interval
   /// ```
-  static Duration calculateInterval(DateTime start, DateTime end, {int desiredIntervals = 5}) {
+  static Duration calculateInterval(
+    DateTime start,
+    DateTime end, {
+    int desiredIntervals = 5,
+  }) {
     final totalSeconds = end.difference(start).inSeconds;
     final intervalSeconds = totalSeconds / desiredIntervals;
 
@@ -80,7 +84,11 @@ class FusionDateTimeUtils {
   /// );
   /// // Returns dates every 7 days
   /// ```
-  static List<DateTime> generateDateRange(DateTime start, DateTime end, Duration interval) {
+  static List<DateTime> generateDateRange(
+    DateTime start,
+    DateTime end,
+    Duration interval,
+  ) {
     final dates = <DateTime>[];
     var current = start;
 
@@ -121,7 +129,8 @@ class FusionDateTimeUtils {
   static DateTime roundToInterval(DateTime dateTime, Duration interval) {
     final millisSinceEpoch = dateTime.millisecondsSinceEpoch;
     final intervalMillis = interval.inMilliseconds;
-    final rounded = (millisSinceEpoch / intervalMillis).round() * intervalMillis;
+    final rounded =
+        (millisSinceEpoch / intervalMillis).round() * intervalMillis;
     return DateTime.fromMillisecondsSinceEpoch(rounded);
   }
 

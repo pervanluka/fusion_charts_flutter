@@ -182,7 +182,10 @@ class AxisBounds {
     final roughInterval = range / targetTicks;
 
     // Find magnitude
-    final magnitude = math.pow(10, (math.log(roughInterval) / math.ln10).floor());
+    final magnitude = math.pow(
+      10,
+      (math.log(roughInterval) / math.ln10).floor(),
+    );
     final normalized = roughInterval / magnitude;
 
     // Nice numbers: 1, 2, 5, 10
@@ -275,6 +278,13 @@ class AxisBounds {
 
   @override
   int get hashCode {
-    return Object.hash(min, max, interval, decimalPlaces, minorTickInterval, padding);
+    return Object.hash(
+      min,
+      max,
+      interval,
+      decimalPlaces,
+      minorTickInterval,
+      padding,
+    );
   }
 }

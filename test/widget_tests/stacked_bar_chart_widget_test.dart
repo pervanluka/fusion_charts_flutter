@@ -196,16 +196,12 @@ void main() {
                 series: [
                   FusionStackedBarSeries(
                     name: 'Single A',
-                    dataPoints: [
-                      FusionDataPoint(0, 50),
-                    ],
+                    dataPoints: [FusionDataPoint(0, 50)],
                     color: Colors.red,
                   ),
                   FusionStackedBarSeries(
                     name: 'Single B',
-                    dataPoints: [
-                      FusionDataPoint(0, 30),
-                    ],
+                    dataPoints: [FusionDataPoint(0, 30)],
                     color: Colors.blue,
                   ),
                 ],

@@ -110,7 +110,8 @@ class DataValidator {
         warnings.add(
           ValidationWarning(
             code: 'DUPLICATES_REMOVED',
-            message: 'Removed ${beforeCount - validData.length} duplicate points',
+            message:
+                'Removed ${beforeCount - validData.length} duplicate points',
           ),
         );
       }
@@ -265,13 +266,20 @@ class DataValidator {
           final interpolatedX = current.x + (gap * t);
           final interpolatedY = current.y + ((next.y - current.y) * t);
 
-          result.add(FusionDataPoint(interpolatedX, interpolatedY, label: 'Interpolated'));
+          result.add(
+            FusionDataPoint(
+              interpolatedX,
+              interpolatedY,
+              label: 'Interpolated',
+            ),
+          );
         }
 
         warnings.add(
           ValidationWarning(
             code: 'VALUES_INTERPOLATED',
-            message: 'Interpolated ${steps - 1} values between x=${current.x} and x=${next.x}',
+            message:
+                'Interpolated ${steps - 1} values between x=${current.x} and x=${next.x}',
           ),
         );
       }
@@ -309,7 +317,8 @@ class DataValidator {
       warnings.add(
         ValidationWarning(
           code: 'VALUES_CLAMPED',
-          message: 'Clamped $clampedCount values to range [$minValue, $maxValue]',
+          message:
+              'Clamped $clampedCount values to range [$minValue, $maxValue]',
         ),
       );
     }
@@ -403,10 +412,12 @@ class ValidationResult {
   bool get isUsable => validCount > 0 && !hasCriticalErrors;
 
   /// Whether there are critical errors.
-  bool get hasCriticalErrors => errors.any((e) => e.severity == ErrorSeverity.critical);
+  bool get hasCriticalErrors =>
+      errors.any((e) => e.severity == ErrorSeverity.critical);
 
   /// Percentage of data that was valid.
-  double get validPercentage => originalCount > 0 ? (validCount / originalCount) * 100 : 0;
+  double get validPercentage =>
+      originalCount > 0 ? (validCount / originalCount) * 100 : 0;
 }
 
 /// Validation error information.
@@ -433,7 +444,11 @@ class ValidationError {
 
 /// Validation warning information.
 class ValidationWarning {
-  const ValidationWarning({required this.code, required this.message, this.details});
+  const ValidationWarning({
+    required this.code,
+    required this.message,
+    this.details,
+  });
 
   /// Warning code.
   final String code;

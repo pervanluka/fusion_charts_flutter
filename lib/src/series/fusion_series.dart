@@ -18,7 +18,6 @@ import '../core/enums/marker_shape.dart';
 /// - [FusionBarSeries] - For bar charts
 /// - [FusionAreaSeries] - For area charts
 /// - [FusionPieSeries] - For pie charts
-/// - [FusionScatterSeries] - For scatter charts
 ///
 /// ## Properties
 ///
@@ -33,7 +32,11 @@ abstract class FusionSeries {
   /// The [color] parameter is required.
   /// The [name] defaults to an empty string (auto-generated in legends/tooltips).
   /// The [visible] parameter defaults to `true`.
-  const FusionSeries({required this.color, this.name = '', this.visible = true});
+  const FusionSeries({
+    required this.color,
+    this.name = '',
+    this.visible = true,
+  });
 
   /// The display name of this series.
   ///
@@ -252,7 +255,8 @@ class FusionSeriesInteraction {
   }
 
   @override
-  int get hashCode => Object.hash(selectable, highlightOnHover, showTooltip, enableSelection);
+  int get hashCode =>
+      Object.hash(selectable, highlightOnHover, showTooltip, enableSelection);
 }
 
 /// Extension methods for lists of series.

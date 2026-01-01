@@ -148,14 +148,16 @@ Clean API:
   @override
   Widget build(BuildContext context) {
     final highlight = _highlights[_currentPage];
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Feature Highlights'),
         actions: [
           IconButton(
             icon: const Icon(Icons.arrow_back_ios),
-            onPressed: _currentPage > 0 ? () => _goToPage(_currentPage - 1) : null,
+            onPressed: _currentPage > 0
+                ? () => _goToPage(_currentPage - 1)
+                : null,
           ),
           Center(
             child: Container(
@@ -316,7 +318,9 @@ Widget _buildLTTBDemo() {
         decoration: BoxDecoration(
           color: const Color(0xFF10B981).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+          border: Border.all(
+            color: const Color(0xFF10B981).withValues(alpha: 0.3),
+          ),
         ),
         child: const Row(
           mainAxisSize: MainAxisSize.min,
@@ -345,9 +349,7 @@ Widget _buildLTTBDemo() {
               lineWidth: 1.5,
             ),
           ],
-          config: const FusionChartConfiguration(
-            enableAnimation: false,
-          ),
+          config: const FusionChartConfiguration(enableAnimation: false),
         ),
       ),
     ],
@@ -369,7 +371,9 @@ Widget _buildQuadTreeDemo() {
         decoration: BoxDecoration(
           color: const Color(0xFF6366F1).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+          border: Border.all(
+            color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+          ),
         ),
         child: const Row(
           mainAxisSize: MainAxisSize.min,
@@ -417,7 +421,11 @@ Widget _buildTooltipStrategiesDemo() {
   final data = [
     FusionPieDataPoint(35, label: 'Sales', color: const Color(0xFF6366F1)),
     FusionPieDataPoint(25, label: 'Marketing', color: const Color(0xFF22C55E)),
-    FusionPieDataPoint(20, label: 'Engineering', color: const Color(0xFFF59E0B)),
+    FusionPieDataPoint(
+      20,
+      label: 'Engineering',
+      color: const Color(0xFFF59E0B),
+    ),
     FusionPieDataPoint(20, label: 'Support', color: const Color(0xFFA855F7)),
   ];
 
@@ -525,9 +533,7 @@ class _TooltipStrategyCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant,
-        ),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
         children: [
@@ -577,10 +583,26 @@ Widget _buildSmartLabelsDemo() {
                     child: FusionPieChart(
                       series: FusionPieSeries(
                         dataPoints: [
-                          FusionPieDataPoint(40, label: 'Dark', color: const Color(0xFF1E293B)),
-                          FusionPieDataPoint(30, label: 'Light', color: const Color(0xFFFEF3C7)),
-                          FusionPieDataPoint(20, label: 'Blue', color: const Color(0xFF6366F1)),
-                          FusionPieDataPoint(10, label: 'Green', color: const Color(0xFF22C55E)),
+                          FusionPieDataPoint(
+                            40,
+                            label: 'Dark',
+                            color: const Color(0xFF1E293B),
+                          ),
+                          FusionPieDataPoint(
+                            30,
+                            label: 'Light',
+                            color: const Color(0xFFFEF3C7),
+                          ),
+                          FusionPieDataPoint(
+                            20,
+                            label: 'Blue',
+                            color: const Color(0xFF6366F1),
+                          ),
+                          FusionPieDataPoint(
+                            10,
+                            label: 'Green',
+                            color: const Color(0xFF22C55E),
+                          ),
                         ],
                       ),
                       config: const FusionPieChartConfiguration(
@@ -606,11 +628,31 @@ Widget _buildSmartLabelsDemo() {
                     child: FusionPieChart(
                       series: FusionPieSeries(
                         dataPoints: [
-                          FusionPieDataPoint(35, label: 'Sales', color: const Color(0xFF6366F1)),
-                          FusionPieDataPoint(25, label: 'Marketing', color: const Color(0xFF22C55E)),
-                          FusionPieDataPoint(20, label: 'Engineering', color: const Color(0xFFF59E0B)),
-                          FusionPieDataPoint(15, label: 'Support', color: const Color(0xFFA855F7)),
-                          FusionPieDataPoint(5, label: 'Other', color: const Color(0xFF6B7280)),
+                          FusionPieDataPoint(
+                            35,
+                            label: 'Sales',
+                            color: const Color(0xFF6366F1),
+                          ),
+                          FusionPieDataPoint(
+                            25,
+                            label: 'Marketing',
+                            color: const Color(0xFF22C55E),
+                          ),
+                          FusionPieDataPoint(
+                            20,
+                            label: 'Engineering',
+                            color: const Color(0xFFF59E0B),
+                          ),
+                          FusionPieDataPoint(
+                            15,
+                            label: 'Support',
+                            color: const Color(0xFFA855F7),
+                          ),
+                          FusionPieDataPoint(
+                            5,
+                            label: 'Other',
+                            color: const Color(0xFF6B7280),
+                          ),
                         ],
                       ),
                       config: const FusionPieChartConfiguration(
@@ -643,10 +685,26 @@ Widget _buildSmartLabelsDemo() {
                     child: FusionPieChart(
                       series: FusionPieSeries(
                         dataPoints: [
-                          FusionPieDataPoint(35, label: 'A', color: const Color(0xFF6366F1)),
-                          FusionPieDataPoint(25, label: 'B', color: const Color(0xFF22C55E)),
-                          FusionPieDataPoint(20, label: 'C', color: const Color(0xFFF59E0B)),
-                          FusionPieDataPoint(20, label: 'D', color: const Color(0xFFA855F7)),
+                          FusionPieDataPoint(
+                            35,
+                            label: 'A',
+                            color: const Color(0xFF6366F1),
+                          ),
+                          FusionPieDataPoint(
+                            25,
+                            label: 'B',
+                            color: const Color(0xFF22C55E),
+                          ),
+                          FusionPieDataPoint(
+                            20,
+                            label: 'C',
+                            color: const Color(0xFFF59E0B),
+                          ),
+                          FusionPieDataPoint(
+                            20,
+                            label: 'D',
+                            color: const Color(0xFFA855F7),
+                          ),
                         ],
                         strokeWidth: 2,
                         strokeColor: Colors.white,
@@ -675,10 +733,26 @@ Widget _buildSmartLabelsDemo() {
                     child: FusionPieChart(
                       series: FusionPieSeries(
                         dataPoints: [
-                          FusionPieDataPoint(35, label: 'A', color: const Color(0xFF6366F1)),
-                          FusionPieDataPoint(25, label: 'B', color: const Color(0xFF22C55E)),
-                          FusionPieDataPoint(20, label: 'C', color: const Color(0xFFF59E0B)),
-                          FusionPieDataPoint(20, label: 'D', color: const Color(0xFFA855F7)),
+                          FusionPieDataPoint(
+                            35,
+                            label: 'A',
+                            color: const Color(0xFF6366F1),
+                          ),
+                          FusionPieDataPoint(
+                            25,
+                            label: 'B',
+                            color: const Color(0xFF22C55E),
+                          ),
+                          FusionPieDataPoint(
+                            20,
+                            label: 'C',
+                            color: const Color(0xFFF59E0B),
+                          ),
+                          FusionPieDataPoint(
+                            20,
+                            label: 'D',
+                            color: const Color(0xFFA855F7),
+                          ),
                         ],
                         strokeWidth: 2,
                         strokeColor: Colors.white,
@@ -709,7 +783,8 @@ Widget _buildPerformanceDemo() {
         icon: Icons.recycling,
         title: 'Paint Object Pooling',
         value: '~0 GC',
-        description: 'Reuses Paint objects instead of creating new ones each frame',
+        description:
+            'Reuses Paint objects instead of creating new ones each frame',
         color: const Color(0xFF10B981),
       ),
       const SizedBox(height: 8),
@@ -791,7 +866,10 @@ class _PerformanceMetricCard extends StatelessWidget {
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: color,
                         borderRadius: BorderRadius.circular(4),
@@ -857,8 +935,7 @@ Widget _buildAPIComparisonDemo() {
                     const SizedBox(height: 8),
                     const Expanded(
                       child: SingleChildScrollView(
-                        child: Text(
-                          '''
+                        child: Text('''
 series: <PieSeries>[
   PieSeries(
     dataLabelSettings: 
@@ -875,12 +952,7 @@ series: <PieSeries>[
           ),
       ),
   ),
-]''',
-                          style: TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 10,
-                          ),
-                        ),
+]''', style: TextStyle(fontFamily: 'monospace', fontSize: 10)),
                       ),
                     ),
                   ],
@@ -894,7 +966,9 @@ series: <PieSeries>[
                 decoration: BoxDecoration(
                   color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: Colors.green.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -915,8 +989,7 @@ series: <PieSeries>[
                     const SizedBox(height: 8),
                     const Expanded(
                       child: SingleChildScrollView(
-                        child: Text(
-                          '''
+                        child: Text('''
 config: 
   FusionPieChartConfiguration(
     labelPosition: 
@@ -924,12 +997,7 @@ config:
     labelConnectorLength: 20,
     showLabels: true,
   )
-''',
-                          style: TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 10,
-                          ),
-                        ),
+''', style: TextStyle(fontFamily: 'monospace', fontSize: 10)),
                       ),
                     ),
                   ],

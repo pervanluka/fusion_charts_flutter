@@ -81,7 +81,8 @@ class ChartBoundsCalculator {
     final effectiveMaxY = config.max ?? dataMaxY;
 
     // Calculate nice interval
-    final yInterval = config.interval ??
+    final yInterval =
+        config.interval ??
         AxisCalculator.calculateNiceInterval(
           effectiveMinY,
           effectiveMaxY,
@@ -133,17 +134,15 @@ class ChartBoundsCalculator {
 
     // For X-axis, default to exact data bounds
     if (!useNiceBounds) {
-      return (
-        minX: config.min ?? dataMinX,
-        maxX: config.max ?? dataMaxX,
-      );
+      return (minX: config.min ?? dataMinX, maxX: config.max ?? dataMaxX);
     }
 
     // If nice bounds requested, calculate similar to Y-axis
     final effectiveMinX = config.min ?? dataMinX;
     final effectiveMaxX = config.max ?? dataMaxX;
 
-    final xInterval = config.interval ??
+    final xInterval =
+        config.interval ??
         AxisCalculator.calculateNiceInterval(
           effectiveMinX,
           effectiveMaxX,
@@ -172,10 +171,7 @@ class ChartBoundsCalculator {
   static ({double minX, double maxX}) calculateCategoryXBounds({
     required int pointCount,
   }) {
-    return (
-      minX: -0.5,
-      maxX: pointCount - 0.5,
-    );
+    return (minX: -0.5, maxX: pointCount - 0.5);
   }
 
   // ==========================================================================

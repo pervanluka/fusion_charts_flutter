@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart' show Offset, Path, Shader, TextPainter, TextStyle;
+import 'package:flutter/material.dart'
+    show Offset, Path, Shader, TextPainter, TextStyle;
 
 import '../data/fusion_data_point.dart';
 import 'fusion_coordinate_system.dart';
@@ -71,7 +72,10 @@ class FusionRenderCache {
     _put(key, screenPositions);
   }
 
-  String _generateCoordKey(List<FusionDataPoint> dataPoints, FusionCoordinateSystem coordSystem) {
+  String _generateCoordKey(
+    List<FusionDataPoint> dataPoints,
+    FusionCoordinateSystem coordSystem,
+  ) {
     return 'coords_${dataPoints.hashCode}_${coordSystem.hashCode}';
   }
 
@@ -197,7 +201,9 @@ class FusionRenderCache {
 
   /// Clears cache entries matching a prefix.
   void clearPrefix(String prefix) {
-    final keysToRemove = _cache.keys.where((k) => k.startsWith(prefix)).toList();
+    final keysToRemove = _cache.keys
+        .where((k) => k.startsWith(prefix))
+        .toList();
 
     for (final key in keysToRemove) {
       _cache.remove(key);
@@ -249,7 +255,11 @@ class FusionRenderCache {
 
 /// Cache entry with metadata.
 class _CacheEntry {
-  _CacheEntry({required this.value, required this.createdAt, required this.lastAccessed});
+  _CacheEntry({
+    required this.value,
+    required this.createdAt,
+    required this.lastAccessed,
+  });
 
   final dynamic value;
   final DateTime createdAt;

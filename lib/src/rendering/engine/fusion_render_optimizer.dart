@@ -4,7 +4,10 @@ import 'dart:ui';
 ///
 /// Tracks what changed between frames and only rerenders affected areas.
 class FusionRenderOptimizer {
-  FusionRenderOptimizer({this.enableDirtyRegionTracking = true, this.enablePathCaching = true});
+  FusionRenderOptimizer({
+    this.enableDirtyRegionTracking = true,
+    this.enablePathCaching = true,
+  });
 
   final bool enableDirtyRegionTracking;
   final bool enablePathCaching;
@@ -120,7 +123,11 @@ class FusionRenderOptimizer {
 }
 
 class _CachedPath {
-  _CachedPath({required this.path, required this.createdFrame, required this.lastUsedFrame});
+  _CachedPath({
+    required this.path,
+    required this.createdFrame,
+    required this.lastUsedFrame,
+  });
 
   final Path path;
   final int createdFrame;

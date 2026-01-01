@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 ///
 /// - [FusionAxisBase] - Defines WHAT kind of axis (numeric, category, etc.)
 /// - [FusionAxisConfiguration] - Defines HOW it looks and behaves (styling, visibility)
-/// - [FusionAxisRenderer] - Renders the axis using both definition and configuration
+/// - Axis Renderer - Renders the axis using both definition and configuration
 abstract class FusionAxisBase {
   const FusionAxisBase({
     // Identification

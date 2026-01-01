@@ -32,7 +32,7 @@ import '../base/fusion_axis_base.dart';
 ///
 /// - [FusionNumericAxis] - Defines the axis properties (min, max, interval)
 /// - [FusionAxisConfiguration] - Defines styling (colors, visibility, etc.)
-/// - [NumericAxisRenderer] - Renders the axis using both
+/// - Numeric Axis Renderer - Renders the axis using both
 class FusionNumericAxis extends FusionAxisBase {
   /// Creates a numeric axis.
   const FusionNumericAxis({
@@ -223,7 +223,8 @@ class FusionNumericAxis extends FusionAxisBase {
       labelFormatter: labelFormatter ?? this.labelFormatter,
       labelAlignment: labelAlignment ?? this.labelAlignment,
       decimalPlaces: decimalPlaces ?? this.decimalPlaces,
-      useScientificNotation: useScientificNotation ?? this.useScientificNotation,
+      useScientificNotation:
+          useScientificNotation ?? this.useScientificNotation,
       rangePadding: rangePadding ?? this.rangePadding,
     );
   }

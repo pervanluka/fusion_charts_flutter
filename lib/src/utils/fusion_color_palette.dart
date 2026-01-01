@@ -20,9 +20,7 @@ class FusionColorPalette {
 
   /// Creates gradient from two colors in this palette.
   LinearGradient gradient(int startIndex, int endIndex) {
-    return LinearGradient(
-      colors: [colorAt(startIndex), colorAt(endIndex)],
-    );
+    return LinearGradient(colors: [colorAt(startIndex), colorAt(endIndex)]);
   }
 
   @override
@@ -108,16 +106,20 @@ class FusionColorPalette {
   // ===========================================================================
 
   /// Material Design inspired palette (default).
-  static FusionColorPalette get material => const FusionColorPalette(materialColors);
+  static FusionColorPalette get material =>
+      const FusionColorPalette(materialColors);
 
   /// Professional business palette.
-  static FusionColorPalette get professional => const FusionColorPalette(professionalColors);
+  static FusionColorPalette get professional =>
+      const FusionColorPalette(professionalColors);
 
   /// Vibrant, eye-catching palette.
-  static FusionColorPalette get vibrant => const FusionColorPalette(vibrantColors);
+  static FusionColorPalette get vibrant =>
+      const FusionColorPalette(vibrantColors);
 
   /// Soft pastel palette.
-  static FusionColorPalette get pastel => const FusionColorPalette(pastelColors);
+  static FusionColorPalette get pastel =>
+      const FusionColorPalette(pastelColors);
 
   /// Warm color palette.
   static FusionColorPalette get warm => const FusionColorPalette(warmColors);
@@ -153,12 +155,16 @@ class FusionColorPalette {
   /// Creates a lighter version of a color.
   static Color lightenColor(Color color, [double amount = 0.2]) {
     final hsl = HSLColor.fromColor(color);
-    return hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0)).toColor();
+    return hsl
+        .withLightness((hsl.lightness + amount).clamp(0.0, 1.0))
+        .toColor();
   }
 
   /// Creates a darker version of a color.
   static Color darkenColor(Color color, [double amount = 0.2]) {
     final hsl = HSLColor.fromColor(color);
-    return hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0)).toColor();
+    return hsl
+        .withLightness((hsl.lightness - amount).clamp(0.0, 1.0))
+        .toColor();
   }
 }

@@ -49,7 +49,10 @@ class FusionPathBuilder {
   ///   coordSystem,
   /// );
   /// ```
-  static Path createLinePath(List<FusionDataPoint> dataPoints, FusionCoordinateSystem coordSystem) {
+  static Path createLinePath(
+    List<FusionDataPoint> dataPoints,
+    FusionCoordinateSystem coordSystem,
+  ) {
     final path = Path();
 
     if (dataPoints.isEmpty) return path;
@@ -146,9 +149,15 @@ class FusionPathBuilder {
       // Calculate control points
       // CP1 is offset from P0 in the tangent direction
       // CP2 is offset from P1 against the tangent direction
-      final cp1 = Offset(p0.dx + dir0.dx * controlDistance, p0.dy + dir0.dy * controlDistance);
+      final cp1 = Offset(
+        p0.dx + dir0.dx * controlDistance,
+        p0.dy + dir0.dy * controlDistance,
+      );
 
-      final cp2 = Offset(p1.dx - dir1.dx * controlDistance, p1.dy - dir1.dy * controlDistance);
+      final cp2 = Offset(
+        p1.dx - dir1.dx * controlDistance,
+        p1.dy - dir1.dy * controlDistance,
+      );
 
       // Draw cubic Bezier curve that passes exactly through p0 and p1
       path.cubicTo(cp1.dx, cp1.dy, cp2.dx, cp2.dy, p1.dx, p1.dy);
@@ -181,13 +190,19 @@ class FusionPathBuilder {
     // This gives the average direction, creating smooth transitions
     for (int i = 1; i < n - 1; i++) {
       directions[i] = _normalizeDirection(
-        Offset(points[i + 1].dx - points[i - 1].dx, points[i + 1].dy - points[i - 1].dy),
+        Offset(
+          points[i + 1].dx - points[i - 1].dx,
+          points[i + 1].dy - points[i - 1].dy,
+        ),
       );
     }
 
     // Last point: direction from second-to-last point
     directions[n - 1] = _normalizeDirection(
-      Offset(points[n - 1].dx - points[n - 2].dx, points[n - 1].dy - points[n - 2].dy),
+      Offset(
+        points[n - 1].dx - points[n - 2].dx,
+        points[n - 1].dy - points[n - 2].dy,
+      ),
     );
 
     return directions;
@@ -362,11 +377,16 @@ class FusionPathBuilder {
   }
 
   /// Calculates perpendicular distance from point to line.
-  static double _perpendicularDistance(Offset point, Offset lineStart, Offset lineEnd) {
+  static double _perpendicularDistance(
+    Offset point,
+    Offset lineStart,
+    Offset lineEnd,
+  ) {
     final dx = lineEnd.dx - lineStart.dx;
     final dy = lineEnd.dy - lineStart.dy;
 
-    final numerator = ((point.dx - lineStart.dx) * dy - (point.dy - lineStart.dy) * dx).abs();
+    final numerator =
+        ((point.dx - lineStart.dx) * dy - (point.dy - lineStart.dy) * dx).abs();
     final denominator = dx * dx + dy * dy;
 
     if (denominator == 0) return 0;
@@ -409,7 +429,10 @@ class FusionPathBuilder {
         final nextDistance = distance + dashLength;
 
         if (draw) {
-          final extractPath = metric.extractPath(distance, nextDistance.clamp(0, metric.length));
+          final extractPath = metric.extractPath(
+            distance,
+            nextDistance.clamp(0, metric.length),
+          );
           dashedPath.addPath(extractPath, Offset.zero);
         }
 

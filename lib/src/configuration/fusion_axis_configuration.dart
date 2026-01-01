@@ -280,7 +280,9 @@ class FusionAxisConfiguration {
     if (position != null) {
       return position!;
     }
-    return isVertical ? AxisPosition.defaultVertical : AxisPosition.defaultHorizontal;
+    return isVertical
+        ? AxisPosition.defaultVertical
+        : AxisPosition.defaultHorizontal;
   }
 
   /// Gets the effective minimum value for the axis.
@@ -482,7 +484,8 @@ class FusionAxisConfiguration {
       desiredTickCount: desiredTickCount ?? this.desiredTickCount,
       desiredIntervals: desiredIntervals ?? this.desiredIntervals,
       useAbbreviation: useAbbreviation ?? this.useAbbreviation,
-      useScientificNotation: useScientificNotation ?? this.useScientificNotation,
+      useScientificNotation:
+          useScientificNotation ?? this.useScientificNotation,
       showGrid: showGrid ?? this.showGrid,
       showMinorGrid: showMinorGrid ?? this.showMinorGrid,
       showMinorTicks: showMinorTicks ?? this.showMinorTicks,

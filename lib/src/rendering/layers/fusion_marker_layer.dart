@@ -55,12 +55,15 @@ import 'fusion_render_layer.dart';
 /// ```
 class FusionMarkerLayer extends FusionRenderLayer {
   /// Creates a marker rendering layer.
-  FusionMarkerLayer({required this.series, this.enableBorders = true, this.enableShadows = false})
-    : super(
-        name: 'markers',
-        zIndex: 60, // After series, before data labels
-        cacheable: false, // Markers change with animation
-      );
+  FusionMarkerLayer({
+    required this.series,
+    this.enableBorders = true,
+    this.enableShadows = false,
+  }) : super(
+         name: 'markers',
+         zIndex: 60, // After series, before data labels
+         cacheable: false, // Markers change with animation
+       );
 
   /// All series to render markers for.
   final List<SeriesWithDataPoints> series;
@@ -116,11 +119,25 @@ class FusionMarkerLayer extends FusionRenderLayer {
       }
 
       // Render marker fill
-      _renderMarker(canvas, context, screenPos, animatedSize, markerColor, markerShape);
+      _renderMarker(
+        canvas,
+        context,
+        screenPos,
+        animatedSize,
+        markerColor,
+        markerShape,
+      );
 
       // Render marker border if enabled
       if (enableBorders) {
-        _renderMarkerBorder(canvas, context, screenPos, animatedSize, markerColor, markerShape);
+        _renderMarkerBorder(
+          canvas,
+          context,
+          screenPos,
+          animatedSize,
+          markerColor,
+          markerShape,
+        );
       }
     }
   }
@@ -198,7 +215,11 @@ class FusionMarkerLayer extends FusionRenderLayer {
         canvas.drawCircle(position, radius, paint);
 
       case MarkerShape.square:
-        final rect = Rect.fromCenter(center: position, width: size, height: size);
+        final rect = Rect.fromCenter(
+          center: position,
+          width: size,
+          height: size,
+        );
         canvas.drawRect(rect, paint);
 
       case MarkerShape.triangle:

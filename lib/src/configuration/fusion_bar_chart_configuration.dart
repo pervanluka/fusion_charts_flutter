@@ -78,8 +78,14 @@ class FusionBarChartConfiguration extends FusionChartConfiguration {
     this.barSpacing = 0.2,
     this.borderRadius = 0.0,
     this.enableBarShadow = false,
-  }) : assert(barWidthRatio > 0 && barWidthRatio <= 1, 'barWidthRatio must be between 0 and 1'),
-       assert(barSpacing >= 0 && barSpacing <= 1, 'barSpacing must be between 0 and 1'),
+  }) : assert(
+         barWidthRatio > 0 && barWidthRatio <= 1,
+         'barWidthRatio must be between 0 and 1',
+       ),
+       assert(
+         barSpacing >= 0 && barSpacing <= 1,
+         'barSpacing must be between 0 and 1',
+       ),
        assert(borderRadius >= 0, 'borderRadius must be non-negative');
 
   // ==========================================================================
@@ -184,7 +190,8 @@ class FusionBarChartConfiguration extends FusionChartConfiguration {
       animationDuration: animationDuration ?? this.animationDuration,
       animationCurve: animationCurve ?? this.animationCurve,
       enableSideBySideSeriesPlacement:
-          enableSideBySideSeriesPlacement ?? this.enableSideBySideSeriesPlacement,
+          enableSideBySideSeriesPlacement ??
+          this.enableSideBySideSeriesPlacement,
       barWidthRatio: barWidthRatio ?? this.barWidthRatio,
       barSpacing: barSpacing ?? this.barSpacing,
       borderRadius: borderRadius ?? this.borderRadius,
@@ -197,7 +204,8 @@ class FusionBarChartConfiguration extends FusionChartConfiguration {
     if (identical(this, other)) return true;
     return other is FusionBarChartConfiguration &&
         super == other &&
-        other.enableSideBySideSeriesPlacement == enableSideBySideSeriesPlacement &&
+        other.enableSideBySideSeriesPlacement ==
+            enableSideBySideSeriesPlacement &&
         other.barWidthRatio == barWidthRatio &&
         other.barSpacing == barSpacing &&
         other.borderRadius == borderRadius &&

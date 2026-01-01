@@ -20,7 +20,8 @@ import 'base/fusion_interactive_state_base.dart';
 ///
 /// Implements [FusionInteractiveStateBase] for compatibility with
 /// [FusionChartBaseState].
-class FusionInteractiveChartState extends ChangeNotifier implements FusionInteractiveStateBase {
+class FusionInteractiveChartState extends ChangeNotifier
+    implements FusionInteractiveStateBase {
   FusionInteractiveChartState({
     required this.config,
     required FusionCoordinateSystem initialCoordSystem,
@@ -131,7 +132,10 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
   void _handleHover(Offset position) {
     if (!config.enableTooltip && !config.enableCrosshair) return;
 
-    final nearestPoint = _interactionHandler?.findNearestPoint(_allDataPoints, position);
+    final nearestPoint = _interactionHandler?.findNearestPoint(
+      _allDataPoints,
+      position,
+    );
 
     if (nearestPoint != null) {
       if (config.enableTooltip) {
@@ -161,7 +165,10 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
 
     if (!config.enableTooltip) return;
 
-    final point = _interactionHandler?.findNearestPoint(_allDataPoints, event.localPosition);
+    final point = _interactionHandler?.findNearestPoint(
+      _allDataPoints,
+      event.localPosition,
+    );
 
     if (point != null) {
       _showTooltipWithDelay(point, event.localPosition, false);
@@ -211,8 +218,14 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
     final dataX = _currentCoordSystem.screenXToDataX(position.dx);
     final dataY = _currentCoordSystem.screenYToDataY(position.dy);
 
-    final clampedDataX = dataX.clamp(_currentCoordSystem.dataXMin, _currentCoordSystem.dataXMax);
-    final clampedDataY = dataY.clamp(_currentCoordSystem.dataYMin, _currentCoordSystem.dataYMax);
+    final clampedDataX = dataX.clamp(
+      _currentCoordSystem.dataXMin,
+      _currentCoordSystem.dataXMax,
+    );
+    final clampedDataY = dataY.clamp(
+      _currentCoordSystem.dataYMin,
+      _currentCoordSystem.dataYMax,
+    );
 
     final clampedPosition = Offset(
       _currentCoordSystem.dataXToScreenX(clampedDataX),
@@ -220,7 +233,10 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
     );
 
     // Find nearest point at clamped position
-    final nearestPoint = _interactionHandler?.findNearestPoint(_allDataPoints, clampedPosition);
+    final nearestPoint = _interactionHandler?.findNearestPoint(
+      _allDataPoints,
+      clampedPosition,
+    );
 
     if (nearestPoint != null && config.crosshairBehavior.snapToDataPoint) {
       // Snap crosshair to nearest point
@@ -296,7 +312,10 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
   void handlePointerHover(PointerHoverEvent event) {
     if (!config.enableTooltip) return;
 
-    final point = _interactionHandler?.findNearestPoint(_allDataPoints, event.localPosition);
+    final point = _interactionHandler?.findNearestPoint(
+      _allDataPoints,
+      event.localPosition,
+    );
 
     if (point != null) {
       _showTooltipWithDelay(point, event.localPosition, false);
@@ -322,7 +341,9 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
         return;
       }
 
-      final scaleFactor = _interactionHandler!.calculateMouseWheelZoom(event.scrollDelta.dy);
+      final scaleFactor = _interactionHandler!.calculateMouseWheelZoom(
+        event.scrollDelta.dy,
+      );
 
       // Apply zoom
       _applyZoom(scaleFactor, event.localPosition);
@@ -389,19 +410,31 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
 
       case FusionTooltipTrackballMode.follow:
         // Follow mode: always show nearest point by Euclidean distance
-        targetPoint = _interactionHandler?.findNearestPoint(_allDataPoints, position);
+        targetPoint = _interactionHandler?.findNearestPoint(
+          _allDataPoints,
+          position,
+        );
 
       case FusionTooltipTrackballMode.snapToX:
         // Snap to X: find point with closest X coordinate (ideal for line charts)
-        targetPoint = _interactionHandler?.findNearestPointByX(_allDataPoints, position);
+        targetPoint = _interactionHandler?.findNearestPointByX(
+          _allDataPoints,
+          position,
+        );
 
       case FusionTooltipTrackballMode.snapToY:
         // Snap to Y: find point with closest Y coordinate
-        targetPoint = _interactionHandler?.findNearestPointByY(_allDataPoints, position);
+        targetPoint = _interactionHandler?.findNearestPointByY(
+          _allDataPoints,
+          position,
+        );
 
       case FusionTooltipTrackballMode.snap:
         // Snap mode: only update if within snap radius, otherwise keep last point
-        final nearest = _interactionHandler?.findNearestPoint(_allDataPoints, position);
+        final nearest = _interactionHandler?.findNearestPoint(
+          _allDataPoints,
+          position,
+        );
         if (nearest != null) {
           final screenPos = _currentCoordSystem.dataToScreen(nearest);
           final distance = (screenPos - position).distance;
@@ -426,7 +459,11 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
 
     if (targetPoint != null) {
       _lastTrackballPosition = position;
-      _updateTooltipPosition(targetPoint, position, magneticOffset: magneticOffset);
+      _updateTooltipPosition(
+        targetPoint,
+        position,
+        magneticOffset: magneticOffset,
+      );
     }
   }
 
@@ -434,8 +471,13 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
   ///
   /// Returns both the target point and an optional magnetic offset
   /// for smooth visual interpolation.
-  ({FusionDataPoint? point, Offset? magneticOffset}) _findMagneticTarget(Offset position) {
-    final nearest = _interactionHandler?.findNearestPoint(_allDataPoints, position);
+  ({FusionDataPoint? point, Offset? magneticOffset}) _findMagneticTarget(
+    Offset position,
+  ) {
+    final nearest = _interactionHandler?.findNearestPoint(
+      _allDataPoints,
+      position,
+    );
 
     if (nearest == null) return (point: null, magneticOffset: null);
 
@@ -463,15 +505,22 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
     return (point: nearest, magneticOffset: null);
   }
 
-  void _updateTooltipPosition(FusionDataPoint point, Offset position, {Offset? magneticOffset}) {
+  void _updateTooltipPosition(
+    FusionDataPoint point,
+    Offset position, {
+    Offset? magneticOffset,
+  }) {
     final seriesInfo = _findSeriesForPoint(point);
 
     // Use magnetic offset for marker position if provided,
     // otherwise snap to exact data point position
-    final effectiveScreenPosition = magneticOffset ?? _currentCoordSystem.dataToScreen(point);
+    final effectiveScreenPosition =
+        magneticOffset ?? _currentCoordSystem.dataToScreen(point);
 
     // Find shared points if shared tooltip is enabled
-    final sharedPoints = config.tooltipBehavior.shared ? _findPointsAtSameX(point) : null;
+    final sharedPoints = config.tooltipBehavior.shared
+        ? _findPointsAtSameX(point)
+        : null;
 
     _tooltipData = TooltipRenderData(
       point: point,
@@ -490,7 +539,11 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
   // TOOLTIP SHOW/HIDE
   // ==========================================================================
 
-  void _showTooltipWithDelay(FusionDataPoint point, Offset position, bool wasLongPress) {
+  void _showTooltipWithDelay(
+    FusionDataPoint point,
+    Offset position,
+    bool wasLongPress,
+  ) {
     final delay = config.tooltipBehavior.activationDelay;
 
     if (delay == Duration.zero) {
@@ -505,7 +558,11 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
     }
   }
 
-  void _showTooltipEnhanced(FusionDataPoint point, Offset position, bool wasLongPress) {
+  void _showTooltipEnhanced(
+    FusionDataPoint point,
+    Offset position,
+    bool wasLongPress,
+  ) {
     _tooltipHideTimer?.cancel();
 
     if (config.tooltipBehavior.hapticFeedback) {
@@ -515,7 +572,9 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
     final seriesInfo = _findSeriesForPoint(point);
 
     // Find shared points if shared tooltip is enabled
-    final sharedPoints = config.tooltipBehavior.shared ? _findPointsAtSameX(point) : null;
+    final sharedPoints = config.tooltipBehavior.shared
+        ? _findPointsAtSameX(point)
+        : null;
 
     _tooltipData = TooltipRenderData(
       point: point,
@@ -559,7 +618,9 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
     final seriesInfo = _findSeriesForPoint(point);
 
     // Find shared points if shared tooltip is enabled
-    final sharedPoints = config.tooltipBehavior.shared ? _findPointsAtSameX(point) : null;
+    final sharedPoints = config.tooltipBehavior.shared
+        ? _findPointsAtSameX(point)
+        : null;
 
     _tooltipData = TooltipRenderData(
       point: point,
@@ -787,13 +848,17 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
 
     if (config.enableTooltip || config.enableSelection) {
       recognizers[TapGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(TapGestureRecognizer.new, (
-            recognizer,
-          ) {
-            recognizer.onTapDown = (details) {
-              _interactionHandler?.handleTapDown(details.localPosition, _allDataPoints);
-            };
-          });
+          GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
+            TapGestureRecognizer.new,
+            (recognizer) {
+              recognizer.onTapDown = (details) {
+                _interactionHandler?.handleTapDown(
+                  details.localPosition,
+                  _allDataPoints,
+                );
+              };
+            },
+          );
     }
 
     if (config.enableCrosshair) {
@@ -803,7 +868,10 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
             (recognizer) {
               recognizer
                 ..onLongPressStart = (details) {
-                  _interactionHandler?.handleLongPress(details.localPosition, _allDataPoints);
+                  _interactionHandler?.handleLongPress(
+                    details.localPosition,
+                    _allDataPoints,
+                  );
                 }
                 ..onLongPressMoveUpdate = (details) {
                   // Update crosshair position during drag
@@ -832,77 +900,91 @@ class FusionInteractiveChartState extends ChangeNotifier implements FusionIntera
     // Use ScaleGestureRecognizer when both zoom and pan are enabled (handles pinch + drag)
     if (config.enableZoom && config.enablePanning) {
       recognizers[ScaleGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(ScaleGestureRecognizer.new, (
-            recognizer,
-          ) {
-            recognizer
-              ..onStart = (details) {
-                _interactionHandler?.handleScaleStart(details.localFocalPoint);
-              }
-              ..onUpdate = (details) {
-                // Scale == 1.0 means no pinch, just pan
-                if (details.scale == 1.0) {
-                  // This is a pan gesture disguised as scale
-                  if (!_isPanning) {
-                    _handlePanStart(details.localFocalPoint);
+          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
+            ScaleGestureRecognizer.new,
+            (recognizer) {
+              recognizer
+                ..onStart = (details) {
+                  _interactionHandler?.handleScaleStart(
+                    details.localFocalPoint,
+                  );
+                }
+                ..onUpdate = (details) {
+                  // Scale == 1.0 means no pinch, just pan
+                  if (details.scale == 1.0) {
+                    // This is a pan gesture disguised as scale
+                    if (!_isPanning) {
+                      _handlePanStart(details.localFocalPoint);
+                    }
+                    // Calculate delta from focal point movement
+                    if (_lastPointerPosition != null) {
+                      final delta =
+                          details.localFocalPoint - _lastPointerPosition!;
+                      _handlePanUpdate(delta);
+                    }
+                    _lastPointerPosition = details.localFocalPoint;
+                  } else {
+                    // Actual pinch zoom
+                    _interactionHandler?.handleScaleUpdate(
+                      details.scale,
+                      details.localFocalPoint,
+                    );
                   }
-                  // Calculate delta from focal point movement
-                  if (_lastPointerPosition != null) {
-                    final delta = details.localFocalPoint - _lastPointerPosition!;
-                    _handlePanUpdate(delta);
+                }
+                ..onEnd = (details) {
+                  if (_isPanning) {
+                    _handlePanEnd();
                   }
-                  _lastPointerPosition = details.localFocalPoint;
-                } else {
-                  // Actual pinch zoom
-                  _interactionHandler?.handleScaleUpdate(details.scale, details.localFocalPoint);
-                }
-              }
-              ..onEnd = (details) {
-                if (_isPanning) {
-                  _handlePanEnd();
-                }
-                if (_isZooming) {
-                  _interactionHandler?.handleScaleEnd();
-                }
-                _lastPointerPosition = null;
-              };
-          });
+                  if (_isZooming) {
+                    _interactionHandler?.handleScaleEnd();
+                  }
+                  _lastPointerPosition = null;
+                };
+            },
+          );
     } else if (config.enablePanning) {
       // Pan only - use PanGestureRecognizer
       recognizers[PanGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(PanGestureRecognizer.new, (
-            recognizer,
-          ) {
-            recognizer
-              ..onStart = (details) {
-                _interactionHandler?.handlePanStart(details.localPosition);
-              }
-              ..onUpdate = (details) {
-                _interactionHandler?.handlePanUpdate(details.delta);
-              }
-              ..onEnd = (details) {
-                _interactionHandler?.handlePanEnd();
-              };
-          });
+          GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(
+            PanGestureRecognizer.new,
+            (recognizer) {
+              recognizer
+                ..onStart = (details) {
+                  _interactionHandler?.handlePanStart(details.localPosition);
+                }
+                ..onUpdate = (details) {
+                  _interactionHandler?.handlePanUpdate(details.delta);
+                }
+                ..onEnd = (details) {
+                  _interactionHandler?.handlePanEnd();
+                };
+            },
+          );
     } else if (config.enableZoom) {
       // Zoom only - use ScaleGestureRecognizer for pinch
       recognizers[ScaleGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(ScaleGestureRecognizer.new, (
-            recognizer,
-          ) {
-            recognizer
-              ..onStart = (details) {
-                _interactionHandler?.handleScaleStart(details.localFocalPoint);
-              }
-              ..onUpdate = (details) {
-                if (details.scale != 1.0) {
-                  _interactionHandler?.handleScaleUpdate(details.scale, details.localFocalPoint);
+          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
+            ScaleGestureRecognizer.new,
+            (recognizer) {
+              recognizer
+                ..onStart = (details) {
+                  _interactionHandler?.handleScaleStart(
+                    details.localFocalPoint,
+                  );
                 }
-              }
-              ..onEnd = (details) {
-                _interactionHandler?.handleScaleEnd();
-              };
-          });
+                ..onUpdate = (details) {
+                  if (details.scale != 1.0) {
+                    _interactionHandler?.handleScaleUpdate(
+                      details.scale,
+                      details.localFocalPoint,
+                    );
+                  }
+                }
+                ..onEnd = (details) {
+                  _interactionHandler?.handleScaleEnd();
+                };
+            },
+          );
     }
 
     return recognizers;

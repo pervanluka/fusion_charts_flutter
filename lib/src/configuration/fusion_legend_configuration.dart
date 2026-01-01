@@ -153,7 +153,11 @@ class FusionLegendConfiguration {
   /// Gets the effective text style.
   TextStyle getEffectiveTextStyle(BuildContext context) {
     return textStyle ??
-        const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xFF666666));
+        const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+          color: Color(0xFF666666),
+        );
   }
 
   // ==========================================================================
@@ -206,7 +210,8 @@ class FusionLegendConfiguration {
   }
 
   @override
-  String toString() => 'FusionLegendConfiguration(visible: $visible, position: $position)';
+  String toString() =>
+      'FusionLegendConfiguration(visible: $visible, position: $position)';
 }
 
 // ==========================================================================

@@ -6,8 +6,11 @@ import 'fusion_render_layer.dart';
 
 /// Renders crosshair indicator on charts.
 class FusionCrosshairLayer extends FusionRenderLayer {
-  FusionCrosshairLayer({required this.crosshairConfig, required this.position, this.snappedPoint})
-    : super(name: 'crosshair', zIndex: 900);
+  FusionCrosshairLayer({
+    required this.crosshairConfig,
+    required this.position,
+    this.snappedPoint,
+  }) : super(name: 'crosshair', zIndex: 900);
 
   /// Crosshair configuration.
   final FusionCrosshairConfiguration crosshairConfig;
@@ -22,7 +25,8 @@ class FusionCrosshairLayer extends FusionRenderLayer {
   void paint(Canvas canvas, Size size, FusionRenderContext context) {
     if (!crosshairConfig.enabled || position == null) return;
 
-    final actualPosition = snappedPoint != null && crosshairConfig.snapToDataPoint
+    final actualPosition =
+        snappedPoint != null && crosshairConfig.snapToDataPoint
         ? context.coordSystem.dataToScreen(snappedPoint!)
         : position!;
 
@@ -79,7 +83,13 @@ class FusionCrosshairLayer extends FusionRenderLayer {
     }
   }
 
-  void _paintLine(Canvas canvas, Offset start, Offset end, Paint paint, List<double>? dashArray) {
+  void _paintLine(
+    Canvas canvas,
+    Offset start,
+    Offset end,
+    Paint paint,
+    List<double>? dashArray,
+  ) {
     if (dashArray == null || dashArray.isEmpty) {
       // Solid line
       canvas.drawLine(start, end, paint);
@@ -108,7 +118,10 @@ class FusionCrosshairLayer extends FusionRenderLayer {
 
     for (int i = 0; i < dashCount * 2; i++) {
       final dashLength = dashArray[i % 2];
-      final nextDistance = (currentDistance + dashLength).clamp(0.0, lineLength);
+      final nextDistance = (currentDistance + dashLength).clamp(
+        0.0,
+        lineLength,
+      );
 
       if (drawDash) {
         final t1 = currentDistance / lineLength;
@@ -136,7 +149,8 @@ class FusionCrosshairLayer extends FusionRenderLayer {
     FusionRenderContext context,
   ) {
     // Use config style, or fall back to theme's axis label style
-    final textStyle = crosshairConfig.labelTextStyle ?? 
+    final textStyle =
+        crosshairConfig.labelTextStyle ??
         context.theme.axisLabelStyle.copyWith(
           color: Colors.white,
           fontWeight: FontWeight.w500,
@@ -149,7 +163,8 @@ class FusionCrosshairLayer extends FusionRenderLayer {
     textPainter.layout();
 
     final padding = crosshairConfig.labelPadding;
-    final bgColor = crosshairConfig.labelBackgroundColor ?? context.theme.primaryColor;
+    final bgColor =
+        crosshairConfig.labelBackgroundColor ?? context.theme.primaryColor;
 
     // Calculate label rect
     Rect labelRect;
@@ -163,7 +178,10 @@ class FusionCrosshairLayer extends FusionRenderLayer {
         textPainter.width + padding.horizontal,
         textPainter.height + padding.vertical,
       );
-      textOffset = Offset(labelRect.left + padding.left, labelRect.top + padding.top);
+      textOffset = Offset(
+        labelRect.left + padding.left,
+        labelRect.top + padding.top,
+      );
     } else {
       // Left Y-axis label
       labelRect = Rect.fromLTWH(
@@ -172,12 +190,18 @@ class FusionCrosshairLayer extends FusionRenderLayer {
         textPainter.width + padding.horizontal,
         textPainter.height + padding.vertical,
       );
-      textOffset = Offset(labelRect.left + padding.left, labelRect.top + padding.top);
+      textOffset = Offset(
+        labelRect.left + padding.left,
+        labelRect.top + padding.top,
+      );
     }
 
     // Draw label background
     canvas.drawRRect(
-      RRect.fromRectAndRadius(labelRect, Radius.circular(crosshairConfig.labelBorderRadius)),
+      RRect.fromRectAndRadius(
+        labelRect,
+        Radius.circular(crosshairConfig.labelBorderRadius),
+      ),
       Paint()..color = bgColor,
     );
 
@@ -187,6 +211,7 @@ class FusionCrosshairLayer extends FusionRenderLayer {
 
   @override
   bool shouldRepaint(covariant FusionCrosshairLayer oldLayer) {
-    return position != oldLayer.position || snappedPoint != oldLayer.snappedPoint;
+    return position != oldLayer.position ||
+        snappedPoint != oldLayer.snappedPoint;
   }
 }

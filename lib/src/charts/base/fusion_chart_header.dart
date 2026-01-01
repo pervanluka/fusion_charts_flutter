@@ -43,7 +43,11 @@ class FusionChartTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: padding,
-      child: Text(title, style: style ?? theme.titleStyle, textAlign: textAlign),
+      child: Text(
+        title,
+        style: style ?? theme.titleStyle,
+        textAlign: textAlign,
+      ),
     );
   }
 }
@@ -90,7 +94,11 @@ class FusionChartSubtitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: padding,
-      child: Text(subtitle, style: style ?? theme.subtitleStyle, textAlign: textAlign),
+      child: Text(
+        subtitle,
+        style: style ?? theme.subtitleStyle,
+        textAlign: textAlign,
+      ),
     );
   }
 }

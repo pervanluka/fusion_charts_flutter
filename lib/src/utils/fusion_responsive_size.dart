@@ -36,10 +36,12 @@ class FusionResponsiveSize {
   double get pixelRatio => MediaQuery.of(context).devicePixelRatio;
 
   /// Checks if the device is in portrait orientation.
-  bool get isPortrait => MediaQuery.of(context).orientation == Orientation.portrait;
+  bool get isPortrait =>
+      MediaQuery.of(context).orientation == Orientation.portrait;
 
   /// Checks if the device is in landscape orientation.
-  bool get isLandscape => MediaQuery.of(context).orientation == Orientation.landscape;
+  bool get isLandscape =>
+      MediaQuery.of(context).orientation == Orientation.landscape;
 
   // ==========================================================================
   // DEVICE TYPE DETECTION

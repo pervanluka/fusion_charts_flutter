@@ -157,17 +157,12 @@ class PieTooltipData extends FusionTooltipDataBase {
   }
 
   @override
-  int get hashCode => Object.hash(
-        index,
-        value,
-        percentage,
-        label,
-        color,
-        screenPosition,
-      );
+  int get hashCode =>
+      Object.hash(index, value, percentage, label, color, screenPosition);
 
   @override
-  String toString() => 'PieTooltipData('
+  String toString() =>
+      'PieTooltipData('
       'index: $index, '
       'label: $label, '
       'percentage: ${percentage.toStringAsFixed(1)}%)';

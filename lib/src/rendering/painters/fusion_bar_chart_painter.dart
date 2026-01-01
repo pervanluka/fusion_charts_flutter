@@ -155,7 +155,8 @@ class FusionBarChartPainter extends CustomPainter {
     // Get bar-specific config, use defaults if base config provided
     final enableSideBySide =
         config is! FusionBarChartConfiguration ||
-        (config! as FusionBarChartConfiguration).enableSideBySideSeriesPlacement;
+        (config! as FusionBarChartConfiguration)
+            .enableSideBySideSeriesPlacement;
 
     return FusionRenderPipeline(
       layers: [
@@ -163,7 +164,8 @@ class FusionBarChartPainter extends CustomPainter {
         FusionBackgroundLayer(color: theme.backgroundColor),
 
         // Layer 10: Grid (if enabled)
-        if (effectiveConfig.enableGrid) FusionGridLayer(showHorizontal: true, showVertical: true),
+        if (effectiveConfig.enableGrid)
+          FusionGridLayer(showHorizontal: true, showVertical: true),
 
         // Layer 50: Series (BARS)
         FusionSeriesLayer(
@@ -178,7 +180,8 @@ class FusionBarChartPainter extends CustomPainter {
           FusionDataLabelLayer(series: series.cast<SeriesWithDataPoints>()),
 
         // Layer 90: Axes (if enabled)
-        if (effectiveConfig.enableAxis) FusionAxisLayer(showXAxis: true, showYAxis: true),
+        if (effectiveConfig.enableAxis)
+          FusionAxisLayer(showXAxis: true, showYAxis: true),
 
         // Layer 95: Border (if enabled)
         if (effectiveConfig.enableBorder) FusionBorderLayer(),
@@ -254,7 +257,9 @@ class FusionBarChartPainter extends CustomPainter {
         return p.label!;
       }
       // Use x value as label (format nicely)
-      return p.x == p.x.roundToDouble() ? p.x.round().toString() : p.x.toString();
+      return p.x == p.x.roundToDouble()
+          ? p.x.round().toString()
+          : p.x.toString();
     }).toList();
 
     return FusionCategoryAxis(categories: categories);
@@ -280,7 +285,10 @@ class FusionBarChartPainter extends CustomPainter {
 
   /// Calculates data bounds from all visible series.
   Rect _calculateDataBounds() {
-    final allPoints = series.where((s) => s.visible).expand((s) => s.dataPoints).toList();
+    final allPoints = series
+        .where((s) => s.visible)
+        .expand((s) => s.dataPoints)
+        .toList();
 
     if (allPoints.isEmpty) {
       return Rect.fromLTRB(0, 0, 10, 100);

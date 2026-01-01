@@ -1,7 +1,11 @@
 /// Arguments passed to custom axis label rendering callbacks.
 class AxisLabelRenderArgs {
   /// Creates axis label render arguments.
-  const AxisLabelRenderArgs({required this.text, required this.value, required this.index});
+  const AxisLabelRenderArgs({
+    required this.text,
+    required this.value,
+    required this.index,
+  });
 
   /// The label text to render.
   final String text;

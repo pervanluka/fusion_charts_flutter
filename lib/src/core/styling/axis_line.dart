@@ -7,7 +7,7 @@ class AxisLine {
   final double width;
   final Color? color;
 
-  /// Dash pattern [dashLength, gapLength]
-  /// Example: [5, 3] creates a dashed line
+  /// Dash pattern `[dashLength, gapLength]`
+  /// Example: `[5, 3]` creates a dashed line
   final List<double>? dashArray;
 }

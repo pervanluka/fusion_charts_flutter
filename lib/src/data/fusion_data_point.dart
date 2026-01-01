@@ -96,7 +96,12 @@ class FusionDataPoint {
   /// final modified = original.copyWith(y: 15);
   /// // modified has x=0, y=15
   /// ```
-  FusionDataPoint copyWith({double? x, double? y, String? label, Map<String, dynamic>? metadata}) {
+  FusionDataPoint copyWith({
+    double? x,
+    double? y,
+    String? label,
+    Map<String, dynamic>? metadata,
+  }) {
     return FusionDataPoint(
       x ?? this.x,
       y ?? this.y,
@@ -107,8 +112,8 @@ class FusionDataPoint {
 
   /// Linearly interpolates between two data points.
   ///
-  /// Returns a new point that is [t] percent of the way from [this]
-  /// to [other]. When [t] is 0.0, returns [this]. When [t] is 1.0,
+  /// Returns a new point that is `t` percent of the way from this point
+  /// to `other`. When `t` is 0.0, returns this point. When `t` is 1.0,
   /// returns [other]. Values between 0.0 and 1.0 interpolate linearly.
   ///
   /// Used internally for animations and smooth transitions.
@@ -132,7 +137,7 @@ class FusionDataPoint {
   ///
   /// Returns the straight-line distance between this point and [other].
   ///
-  /// Formula: √[(x₂-x₁)² + (y₂-y₁)²]
+  /// Formula: `√((x₂-x₁)² + (y₂-y₁)²)`
   ///
   /// Example:
   /// ```dart
@@ -223,7 +228,12 @@ extension FusionDataPointListExtensions on List<FusionDataPoint> {
   ///
   /// Returns a new list containing only points within the specified bounds.
   /// Useful for viewport culling.
-  List<FusionDataPoint> filterByBounds(double minX, double maxX, double minY, double maxY) {
+  List<FusionDataPoint> filterByBounds(
+    double minX,
+    double maxX,
+    double minY,
+    double maxY,
+  ) {
     return where((p) => p.isWithinBounds(minX, maxX, minY, maxY)).toList();
   }
 
@@ -291,13 +301,19 @@ class FusionDataPointHelper {
     if (count <= 0) return [];
     if (count == 1) {
       final x = startX;
-      return [FusionDataPoint(x, yValueGenerator(x), label: labelGenerator?.call(x))];
+      return [
+        FusionDataPoint(x, yValueGenerator(x), label: labelGenerator?.call(x)),
+      ];
     }
 
     final step = (endX - startX) / (count - 1);
     return List.generate(count, (index) {
       final x = startX + (step * index);
-      return FusionDataPoint(x, yValueGenerator(x), label: labelGenerator?.call(x));
+      return FusionDataPoint(
+        x,
+        yValueGenerator(x),
+        label: labelGenerator?.call(x),
+      );
     });
   }
 
@@ -316,14 +332,21 @@ class FusionDataPointHelper {
     List<double> yValues, {
     List<String>? labels,
   }) {
-    assert(xValues.length == yValues.length, 'xValues and yValues must have the same length');
+    assert(
+      xValues.length == yValues.length,
+      'xValues and yValues must have the same length',
+    );
     assert(
       labels == null || labels.length == xValues.length,
       'labels must have the same length as xValues and yValues',
     );
 
     return List.generate(xValues.length, (index) {
-      return FusionDataPoint(xValues[index], yValues[index], label: labels?[index]);
+      return FusionDataPoint(
+        xValues[index],
+        yValues[index],
+        label: labels?[index],
+      );
     });
   }
 

@@ -60,13 +60,15 @@ class FusionBarChartData {
   // ==========================================================================
 
   /// Gets all visible series.
-  List<FusionBarSeries> get visibleSeries => series.where((s) => s.visible).toList();
+  List<FusionBarSeries> get visibleSeries =>
+      series.where((s) => s.visible).toList();
 
   /// Checks if any series is visible.
   bool get hasVisibleSeries => visibleSeries.isNotEmpty;
 
   /// Gets the total number of data points across all visible series.
-  int get totalDataPoints => visibleSeries.fold(0, (sum, s) => sum + s.dataPoints.length);
+  int get totalDataPoints =>
+      visibleSeries.fold(0, (sum, s) => sum + s.dataPoints.length);
 
   /// Gets the minimum Y value across all visible series.
   double? get minY {
@@ -108,5 +110,6 @@ class FusionBarChartData {
   }
 
   @override
-  String toString() => 'FusionBarChartData(series: ${series.length}, title: $title)';
+  String toString() =>
+      'FusionBarChartData(series: ${series.length}, title: $title)';
 }

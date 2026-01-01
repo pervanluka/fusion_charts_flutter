@@ -147,7 +147,8 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
     return FusionStackedBarChartConfiguration(
       theme: config?.theme,
       tooltipBehavior: config?.tooltipBehavior ?? const FusionTooltipBehavior(),
-      crosshairBehavior: config?.crosshairBehavior ?? const FusionCrosshairConfiguration(),
+      crosshairBehavior:
+          config?.crosshairBehavior ?? const FusionCrosshairConfiguration(),
       zoomBehavior: config?.zoomBehavior ?? const FusionZoomConfiguration(),
       panBehavior: config?.panBehavior ?? const FusionPanConfiguration(),
       enableAnimation: config?.enableAnimation ?? true,
@@ -177,7 +178,9 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
     final config = _stackedConfig;
 
     _animationController = AnimationController(
-      duration: config.enableAnimation ? config.effectiveAnimationDuration : Duration.zero,
+      duration: config.enableAnimation
+          ? config.effectiveAnimationDuration
+          : Duration.zero,
       vsync: this,
     );
 
@@ -270,7 +273,8 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
   void didUpdateWidget(FusionStackedBarChart oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.series != oldWidget.series || widget.config != oldWidget.config) {
+    if (widget.series != oldWidget.series ||
+        widget.config != oldWidget.config) {
       _cachedSize = null;
       _cachedSeriesHash = null;
 
@@ -303,14 +307,18 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (title != null) FusionChartTitle(title: title, theme: theme),
-          if (subtitle != null) FusionChartSubtitle(subtitle: subtitle, theme: theme),
+          if (subtitle != null)
+            FusionChartSubtitle(subtitle: subtitle, theme: theme),
           Expanded(
             child: AnimatedBuilder(
               animation: _animation,
               builder: (context, child) {
                 return LayoutBuilder(
                   builder: (context, constraints) {
-                    final size = Size(constraints.maxWidth, constraints.maxHeight);
+                    final size = Size(
+                      constraints.maxWidth,
+                      constraints.maxHeight,
+                    );
                     _updateCoordinateSystem(size);
 
                     if (_coordSystem != null) {
@@ -360,7 +368,11 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
                         children: [
                           chartWidget,
                           if (_interactiveState.tooltipData != null)
-                            _buildCustomTooltip(context, _interactiveState.tooltipData!, config),
+                            _buildCustomTooltip(
+                              context,
+                              _interactiveState.tooltipData!,
+                              config,
+                            ),
                         ],
                       );
                     }
@@ -409,20 +421,27 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
     return Positioned(
       left: data.screenPosition.dx,
       top: data.screenPosition.dy,
-      child: FractionalTranslation(translation: const Offset(-0.5, -1.1), child: customWidget),
+      child: FractionalTranslation(
+        translation: const Offset(-0.5, -1.1),
+        child: customWidget,
+      ),
     );
   }
 
   void _updateCoordinateSystem(Size size) {
     final seriesHash = _calculateSeriesHash();
 
-    if (_cachedSize == size && _cachedSeriesHash == seriesHash && _coordSystem != null) {
+    if (_cachedSize == size &&
+        _cachedSeriesHash == seriesHash &&
+        _coordSystem != null) {
       return;
     }
 
     final config = _stackedConfig;
 
-    final pointCount = widget.series.isNotEmpty ? widget.series.first.dataPoints.length : 1;
+    final pointCount = widget.series.isNotEmpty
+        ? widget.series.first.dataPoints.length
+        : 1;
 
     // Coordinate system uses -0.5 to pointCount-0.5 for bar centering
     const minX = -0.5;

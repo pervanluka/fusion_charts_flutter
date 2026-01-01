@@ -15,7 +15,7 @@ class BarHitTestResult {
   });
 
   final FusionDataPoint point;
-  final int pointIndex;  // Index in the series (for category positioning)
+  final int pointIndex; // Index in the series (for category positioning)
   final int seriesIndex;
   final String seriesName;
   final Color seriesColor;
@@ -57,10 +57,18 @@ class FusionBarHitTester {
 
     // Test each bar in each series
     // Go in reverse order so topmost bars (rendered last) are tested first
-    for (int seriesIndex = visibleSeries.length - 1; seriesIndex >= 0; seriesIndex--) {
+    for (
+      int seriesIndex = visibleSeries.length - 1;
+      seriesIndex >= 0;
+      seriesIndex--
+    ) {
       final series = visibleSeries[seriesIndex];
 
-      for (int pointIndex = 0; pointIndex < series.dataPoints.length; pointIndex++) {
+      for (
+        int pointIndex = 0;
+        pointIndex < series.dataPoints.length;
+        pointIndex++
+      ) {
         final point = series.dataPoints[pointIndex];
 
         final barRect = _calculateBarRect(
@@ -113,10 +121,18 @@ class FusionBarHitTester {
       enableSideBySideSeriesPlacement: enableSideBySideSeriesPlacement,
     );
 
-    for (int seriesIndex = 0; seriesIndex < visibleSeries.length; seriesIndex++) {
+    for (
+      int seriesIndex = 0;
+      seriesIndex < visibleSeries.length;
+      seriesIndex++
+    ) {
       final series = visibleSeries[seriesIndex];
 
-      for (int pointIndex = 0; pointIndex < series.dataPoints.length; pointIndex++) {
+      for (
+        int pointIndex = 0;
+        pointIndex < series.dataPoints.length;
+        pointIndex++
+      ) {
         final point = series.dataPoints[pointIndex];
 
         final barRect = _calculateBarRect(
@@ -210,7 +226,9 @@ class FusionBarHitTester {
     required int pointCount,
     required bool enableSideBySideSeriesPlacement,
   }) {
-    final seriesCount = enableSideBySideSeriesPlacement ? visibleSeries.length : 1;
+    final seriesCount = enableSideBySideSeriesPlacement
+        ? visibleSeries.length
+        : 1;
     final totalWidth = chartArea.width;
     final categoryWidth = totalWidth / pointCount;
     final categorySpacing = categoryWidth * 0.1;
@@ -228,7 +246,8 @@ class FusionBarHitTester {
       barSpacing = 0;
     } else {
       final spacing = visibleSeries.first.spacing;
-      final totalSpacingSpace = groupWidth * spacing * (seriesCount - 1) / seriesCount;
+      final totalSpacingSpace =
+          groupWidth * spacing * (seriesCount - 1) / seriesCount;
       final availableBarSpace = groupWidth - totalSpacingSpace;
       barWidth = (availableBarSpace / seriesCount) * barWidthRatio;
       barSpacing = seriesCount > 1 ? totalSpacingSpace / (seriesCount - 1) : 0;
@@ -300,7 +319,8 @@ class FusionBarHitTester {
 
       if (totalSeriesCount > 1 && enableSideBySideSeriesPlacement) {
         final totalGroupWidth =
-            totalSeriesCount * layout.barWidth + (totalSeriesCount - 1) * layout.barSpacing;
+            totalSeriesCount * layout.barWidth +
+            (totalSeriesCount - 1) * layout.barSpacing;
         final groupStartX = barCenterX - (totalGroupWidth / 2);
         final barOffset = seriesIndex * (layout.barWidth + layout.barSpacing);
         barCenterX = groupStartX + barOffset + (layout.barWidth / 2);
@@ -310,7 +330,8 @@ class FusionBarHitTester {
 
       if (totalSeriesCount > 1 && enableSideBySideSeriesPlacement) {
         final totalGroupWidth =
-            totalSeriesCount * layout.barWidth + (totalSeriesCount - 1) * layout.barSpacing;
+            totalSeriesCount * layout.barWidth +
+            (totalSeriesCount - 1) * layout.barSpacing;
         final groupStartX = barCenterX - (totalGroupWidth / 2);
         final barOffset = seriesIndex * (layout.barWidth + layout.barSpacing);
         barCenterX = groupStartX + barOffset + (layout.barWidth / 2);
@@ -350,7 +371,8 @@ class FusionBarHitTester {
 
       if (totalSeriesCount > 1 && enableSideBySideSeriesPlacement) {
         final totalGroupWidth =
-            totalSeriesCount * layout.barWidth + (totalSeriesCount - 1) * layout.barSpacing;
+            totalSeriesCount * layout.barWidth +
+            (totalSeriesCount - 1) * layout.barSpacing;
         final groupStartY = barCenterY - (totalGroupWidth / 2);
         final barOffset = seriesIndex * (layout.barWidth + layout.barSpacing);
         barCenterY = groupStartY + barOffset + (layout.barWidth / 2);
@@ -360,7 +382,8 @@ class FusionBarHitTester {
 
       if (totalSeriesCount > 1 && enableSideBySideSeriesPlacement) {
         final totalGroupWidth =
-            totalSeriesCount * layout.barWidth + (totalSeriesCount - 1) * layout.barSpacing;
+            totalSeriesCount * layout.barWidth +
+            (totalSeriesCount - 1) * layout.barSpacing;
         final groupStartY = barCenterY - (totalGroupWidth / 2);
         final barOffset = seriesIndex * (layout.barWidth + layout.barSpacing);
         barCenterY = groupStartY + barOffset + (layout.barWidth / 2);

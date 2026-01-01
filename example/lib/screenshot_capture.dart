@@ -47,7 +47,11 @@ class _ScreenshotPagesState extends State<ScreenshotPages> {
     BarChartShowcase(),
   ];
 
-  final List<String> _titles = ['Line Chart', 'Bar Chart (Grouped)', 'Bar Chart Showcase'];
+  final List<String> _titles = [
+    'Line Chart',
+    'Bar Chart (Grouped)',
+    'Bar Chart Showcase',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +68,10 @@ class _ScreenshotPagesState extends State<ScreenshotPages> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.show_chart), label: 'Line'),
           BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Bar'),
-          BottomNavigationBarItem(icon: Icon(Icons.auto_awesome), label: 'Showcase'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.auto_awesome),
+            label: 'Showcase',
+          ),
         ],
       ),
     );
@@ -87,7 +94,11 @@ class LineChartScreenshot extends StatelessWidget {
         children: [
           const Text(
             'Monthly Revenue Overview',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1F2937),
+            ),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -152,7 +163,16 @@ class LineChartScreenshot extends StatelessWidget {
               xAxis: FusionAxisConfiguration(
                 title: 'Month',
                 labelFormatter: (value) {
-                  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'];
+                  const months = [
+                    'Jan',
+                    'Feb',
+                    'Mar',
+                    'Apr',
+                    'May',
+                    'Jun',
+                    'Jul',
+                    'Aug',
+                  ];
                   final index = value.toInt();
                   if (index >= 0 && index < months.length) return months[index];
                   return '';
@@ -195,7 +215,11 @@ class BarChartScreenshot extends StatelessWidget {
         children: [
           const Text(
             'Quarterly Sales Report',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1F2937),
+            ),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -243,7 +267,8 @@ class BarChartScreenshot extends StatelessWidget {
                 labelFormatter: (value) {
                   const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
                   final index = value.toInt();
-                  if (index >= 0 && index < quarters.length) return quarters[index];
+                  if (index >= 0 && index < quarters.length)
+                    return quarters[index];
                   return '';
                 },
               ),
@@ -266,9 +291,21 @@ class BarChartScreenshot extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _StatCard(label: 'Total 2023', value: '\$300M', color: const Color(0xFF6366F1)),
-              _StatCard(label: 'Total 2024', value: '\$370M', color: const Color(0xFF10B981)),
-              _StatCard(label: 'Growth', value: '+23%', color: const Color(0xFFF59E0B)),
+              _StatCard(
+                label: 'Total 2023',
+                value: '\$300M',
+                color: const Color(0xFF6366F1),
+              ),
+              _StatCard(
+                label: 'Total 2024',
+                value: '\$370M',
+                color: const Color(0xFF10B981),
+              ),
+              _StatCard(
+                label: 'Growth',
+                value: '+23%',
+                color: const Color(0xFFF59E0B),
+              ),
             ],
           ),
         ],
@@ -294,7 +331,10 @@ class BarChartShowcase extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Section 1: Grouped Bars
-            _SectionTitle(title: '1. Grouped Bars', subtitle: 'Multiple series side-by-side'),
+            _SectionTitle(
+              title: '1. Grouped Bars',
+              subtitle: 'Multiple series side-by-side',
+            ),
             _ChartCard(
               child: SizedBox(
                 height: 250,
@@ -336,7 +376,10 @@ class BarChartShowcase extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Section 2: Overlapped Bars (Actual vs Target)
-            _SectionTitle(title: '2. Overlapped Bars', subtitle: 'Actual vs Target comparison'),
+            _SectionTitle(
+              title: '2. Overlapped Bars',
+              subtitle: 'Actual vs Target comparison',
+            ),
             _ChartCard(
               child: SizedBox(
                 height: 250,
@@ -405,7 +448,9 @@ class BarChartShowcase extends StatelessWidget {
                     ),
                   ],
                   config: const FusionChartConfiguration(enableAnimation: true),
-                  yAxis: FusionAxisConfiguration(labelFormatter: (value) => '${value.toInt()}%'),
+                  yAxis: FusionAxisConfiguration(
+                    labelFormatter: (value) => '${value.toInt()}%',
+                  ),
                 ),
               ),
             ),
@@ -413,7 +458,10 @@ class BarChartShowcase extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Section 4: Gradient Bars
-            _SectionTitle(title: '4. Gradient Bars', subtitle: 'Beautiful gradient fills'),
+            _SectionTitle(
+              title: '4. Gradient Bars',
+              subtitle: 'Beautiful gradient fills',
+            ),
             _ChartCard(
               child: SizedBox(
                 height: 250,
@@ -446,7 +494,10 @@ class BarChartShowcase extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Section 5: Stacked Bar Chart
-            _SectionTitle(title: '5. Stacked Bars', subtitle: 'Cumulative data visualization'),
+            _SectionTitle(
+              title: '5. Stacked Bars',
+              subtitle: 'Cumulative data visualization',
+            ),
             _ChartCard(
               child: SizedBox(
                 height: 280,
@@ -544,7 +595,9 @@ class BarChartShowcase extends StatelessWidget {
                     isStacked100: true,
                     enableAnimation: true,
                   ),
-                  yAxis: FusionAxisConfiguration(labelFormatter: (value) => '${value.toInt()}%'),
+                  yAxis: FusionAxisConfiguration(
+                    labelFormatter: (value) => '${value.toInt()}%',
+                  ),
                 ),
               ),
             ),
@@ -552,7 +605,10 @@ class BarChartShowcase extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Section 7: Styled Bars with Borders
-            _SectionTitle(title: '7. Styled Bars', subtitle: 'Custom borders and shadows'),
+            _SectionTitle(
+              title: '7. Styled Bars',
+              subtitle: 'Custom borders and shadows',
+            ),
             _ChartCard(
               child: SizedBox(
                 height: 250,
@@ -592,7 +648,9 @@ class BarChartShowcase extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -659,7 +717,10 @@ class _SectionTitle extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          Text(subtitle, style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280))),
+          Text(
+            subtitle,
+            style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+          ),
         ],
       ),
     );
@@ -705,7 +766,10 @@ class _LegendItem extends StatelessWidget {
         Container(
           width: 12,
           height: 12,
-          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3)),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(3),
+          ),
         ),
         const SizedBox(width: 6),
         Text(
@@ -726,7 +790,11 @@ class _StatCard extends StatelessWidget {
   final String value;
   final Color color;
 
-  const _StatCard({required this.label, required this.value, required this.color});
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -741,10 +809,17 @@ class _StatCard extends StatelessWidget {
         children: [
           Text(
             value,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
           const SizedBox(height: 2),
-          Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+          ),
         ],
       ),
     );
@@ -763,11 +838,17 @@ class _FeatureChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.5)),
+        border: Border.all(
+          color: const Color(0xFF6366F1).withValues(alpha: 0.5),
+        ),
       ),
       child: Text(
         label,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF6366F1)),
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: Color(0xFF6366F1),
+        ),
       ),
     );
   }

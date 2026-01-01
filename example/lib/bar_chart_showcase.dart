@@ -177,7 +177,9 @@ FusionBarChartConfiguration(
         actions: [
           IconButton(
             icon: const Icon(Icons.arrow_back_ios),
-            onPressed: _currentPage > 0 ? () => _goToPage(_currentPage - 1) : null,
+            onPressed: _currentPage > 0
+                ? () => _goToPage(_currentPage - 1)
+                : null,
           ),
           Center(
             child: Container(
@@ -212,7 +214,9 @@ FusionBarChartConfiguration(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               border: Border(
-                bottom: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+                bottom: BorderSide(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
               ),
             ),
             child: Column(
@@ -220,9 +224,9 @@ FusionBarChartConfiguration(
               children: [
                 Text(
                   _showcaseItems[_currentPage].title,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -566,9 +570,7 @@ Widget _buildNegativeValueBars() {
         borderRadius: 4.0,
       ),
     ],
-    config: const FusionBarChartConfiguration(
-      enableAnimation: true,
-    ),
+    config: const FusionBarChartConfiguration(enableAnimation: true),
   );
 }
 
@@ -590,9 +592,7 @@ Widget _buildDataLabelBars() {
         dataLabelFormatter: (value) => '\$${value.toStringAsFixed(0)}K',
       ),
     ],
-    config: const FusionBarChartConfiguration(
-      enableDataLabels: true,
-    ),
+    config: const FusionBarChartConfiguration(enableDataLabels: true),
   );
 }
 

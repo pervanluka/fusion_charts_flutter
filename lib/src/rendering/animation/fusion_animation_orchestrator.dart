@@ -127,7 +127,11 @@ class FusionAnimationOrchestrator {
   void stop() => controller.stop();
 
   /// Animates to a specific value.
-  TickerFuture animateTo(double target, {Duration? duration, Curve curve = Curves.linear}) {
+  TickerFuture animateTo(
+    double target, {
+    Duration? duration,
+    Curve curve = Curves.linear,
+  }) {
     return controller.animateTo(target, duration: duration, curve: curve);
   }
 
@@ -155,7 +159,8 @@ class FusionAnimationOrchestrator {
   void addListener(VoidCallback listener) => controller.addListener(listener);
 
   /// Removes a listener.
-  void removeListener(VoidCallback listener) => controller.removeListener(listener);
+  void removeListener(VoidCallback listener) =>
+      controller.removeListener(listener);
 
   /// Adds a status listener.
   void addStatusListener(AnimationStatusListener listener) {
@@ -191,8 +196,18 @@ class FusionAnimationOrchestrator {
   // ==========================================================================
 
   /// Repeats the animation.
-  TickerFuture repeat({double? min, double? max, bool reverse = false, Duration? period}) {
-    return controller.repeat(min: min, max: max, reverse: reverse, period: period);
+  TickerFuture repeat({
+    double? min,
+    double? max,
+    bool reverse = false,
+    Duration? period,
+  }) {
+    return controller.repeat(
+      min: min,
+      max: max,
+      reverse: reverse,
+      period: period,
+    );
   }
 
   /// Animates with spring physics.
@@ -306,7 +321,11 @@ class FusionStaggerAnimationBuilder {
       animations[entry.key] = Tween<double>(begin: 0.0, end: 1.0).animate(
         CurvedAnimation(
           parent: controller,
-          curve: Interval(spec.startInterval, spec.endInterval, curve: spec.curve),
+          curve: Interval(
+            spec.startInterval,
+            spec.endInterval,
+            curve: spec.curve,
+          ),
         ),
       );
     }

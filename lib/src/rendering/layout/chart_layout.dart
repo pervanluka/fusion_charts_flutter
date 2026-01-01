@@ -136,7 +136,10 @@ class ChartLayout {
 
   /// Converts screen coordinates to data point.
   Offset screenToData(Offset screenPoint) {
-    return Offset(screenXToDataX(screenPoint.dx), screenYToDataY(screenPoint.dy));
+    return Offset(
+      screenXToDataX(screenPoint.dx),
+      screenYToDataY(screenPoint.dy),
+    );
   }
 
   // ==========================================================================

@@ -46,9 +46,7 @@ void main() {
                 series: [
                   FusionLineSeries(
                     name: 'Single',
-                    dataPoints: [
-                      FusionDataPoint(0, 50),
-                    ],
+                    dataPoints: [FusionDataPoint(0, 50)],
                     color: Colors.blue,
                   ),
                 ],
@@ -214,9 +212,7 @@ void main() {
                     markerShape: MarkerShape.circle,
                   ),
                 ],
-                config: const FusionLineChartConfiguration(
-                  enableMarkers: true,
-                ),
+                config: const FusionLineChartConfiguration(enableMarkers: true),
               ),
             ),
           ),
@@ -245,9 +241,7 @@ void main() {
                     color: Colors.blue,
                   ),
                 ],
-                config: const FusionChartConfiguration(
-                  enableAnimation: false,
-                ),
+                config: const FusionChartConfiguration(enableAnimation: false),
               ),
             ),
           ),
