@@ -6,6 +6,7 @@ import 'pie_chart_showcase.dart';
 import 'line_chart_showcase.dart';
 import 'bar_chart_showcase.dart';
 import 'feature_highlights.dart';
+import 'label_generator_showcase.dart';
 
 void main() {
   runApp(const FusionChartsShowcaseApp());
@@ -234,6 +235,17 @@ class ShowcaseGalleryHome extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const FeatureHighlights()),
+                ),
+              ),
+              _ShowcaseCard(
+                title: 'Label Generator',
+                subtitle: 'v1.1 Custom Labels',
+                icon: Icons.label,
+                color: const Color(0xFFEC4899),
+                examples: '8 examples',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LabelGeneratorShowcase()),
                 ),
               ),
               _ShowcaseCard(

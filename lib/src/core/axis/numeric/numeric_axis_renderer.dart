@@ -268,8 +268,51 @@ class NumericAxisRenderer extends FusionAxisRenderer {
   // LABEL GENERATION
   // ==========================================================================
 
+  /// Stores the available size for the axis (set during measureAxisLabels).
+  double _availableSize = 0;
+
   @override
   List<AxisLabel> generateLabels(AxisBounds bounds) {
+    // Check if custom labelGenerator is provided
+    if (configuration.hasLabelGenerator) {
+      return _generateCustomLabels(bounds);
+    }
+
+    return _generateAutoLabels(bounds);
+  }
+
+  /// Generates labels using the custom labelGenerator callback.
+  List<AxisLabel> _generateCustomLabels(AxisBounds bounds) {
+    final generator = configuration.labelGenerator!;
+    final customValues = generator(bounds, _availableSize, isVertical);
+
+    final labels = <AxisLabel>[];
+
+    for (final value in customValues) {
+      // Skip values outside the axis range
+      if (value < bounds.min - _epsilon || value > bounds.max + _epsilon) {
+        continue;
+      }
+
+      final cleanValue = _cleanFloatingPoint(value, bounds.interval);
+      final text = _formatValue(cleanValue);
+      final position = _calculatePrecisePosition(cleanValue, bounds);
+
+      labels.add(
+        AxisLabel(
+          value: cleanValue,
+          text: text,
+          position: position.clamp(0.0, 1.0),
+        ),
+      );
+    }
+
+    _cachedLabels = labels;
+    return labels;
+  }
+
+  /// Generates labels using the automatic interval-based algorithm.
+  List<AxisLabel> _generateAutoLabels(AxisBounds bounds) {
     final labels = <AxisLabel>[];
 
     final labelCount = _calculateLabelCount(bounds);
@@ -356,6 +399,9 @@ class NumericAxisRenderer extends FusionAxisRenderer {
 
   @override
   Size measureAxisLabels(List<AxisLabel> labels, Size availableSize) {
+    // Store available size for labelGenerator callback
+    _availableSize = isVertical ? availableSize.height : availableSize.width;
+
     // If axis is not visible, return zero size
     if (!configuration.visible) {
       return Size.zero;

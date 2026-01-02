@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/axis/base/fusion_axis_base.dart';
 import '../core/enums/axis_position.dart';
 import '../core/enums/label_alignment.dart';
+import '../core/models/axis_bounds.dart';
 
 /// Configuration for a chart axis.
 ///
@@ -65,6 +66,7 @@ class FusionAxisConfiguration {
     this.axisLineColor,
     this.axisLineWidth,
     this.rangePadding,
+    this.labelGenerator,
   });
 
   // ==========================================================================
@@ -157,6 +159,83 @@ class FusionAxisConfiguration {
   ///
   /// If null, padding is determined automatically based on data.
   final double? rangePadding;
+
+  // ==========================================================================
+  // LABEL GENERATION
+  // ==========================================================================
+
+  /// Custom label position generator.
+  ///
+  /// When provided, this callback completely overrides the automatic label
+  /// generation. The callback receives axis bounds and sizing information,
+  /// and should return a list of values where labels should appear.
+  ///
+  /// This is the "escape hatch" for complete control over label positioning.
+  /// For common patterns, consider using [labelStrategy] instead (v1.1+).
+  ///
+  /// ## Parameters
+  ///
+  /// - [bounds]: The calculated axis bounds (min, max, interval)
+  /// - [availableSize]: Pixels available for the axis (width or height)
+  /// - [isVertical]: Whether this is a vertical (Y) or horizontal (X) axis
+  ///
+  /// ## Returns
+  ///
+  /// List of numeric values where labels should be placed.
+  /// Values outside the axis range will be ignored.
+  ///
+  /// ## Example
+  ///
+  /// ```dart
+  /// // Fibonacci-spaced labels
+  /// FusionAxisConfiguration(
+  ///   labelGenerator: (bounds, availableSize, isVertical) {
+  ///     final fibs = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
+  ///     return fibs
+  ///         .where((f) => f >= bounds.min && f <= bounds.max)
+  ///         .map((f) => f.toDouble())
+  ///         .toList();
+  ///   },
+  /// )
+  ///
+  /// // Powers of 10 (log-scale style)
+  /// FusionAxisConfiguration(
+  ///   labelGenerator: (bounds, availableSize, isVertical) {
+  ///     final labels = <double>[];
+  ///     var value = 1.0;
+  ///     while (value <= bounds.max) {
+  ///       if (value >= bounds.min) labels.add(value);
+  ///       value *= 10;
+  ///     }
+  ///     return labels;
+  ///   },
+  /// )
+  ///
+  /// // Edge-inclusive (first and last data points)
+  /// FusionAxisConfiguration(
+  ///   labelGenerator: (bounds, availableSize, isVertical) {
+  ///     return [
+  ///       bounds.min,
+  ///       bounds.min + bounds.range * 0.25,
+  ///       bounds.min + bounds.range * 0.5,
+  ///       bounds.min + bounds.range * 0.75,
+  ///       bounds.max,
+  ///     ];
+  ///   },
+  /// )
+  /// ```
+  ///
+  /// ## Note
+  ///
+  /// When [labelGenerator] is provided:
+  /// - [interval] is ignored for label positioning (but still used for grid lines)
+  /// - [desiredIntervals] is ignored
+  /// - [labelFormatter] is still applied to format the label text
+  final List<double> Function(
+    AxisBounds bounds,
+    double availableSize,
+    bool isVertical,
+  )? labelGenerator;
 
   // ==========================================================================
   // LABEL PROPERTIES
@@ -466,6 +545,7 @@ class FusionAxisConfiguration {
     Color? axisLineColor,
     double? axisLineWidth,
     double? rangePadding,
+    List<double> Function(AxisBounds, double, bool)? labelGenerator,
   }) {
     return FusionAxisConfiguration(
       axisType: axisType ?? this.axisType,
@@ -506,6 +586,7 @@ class FusionAxisConfiguration {
       axisLineColor: axisLineColor ?? this.axisLineColor,
       axisLineWidth: axisLineWidth ?? this.axisLineWidth,
       rangePadding: rangePadding ?? this.rangePadding,
+      labelGenerator: labelGenerator ?? this.labelGenerator,
     );
   }
 
@@ -526,6 +607,9 @@ class FusionAxisConfiguration {
         ')';
   }
 
+  /// Checks if a custom label generator is configured.
+  bool get hasLabelGenerator => labelGenerator != null;
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -540,7 +624,8 @@ class FusionAxisConfiguration {
         other.autoRange == autoRange &&
         other.autoInterval == autoInterval &&
         other.position == position &&
-        other.desiredIntervals == desiredIntervals;
+        other.desiredIntervals == desiredIntervals &&
+        other.labelGenerator == labelGenerator;
   }
 
   @override
@@ -556,6 +641,7 @@ class FusionAxisConfiguration {
       autoInterval,
       position,
       desiredIntervals,
+      labelGenerator,
     );
   }
 }
