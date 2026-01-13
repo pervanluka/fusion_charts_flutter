@@ -162,6 +162,8 @@ FusionLineChart(
 
 ## 🎯 Interactivity
 
+### Basic Setup
+
 ```dart
 FusionLineChart(
   series: [...],
@@ -170,6 +172,175 @@ FusionLineChart(
     enableCrosshair: true,
     enableZoom: true,
     enablePanning: true,
+  ),
+)
+```
+
+### Zoom & Pan
+
+The library supports multiple zoom/pan interactions:
+
+#### Mobile Gestures
+
+| Gesture | Action |
+|---------|--------|
+| Pinch | Zoom in/out |
+| Double-tap | Zoom in 2x / Reset |
+| Drag | Pan (when zoomed) |
+
+#### Desktop / Web Gestures
+
+| Gesture | Action |
+|---------|--------|
+| `Ctrl + Scroll` (Win/Linux) | Zoom in/out at cursor |
+| `Cmd + Scroll` (macOS) | Zoom in/out at cursor |
+| `Shift + Drag` | Selection zoom (draw rectangle) |
+| Double-click | Zoom in 2x / Reset |
+| Drag | Pan (when zoomed) |
+
+> **Note:** Mouse wheel zoom requires holding `Ctrl` (Windows/Linux) or `Cmd` (macOS) to prevent conflicts with page scrolling. This matches the behavior of Google Maps, Figma, and other professional applications.
+
+#### Selection Zoom
+
+When using `Shift + Drag` on desktop/web, a visual selection rectangle appears with:
+- Semi-transparent fill
+- Dashed border
+- Corner handles
+- Dimension indicator (width x height)
+
+Release to zoom into the selected area.
+
+#### Configuration
+
+```dart
+FusionLineChart(
+  series: [...],
+  config: FusionChartConfiguration(
+    enableZoom: true,
+    enablePanning: true,
+    zoomBehavior: FusionZoomConfiguration(
+      zoomMode: FusionZoomMode.x,             // x, y, or both
+      minZoomLevel: 0.5,                       // Max zoom out (0.5x)
+      maxZoomLevel: 10.0,                      // Max zoom in (10x)
+      enableDoubleTapZoom: true,
+      enableSelectionZoom: true,               // Shift+drag rectangle zoom
+      enableMouseWheelZoom: true,
+      requireModifierForWheelZoom: true,       // Require Ctrl/Cmd for wheel zoom
+      animateZoom: true,
+      zoomAnimationDuration: Duration(milliseconds: 300),
+    ),
+    panBehavior: FusionPanConfiguration(
+      panMode: FusionPanMode.x,               // x, y, or both
+    ),
+  ),
+)
+```
+
+#### Programmatic Control
+
+Use `FusionChartController` for programmatic zoom/pan control:
+
+```dart
+class MyChartWidget extends StatefulWidget {
+  @override
+  State<MyChartWidget> createState() => _MyChartWidgetState();
+}
+
+class _MyChartWidgetState extends State<MyChartWidget> {
+  final _controller = FusionChartController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: FusionLineChart(
+            controller: _controller,
+            series: [...],
+            config: const FusionChartConfiguration(
+              enableZoom: true,
+              enablePanning: true,
+            ),
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: Icon(Icons.zoom_in),
+              onPressed: _controller.zoomIn,
+            ),
+            IconButton(
+              icon: Icon(Icons.zoom_out),
+              onPressed: _controller.zoomOut,
+            ),
+            IconButton(
+              icon: Icon(Icons.refresh),
+              onPressed: _controller.resetZoom,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+```
+
+### Zoom Controls Widget
+
+Add UI buttons for zoom control:
+
+```dart
+Stack(
+  children: [
+    FusionLineChart(series: [...], config: config),
+    Positioned(
+      right: 16,
+      bottom: 16,
+      child: FusionZoomControls(
+        onZoomIn: () => chartState.zoomIn(),
+        onZoomOut: () => chartState.zoomOut(),
+        onReset: () => chartState.reset(),
+      ),
+    ),
+  ],
+)
+```
+
+### Tooltip Trackball Modes
+
+Control how tooltips follow user interaction:
+
+```dart
+config: FusionChartConfiguration(
+  enableTooltip: true,
+  tooltipBehavior: FusionTooltipBehavior(
+    trackballMode: FusionTooltipTrackballMode.snapToX,  // Ideal for line charts
+    // Options: none, follow, snap, snapToX, snapToY, magnetic
+    shared: true,  // Show all series values at same X position
+  ),
+)
+```
+
+### Crosshair
+
+Long-press to show crosshair lines:
+
+```dart
+config: FusionChartConfiguration(
+  enableCrosshair: true,
+  crosshairBehavior: FusionCrosshairConfiguration(
+    showHorizontalLine: true,
+    showVerticalLine: true,
+    snapToDataPoint: true,
+    lineColor: Colors.grey,
+    lineWidth: 1.0,
   ),
 )
 ```
@@ -197,6 +368,46 @@ FusionLineChart(
   ],
 )
 ```
+
+---
+
+## 📅 DateTime Axis & DST Support
+
+The library includes a dedicated `FusionDateTimeAxis` for time-series data with **DST (Daylight Saving Time) safe** handling:
+
+```dart
+FusionLineChart(
+  series: [
+    FusionLineSeries(
+      name: 'Temperature',
+      dataPoints: temperatureData.map((d) =>
+        FusionDataPoint(d.timestamp.millisecondsSinceEpoch.toDouble(), d.value)
+      ).toList(),
+    ),
+  ],
+  xAxis: FusionDateTimeAxis(
+    min: DateTime(2024, 1, 1),
+    max: DateTime(2024, 12, 31),
+    desiredIntervals: 6,
+  ),
+)
+```
+
+### DST Support Details
+
+| Interval Type | DST Handling | Method |
+|---------------|--------------|--------|
+| Days, Weeks, Months, Years | **DST-Safe** | Calendar arithmetic (no drift) |
+| Hours, Minutes, Seconds | Duration-based | May show gaps/doubles at DST transitions |
+
+**Key Features:**
+- Automatic date formatting based on time range
+- Smart interval calculation
+- Custom `DateFormat` support via `intl` package
+- Month edge case handling (Jan 31 + 1 month = Feb 28)
+- Leap year support
+
+**Note:** The library works with local `DateTime` objects. For timezone-aware applications, convert your data to local time before passing to the chart.
 
 ---
 

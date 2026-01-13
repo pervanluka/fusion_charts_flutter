@@ -883,7 +883,7 @@ void main() {
 
         await finger1.up();
         await finger2.up();
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(find.byType(FusionLineChart), findsOneWidget);
       });

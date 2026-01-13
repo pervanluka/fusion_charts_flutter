@@ -55,7 +55,7 @@ class FusionChartConfiguration {
     this.panBehavior = const FusionPanConfiguration(),
     this.enableAnimation = true,
     this.enableTooltip = true,
-    this.enableCrosshair = true,
+    this.enableCrosshair = false,
     this.enableZoom = false,
     this.enablePanning = false,
     this.enableSelection = true,
@@ -133,7 +133,7 @@ class FusionChartConfiguration {
 
   /// Whether to show crosshair indicator on interaction.
   ///
-  /// Default: `true`
+  /// Default: `false`
   final bool enableCrosshair;
 
   /// Whether to enable zoom functionality.

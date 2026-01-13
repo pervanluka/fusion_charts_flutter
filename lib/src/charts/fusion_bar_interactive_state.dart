@@ -5,7 +5,9 @@ import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 import '../rendering/fusion_bar_hit_tester.dart';
 import '../rendering/fusion_interaction_handler.dart';
+import '../utils/fusion_desktop_helper.dart';
 import 'base/fusion_interactive_state_base.dart';
+import 'mixins/fusion_zoom_animation_mixin.dart';
 
 /// Specialized interactive state for bar charts.
 ///
@@ -13,6 +15,7 @@ import 'base/fusion_interactive_state_base.dart';
 /// this uses rectangle-based hit testing for accurate bar selection.
 /// Also supports zoom and pan with configuration-aware constraints.
 class FusionBarInteractiveState extends ChangeNotifier
+    with FusionZoomAnimationMixin
     implements FusionInteractiveStateBase {
   FusionBarInteractiveState({
     required this.config,
@@ -47,10 +50,16 @@ class FusionBarInteractiveState extends ChangeNotifier
   // Zoom/Pan state
   bool _isPanning = false;
   bool _isZooming = false;
+  bool _hasActiveZoom = false;  // Tracks if user has zoomed (persists after gesture ends)
+  double _lastScale = 1.0;  // For converting cumulative scale to delta
 
   // Timers
   Timer? _tooltipHideTimer;
   Timer? _crosshairHideTimer;
+
+  // Cached gesture recognizers - prevents recreation on rebuild which kills in-progress gestures
+  Map<Type, GestureRecognizerFactory>? _cachedGestureRecognizers;
+  int? _lastGestureConfigHash;
 
   // Getters
   @override
@@ -64,9 +73,52 @@ class FusionBarInteractiveState extends ChangeNotifier
   @override
   FusionDataPoint? get crosshairPoint => _crosshairPoint;
   @override
-  bool get isInteracting => _isPanning || _isZooming;
+  bool get isInteracting => _isPanning || _isZooming || isAnimatingZoom;
   @override
   bool get isPointerDown => _isPointerDown;
+  
+  // ===========================================================================
+  // ZOOM ANIMATION MIXIN IMPLEMENTATION
+  // ===========================================================================
+  
+  @override
+  FusionZoomConfiguration get zoomConfig => config.zoomBehavior;
+  
+  @override
+  FusionCoordinateSystem get currentCoordSystem => _currentCoordSystem;
+  
+  @override
+  FusionCoordinateSystem get originalCoordSystem => _originalCoordSystem;
+  
+  @override
+  set currentCoordSystemValue(FusionCoordinateSystem value) {
+    _currentCoordSystem = value;
+  }
+  
+  @override
+  void onZoomAnimationUpdate() {
+    notifyListeners();
+  }
+  
+  @override
+  void onZoomComplete() {
+    // Check if we're back to original bounds
+    final isAtOriginal = 
+        (_currentCoordSystem.dataXMin - _originalCoordSystem.dataXMin).abs() < 0.001 &&
+        (_currentCoordSystem.dataXMax - _originalCoordSystem.dataXMax).abs() < 0.001 &&
+        (_currentCoordSystem.dataYMin - _originalCoordSystem.dataYMin).abs() < 0.001 &&
+        (_currentCoordSystem.dataYMax - _originalCoordSystem.dataYMax).abs() < 0.001;
+    
+    _hasActiveZoom = !isAtOriginal;
+    _rebuildInteractionHandler();
+  }
+  
+  /// Public methods for zoom controls
+  @override
+  void zoomIn() => zoomInByControl();
+  
+  @override
+  void zoomOut() => zoomOutByControl();
 
   @override
   void initialize() {
@@ -81,12 +133,24 @@ class FusionBarInteractiveState extends ChangeNotifier
     );
   }
 
-  /// Updates the coordinate system when chart dimensions change.
-  /// Always updates without comparison to ensure proper responsiveness.
   @override
   void updateCoordinateSystem(FusionCoordinateSystem newCoordSystem) {
-    _currentCoordSystem = newCoordSystem;
-    _rebuildInteractionHandler();
+    if (isInteracting || _hasActiveZoom) {
+      _currentCoordSystem = FusionCoordinateSystem(
+        chartArea: newCoordSystem.chartArea,
+        dataXMin: _currentCoordSystem.dataXMin,
+        dataXMax: _currentCoordSystem.dataXMax,
+        dataYMin: _currentCoordSystem.dataYMin,
+        dataYMax: _currentCoordSystem.dataYMax,
+        devicePixelRatio: newCoordSystem.devicePixelRatio,
+      );
+      if (!isInteracting) {
+        _rebuildInteractionHandler();
+      }
+    } else {
+      _currentCoordSystem = newCoordSystem;
+      _rebuildInteractionHandler();
+    }
   }
 
   // ========================================================================
@@ -206,54 +270,38 @@ class FusionBarInteractiveState extends ChangeNotifier
         return;
       }
 
-      final scaleFactor = _interactionHandler!.calculateMouseWheelZoom(
-        event.scrollDelta.dy,
+      // Check for modifier key requirement (Ctrl/Cmd + scroll to zoom)
+      if (config.zoomBehavior.requireModifierForWheelZoom) {
+        final hasModifier = FusionDesktopHelper.isControlPressed ||
+            FusionDesktopHelper.isMetaPressed;
+        if (!hasModifier) {
+          return;
+        }
+      }
+
+      // Register with pointer signal resolver to consume the event.
+      // This prevents the scroll from propagating to parent scrollables.
+      GestureBinding.instance.pointerSignalResolver.register(
+        event,
+        (PointerSignalEvent resolvedEvent) {
+          if (resolvedEvent is PointerScrollEvent) {
+            final scaleFactor = _interactionHandler!.calculateMouseWheelZoom(
+              resolvedEvent.scrollDelta.dy,
+            );
+            _applyZoom(scaleFactor, resolvedEvent.localPosition);
+          }
+        },
       );
-      _applyZoom(scaleFactor, event.localPosition);
     }
   }
 
   void _applyZoom(double scaleFactor, Offset focalPoint) {
-    final currentXMin = _currentCoordSystem.dataXMin;
-    final currentXMax = _currentCoordSystem.dataXMax;
-    final currentYMin = _currentCoordSystem.dataYMin;
-    final currentYMax = _currentCoordSystem.dataYMax;
-
-    final newBounds = _interactionHandler!.calculateZoomedBounds(
+    applyZoom(
       scaleFactor,
       focalPoint,
-      currentXMin,
-      currentXMax,
-      currentYMin,
-      currentYMax,
+      _interactionHandler!,
+      (value) => _hasActiveZoom = value,
     );
-
-    final originalXMin = _originalCoordSystem.dataXMin;
-    final originalXMax = _originalCoordSystem.dataXMax;
-    final originalYMin = _originalCoordSystem.dataYMin;
-    final originalYMax = _originalCoordSystem.dataYMax;
-
-    final constrainedBounds = _interactionHandler!.constrainBounds(
-      newBounds.xMin,
-      newBounds.xMax,
-      newBounds.yMin,
-      newBounds.yMax,
-      originalXMin,
-      originalXMax,
-      originalYMin,
-      originalYMax,
-    );
-
-    _currentCoordSystem = FusionCoordinateSystem(
-      chartArea: _currentCoordSystem.chartArea,
-      dataXMin: constrainedBounds.xMin,
-      dataXMax: constrainedBounds.xMax,
-      dataYMin: constrainedBounds.yMin,
-      dataYMax: constrainedBounds.yMax,
-      devicePixelRatio: _currentCoordSystem.devicePixelRatio,
-    );
-
-    notifyListeners();
   }
 
   // ========================================================================
@@ -264,11 +312,11 @@ class FusionBarInteractiveState extends ChangeNotifier
     if (!config.enablePanning) return;
     _isPanning = true;
 
-    if (config.tooltipBehavior.fadeOutOnPanZoom && _tooltipData != null) {
-      _tooltipOpacity = 0.3;
+    if (_tooltipData != null) {
+      _tooltipData = null;
+      _tooltipOpacity = 0.0;
+      notifyListeners();
     }
-
-    notifyListeners();
   }
 
   void _handlePanUpdate(Offset delta) {
@@ -307,11 +355,7 @@ class FusionBarInteractiveState extends ChangeNotifier
 
   void _handlePanEnd() {
     _isPanning = false;
-
-    if (_tooltipData != null) {
-      _tooltipOpacity = 1.0;
-    }
-
+    _rebuildInteractionHandler();
     notifyListeners();
   }
 
@@ -325,12 +369,13 @@ class FusionBarInteractiveState extends ChangeNotifier
     if (config.zoomBehavior.zoomMode == FusionZoomMode.none) return;
 
     _isZooming = true;
+    _lastScale = 1.0;
 
-    if (config.tooltipBehavior.fadeOutOnPanZoom && _tooltipData != null) {
-      _tooltipOpacity = 0.3;
+    if (_tooltipData != null) {
+      _tooltipData = null;
+      _tooltipOpacity = 0.0;
+      notifyListeners();
     }
-
-    notifyListeners();
   }
 
   void _handleScaleUpdate(double scaleFactor, Offset focalPoint) {
@@ -343,11 +388,7 @@ class FusionBarInteractiveState extends ChangeNotifier
 
   void _handleScaleEnd() {
     _isZooming = false;
-
-    if (_tooltipData != null) {
-      _tooltipOpacity = 1.0;
-    }
-
+    _rebuildInteractionHandler();
     notifyListeners();
   }
 
@@ -355,8 +396,10 @@ class FusionBarInteractiveState extends ChangeNotifier
   // RESET
   // ========================================================================
 
+  @override
   void reset() {
     _currentCoordSystem = _originalCoordSystem;
+    _hasActiveZoom = false;
     _hideTooltip();
     _hideCrosshair();
     notifyListeners();
@@ -515,8 +558,29 @@ class FusionBarInteractiveState extends ChangeNotifier
   // GESTURE RECOGNIZERS
   // ========================================================================
 
+  /// Computes a hash of configuration options that affect gesture behavior.
+  /// Used to determine when gesture recognizers need to be recreated.
+  int _computeGestureConfigHash() {
+    return Object.hash(
+      config.enableTooltip,
+      config.enableSelection,
+      config.enableCrosshair,
+      config.enableZoom,
+      config.enablePanning,
+      config.zoomBehavior.enablePinchZoom,
+      config.zoomBehavior.enableDoubleTapZoom,
+      config.zoomBehavior.zoomMode,
+    );
+  }
+
   @override
   Map<Type, GestureRecognizerFactory> getGestureRecognizers() {
+    final currentHash = _computeGestureConfigHash();
+    if (_cachedGestureRecognizers != null &&
+        _lastGestureConfigHash == currentHash) {
+      return _cachedGestureRecognizers!;
+    }
+
     final recognizers = <Type, GestureRecognizerFactory>{};
 
     if (config.enableTooltip || config.enableSelection) {
@@ -535,6 +599,27 @@ class FusionBarInteractiveState extends ChangeNotifier
 
                 if (hitResult != null && config.enableTooltip) {
                   _showTooltip(hitResult, details.localPosition);
+                }
+              };
+            },
+          );
+    }
+    
+    // Double-tap to zoom in/reset
+    if (config.enableZoom && config.zoomBehavior.enableDoubleTapZoom) {
+      recognizers[DoubleTapGestureRecognizer] =
+          GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
+            DoubleTapGestureRecognizer.new,
+            (recognizer) {
+              recognizer.onDoubleTapDown = (details) {
+                _lastPointerPosition = details.localPosition;
+              };
+              recognizer.onDoubleTap = () {
+                if (_lastPointerPosition != null) {
+                  handleDoubleTapZoom(
+                    _lastPointerPosition!,
+                    hasActiveZoom: _hasActiveZoom,
+                  );
                 }
               };
             },
@@ -583,7 +668,6 @@ class FusionBarInteractiveState extends ChangeNotifier
           );
     }
 
-    // Use ScaleGestureRecognizer when both zoom and pan are enabled
     if (config.enableZoom && config.enablePanning) {
       recognizers[ScaleGestureRecognizer] =
           GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
@@ -591,11 +675,11 @@ class FusionBarInteractiveState extends ChangeNotifier
             (recognizer) {
               recognizer
                 ..onStart = (details) {
+                  _lastPointerPosition = details.localFocalPoint;
                   _handleScaleStart(details.localFocalPoint);
                 }
                 ..onUpdate = (details) {
                   if (details.scale == 1.0) {
-                    // Pan gesture
                     if (!_isPanning) {
                       _handlePanStart(details.localFocalPoint);
                     }
@@ -606,8 +690,9 @@ class FusionBarInteractiveState extends ChangeNotifier
                     }
                     _lastPointerPosition = details.localFocalPoint;
                   } else {
-                    // Pinch zoom
-                    _handleScaleUpdate(details.scale, details.localFocalPoint);
+                    final scaleDelta = details.scale / _lastScale;
+                    _lastScale = details.scale;
+                    _handleScaleUpdate(scaleDelta, details.localFocalPoint);
                   }
                 }
                 ..onEnd = (details) {
@@ -618,6 +703,7 @@ class FusionBarInteractiveState extends ChangeNotifier
                     _handleScaleEnd();
                   }
                   _lastPointerPosition = null;
+                  _lastScale = 1.0;
                 };
             },
           );
@@ -649,15 +735,21 @@ class FusionBarInteractiveState extends ChangeNotifier
                 }
                 ..onUpdate = (details) {
                   if (details.scale != 1.0) {
-                    _handleScaleUpdate(details.scale, details.localFocalPoint);
+                    final scaleDelta = details.scale / _lastScale;
+                    _lastScale = details.scale;
+                    _handleScaleUpdate(scaleDelta, details.localFocalPoint);
                   }
                 }
                 ..onEnd = (details) {
                   _handleScaleEnd();
+                  _lastScale = 1.0;
                 };
             },
           );
     }
+
+    _cachedGestureRecognizers = recognizers;
+    _lastGestureConfigHash = currentHash;
 
     return recognizers;
   }
@@ -666,6 +758,7 @@ class FusionBarInteractiveState extends ChangeNotifier
   void dispose() {
     _tooltipHideTimer?.cancel();
     _crosshairHideTimer?.cancel();
+    disposeZoomAnimation();
     super.dispose();
   }
 }

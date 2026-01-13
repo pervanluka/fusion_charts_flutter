@@ -248,6 +248,15 @@ class FusionInteractionHandler {
     onHover?.call(position);
   }
 
+  /// Calculates zoom factor with zoomSpeed applied.
+  double applyZoomSpeed(double rawScaleFactor) {
+    if (rawScaleFactor == 1.0) return 1.0;
+    
+    final delta = rawScaleFactor - 1.0;
+    final adjustedDelta = delta * zoomConfig.zoomSpeed;
+    return 1.0 + adjustedDelta;
+  }
+
   /// Calculates new bounds after panning with pan mode support.
   ({double xMin, double xMax, double yMin, double yMax}) calculatePannedBounds(
     Offset delta,
@@ -262,7 +271,6 @@ class FusionInteractionHandler {
     final chartWidth = coordSystem.chartArea.width;
     final chartHeight = coordSystem.chartArea.height;
 
-    // Apply pan mode constraints
     double xShift = 0.0;
     double yShift = 0.0;
 
@@ -273,7 +281,7 @@ class FusionInteractionHandler {
 
     if (panConfig.panMode == FusionPanMode.y ||
         panConfig.panMode == FusionPanMode.both) {
-      yShift = (delta.dy / chartHeight) * yRange; // Y is inverted
+      yShift = (delta.dy / chartHeight) * yRange;
     }
 
     return (
@@ -293,17 +301,13 @@ class FusionInteractionHandler {
     double currentYMin,
     double currentYMax,
   ) {
-    // Convert focal point to data coordinates
     final focalDataX = _screenXToDataX(focalPoint.dx, currentXMin, currentXMax);
     final focalDataY = _screenYToDataY(focalPoint.dy, currentYMin, currentYMax);
 
-    // Calculate new ranges based on zoom mode
     double newXMin = currentXMin;
     double newXMax = currentXMax;
     double newYMin = currentYMin;
     double newYMax = currentYMax;
-
-    // Apply zoom based on mode
     if (zoomConfig.zoomMode == FusionZoomMode.x ||
         zoomConfig.zoomMode == FusionZoomMode.both) {
       final xRange = (currentXMax - currentXMin) / scaleFactor;
@@ -323,7 +327,7 @@ class FusionInteractionHandler {
     return (xMin: newXMin, xMax: newXMax, yMin: newYMin, yMax: newYMax);
   }
 
-  /// Constrains bounds using zoom configuration limits.
+  /// Constrains bounds using zoom configuration limits and pan boundaries.
   ({double xMin, double xMax, double yMin, double yMax}) constrainBounds(
     double xMin,
     double xMax,
@@ -334,26 +338,68 @@ class FusionInteractionHandler {
     double dataYMin,
     double dataYMax,
   ) {
-    // Use configuration values for zoom limits
-    // minZoomLevel = 0.5 means you can zoom out to see 200% of original range (1/0.5 = 2x)
-    // maxZoomLevel = 5.0 means you can zoom in to see 20% of original range (1/5 = 0.2x)
-    final maxZoomOut =
-        1.0 / zoomConfig.minZoomLevel; // e.g., 1/0.5 = 2.0 (200% of range)
-    final minZoomIn =
-        1.0 / zoomConfig.maxZoomLevel; // e.g., 1/5.0 = 0.2 (20% of range)
+    var bounds = (xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax);
+
+    bounds = _constrainZoomLevels(
+      bounds,
+      dataXMin,
+      dataXMax,
+      dataYMin,
+      dataYMax,
+    );
+
+    bounds = _constrainPanBoundaries(
+      bounds,
+      dataXMin,
+      dataXMax,
+      dataYMin,
+      dataYMax,
+    );
+
+    return bounds;
+  }
+
+  /// Constrains zoom levels to configured min/max zoom.
+  ///
+  /// ## Zoom Level Conversion
+  ///
+  /// The zoom configuration uses magnification factors:
+  /// - `minZoomLevel = 0.5` means minimum 0.5x magnification (zoomed out)
+  /// - `maxZoomLevel = 5.0` means maximum 5x magnification (zoomed in)
+  ///
+  /// We convert these to range multipliers:
+  /// - `maxZoomOut = 1/minZoomLevel = 2.0` → can see 200% of original range
+  /// - `minZoomIn = 1/maxZoomLevel = 0.2` → can see 20% of original range
+  ///
+  /// ## Example
+  ///
+  /// Original data range: 0-100 (range = 100)
+  /// - At max zoom out (0.5x): visible range = 100 * 2.0 = 200 units
+  /// - At max zoom in (5.0x): visible range = 100 * 0.2 = 20 units
+  ({double xMin, double xMax, double yMin, double yMax}) _constrainZoomLevels(
+    ({double xMin, double xMax, double yMin, double yMax}) bounds,
+    double dataXMin,
+    double dataXMax,
+    double dataYMin,
+    double dataYMax,
+  ) {
+    // Convert magnification factors to range multipliers
+    // minZoomLevel=0.5 → maxZoomOut=2.0 (can see 2x the original range)
+    // maxZoomLevel=5.0 → minZoomIn=0.2 (can see 0.2x the original range)
+    final maxZoomOut = 1.0 / zoomConfig.minZoomLevel;
+    final minZoomIn = 1.0 / zoomConfig.maxZoomLevel;
 
     final originalXRange = dataXMax - dataXMin;
     final originalYRange = dataYMax - dataYMin;
 
-    var newXMin = xMin;
-    var newXMax = xMax;
-    var newYMin = yMin;
-    var newYMax = yMax;
+    var newXMin = bounds.xMin;
+    var newXMax = bounds.xMax;
+    var newYMin = bounds.yMin;
+    var newYMax = bounds.yMax;
 
     final newXRange = newXMax - newXMin;
     final newYRange = newYMax - newYMin;
 
-    // Prevent zooming out too far
     if (newXRange > originalXRange * maxZoomOut) {
       final center = (newXMin + newXMax) / 2;
       final halfRange = (originalXRange * maxZoomOut) / 2;
@@ -368,7 +414,6 @@ class FusionInteractionHandler {
       newYMax = center + halfRange;
     }
 
-    // Prevent zooming in too far
     if (newXRange < originalXRange * minZoomIn) {
       final center = (newXMin + newXMax) / 2;
       final halfRange = (originalXRange * minZoomIn) / 2;
@@ -386,14 +431,119 @@ class FusionInteractionHandler {
     return (xMin: newXMin, xMax: newXMax, yMin: newYMin, yMax: newYMax);
   }
 
+  /// Constrains pan boundaries to prevent panning outside reasonable bounds.
+  ///
+  /// ## How Pan Boundaries Work
+  ///
+  /// This method prevents the user from panning too far outside the original
+  /// data bounds. The constraint is based on the viewport center position.
+  ///
+  /// ### Terminology
+  /// - `constrainedXRange`: The current visible X range (after zoom)
+  /// - `maxPanXRange`: The maximum theoretical visible range (at max zoom out)
+  /// - `centerX`: The center of the current viewport in data coordinates
+  ///
+  /// ### Center Bounds Calculation
+  ///
+  /// The viewport center is constrained to stay within bounds such that:
+  /// - The left edge of viewport doesn't go below `dataXMin`
+  /// - The right edge of viewport doesn't exceed the max pan boundary
+  ///
+  /// ```
+  /// |<-------- maxPanXRange -------->|
+  /// |                                |
+  /// dataXMin                    max boundary
+  ///     |<-- constrainedXRange -->|
+  ///     ^                         ^
+  ///   minXCenter              maxXCenter
+  /// ```
+  ///
+  /// - `minXCenter = dataXMin + constrainedXRange/2`
+  ///   (center when left edge touches dataXMin)
+  /// - `maxXCenter = dataXMin + maxPanXRange - constrainedXRange/2`
+  ///   (center when right edge touches max boundary)
+  ///
+  /// ### Edge Cases
+  ///
+  /// When zoomed out to maximum (`constrainedXRange == maxPanXRange`):
+  /// - `minXCenter == maxXCenter` → center is fixed, no panning possible
+  ///
+  /// When zoomed in (`constrainedXRange < maxPanXRange`):
+  /// - `minXCenter < maxXCenter` → panning is allowed within this range
+  ({double xMin, double xMax, double yMin, double yMax}) _constrainPanBoundaries(
+    ({double xMin, double xMax, double yMin, double yMax}) bounds,
+    double dataXMin,
+    double dataXMax,
+    double dataYMin,
+    double dataYMax,
+  ) {
+    // Calculate the maximum viewable range (at max zoom out level)
+    final maxZoomOut = 1.0 / zoomConfig.minZoomLevel;
+    final originalXRange = dataXMax - dataXMin;
+    final originalYRange = dataYMax - dataYMin;
+
+    var newXMin = bounds.xMin;
+    var newXMax = bounds.xMax;
+    var newYMin = bounds.yMin;
+    var newYMax = bounds.yMax;
+
+    // Current viewport size in data coordinates
+    final constrainedXRange = newXMax - newXMin;
+    final constrainedYRange = newYMax - newYMin;
+
+    // Maximum pan boundary (allows panning within the max zoom out view)
+    final maxPanXRange = originalXRange * maxZoomOut;
+    final maxPanYRange = originalYRange * maxZoomOut;
+
+    // Calculate current viewport center
+    final centerX = (newXMin + newXMax) / 2;
+    final centerY = (newYMin + newYMax) / 2;
+
+    // Calculate allowed center bounds for X axis
+    // minXCenter: center position when left edge is at dataXMin
+    // maxXCenter: center position when right edge is at max pan boundary
+    final maxXCenter = dataXMin + maxPanXRange - constrainedXRange / 2;
+    final minXCenter = dataXMin + constrainedXRange / 2;
+
+    // Constrain X center: shift viewport if center is outside allowed bounds
+    if (centerX < minXCenter) {
+      // Panned too far left - shift right to bring left edge to dataXMin
+      final shift = minXCenter - centerX;
+      newXMin += shift;
+      newXMax += shift;
+    } else if (centerX > maxXCenter) {
+      // Panned too far right - shift left to bring right edge to max boundary
+      final shift = centerX - maxXCenter;
+      newXMin -= shift;
+      newXMax -= shift;
+    }
+
+    // Calculate allowed center bounds for Y axis (same logic as X)
+    final maxYCenter = dataYMin + maxPanYRange - constrainedYRange / 2;
+    final minYCenter = dataYMin + constrainedYRange / 2;
+
+    // Constrain Y center: shift viewport if center is outside allowed bounds
+    if (centerY < minYCenter) {
+      // Panned too far down - shift up to bring bottom edge to dataYMin
+      final shift = minYCenter - centerY;
+      newYMin += shift;
+      newYMax += shift;
+    } else if (centerY > maxYCenter) {
+      // Panned too far up - shift down to bring top edge to max boundary
+      final shift = centerY - maxYCenter;
+      newYMin -= shift;
+      newYMax -= shift;
+    }
+
+    return (xMin: newXMin, xMax: newXMax, yMin: newYMin, yMax: newYMax);
+  }
+
   /// Calculates zoom from mouse wheel delta.
   double calculateMouseWheelZoom(double scrollDelta) {
-    // Negative delta = scroll up = zoom in
-    // Positive delta = scroll down = zoom out
     const baseZoomFactor = 0.1;
     final zoomDelta =
         -scrollDelta * baseZoomFactor * zoomConfig.zoomSpeed / 100;
-    return 1.0 + zoomDelta.clamp(-0.3, 0.3); // Clamp for smooth zooming
+    return 1.0 + zoomDelta.clamp(-0.3, 0.3);
   }
 
   double _screenXToDataX(double screenX, double dataXMin, double dataXMax) {

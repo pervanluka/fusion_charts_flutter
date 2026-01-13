@@ -132,6 +132,9 @@ export 'src/configuration/fusion_tooltip_configuration.dart';
 /// Zoom configuration.
 export 'src/configuration/fusion_zoom_configuration.dart';
 
+/// Chart controller for programmatic zoom/pan control.
+export 'src/controllers/fusion_chart_controller.dart';
+
 /// Base axis class (for type checking and extension).
 export 'src/core/axis/base/fusion_axis_base.dart';
 
@@ -294,12 +297,15 @@ export 'src/utils/lttb_downsampler.dart';
 /// Error boundary widget for graceful error handling.
 export 'src/widgets/error/fusion_chart_error_boundary.dart';
 
+/// Zoom controls widget (+/- buttons overlay).
+export 'src/widgets/fusion_zoom_controls.dart';
+
 // ============================================================================
 // VERSION & METADATA
 // ============================================================================
 
 /// Current version of fusion_charts_flutter.
-const String fusionChartsVersion = '1.0.0';
+const String fusionChartsVersion = '1.0.1';
 
 /// Library name.
 const String fusionChartsName = 'fusion_charts_flutter';
@@ -309,8 +315,7 @@ const String fusionChartsDescription =
     'Professional Flutter charting library with stunning visuals and enterprise-grade features';
 
 /// Repository URL.
-const String fusionChartsRepository =
-    'https://github.com/pervanluka/fusion_charts_flutter';
+const String fusionChartsRepository = 'https://github.com/pervanluka/fusion_charts_flutter';
 
 /// License.
 const String fusionChartsLicense = 'MIT';
@@ -319,5 +324,4 @@ const String fusionChartsLicense = 'MIT';
 const String fusionChartsAuthor = 'Luka Pervan';
 
 /// Homepage.
-const String fusionChartsHomepage =
-    'https://github.com/pervanluka/fusion_charts_flutter';
+const String fusionChartsHomepage = 'https://github.com/pervanluka/fusion_charts_flutter';

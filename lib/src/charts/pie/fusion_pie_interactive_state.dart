@@ -26,8 +26,7 @@ import 'pie_tooltip_data.dart';
 /// - Activation delays
 /// - Haptic feedback
 /// - Opacity animation
-class FusionPieInteractiveState extends ChangeNotifier
-    implements FusionInteractiveStateBase {
+class FusionPieInteractiveState extends ChangeNotifier implements FusionInteractiveStateBase {
   FusionPieInteractiveState({
     required this.config,
     required this.series,
@@ -170,11 +169,7 @@ class FusionPieInteractiveState extends ChangeNotifier
   // LAYOUT UPDATE
   // ===========================================================================
 
-  void updateLayout({
-    required Offset center,
-    required double availableRadius,
-    required Size size,
-  }) {
+  void updateLayout({required Offset center, required double availableRadius, required Size size}) {
     _center = center;
     _availableRadius = availableRadius;
     _size = size;
@@ -251,8 +246,7 @@ class FusionPieInteractiveState extends ChangeNotifier
       // Segment changed - update selection highlight
       if (hitIndex != currentIndex) {
         // Update selection to current segment (scrubbing behavior)
-        if (config.enableSelection &&
-            config.selectionMode == PieSelectionMode.single) {
+        if (config.enableSelection && config.selectionMode == PieSelectionMode.single) {
           _selectedIndices.clear();
           _selectedIndices.add(hitIndex);
 
@@ -263,8 +257,7 @@ class FusionPieInteractiveState extends ChangeNotifier
               final prevDataPoint = currentIndex < series.dataPoints.length
                   ? series.dataPoints[currentIndex]
                   : null;
-              if (!series.explodeAll &&
-                  (prevDataPoint == null || !prevDataPoint.explode)) {
+              if (!series.explodeAll && (prevDataPoint == null || !prevDataPoint.explode)) {
                 _explodedIndices.remove(currentIndex);
               }
             }
@@ -282,8 +275,7 @@ class FusionPieInteractiveState extends ChangeNotifier
       }
     } else {
       // Moved outside all segments - clear highlight but keep last tooltip briefly
-      if (_selectedIndices.isNotEmpty &&
-          config.selectionMode == PieSelectionMode.single) {
+      if (_selectedIndices.isNotEmpty && config.selectionMode == PieSelectionMode.single) {
         // Don't clear immediately - feels jarring. Let pointer up handle it.
       }
     }
@@ -383,8 +375,7 @@ class FusionPieInteractiveState extends ChangeNotifier
           _explodedIndices.removeWhere(
             (i) =>
                 !series.explodeAll &&
-                (i >= series.dataPoints.length ||
-                    !series.dataPoints[i].explode) &&
+                (i >= series.dataPoints.length || !series.dataPoints[i].explode) &&
                 !_selectedIndices.contains(i),
           );
         }
@@ -404,16 +395,15 @@ class FusionPieInteractiveState extends ChangeNotifier
   @override
   Map<Type, GestureRecognizerFactory> getGestureRecognizers() {
     return {
-      LongPressGestureRecognizer:
-          GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
-            () => LongPressGestureRecognizer(),
-            (recognizer) {
-              recognizer.onLongPressStart = (details) {
-                _wasLongPress = true;
-                _handleLongPress(details.localPosition);
-              };
-            },
-          ),
+      LongPressGestureRecognizer: GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
+        () => LongPressGestureRecognizer(),
+        (recognizer) {
+          recognizer.onLongPressStart = (details) {
+            _wasLongPress = true;
+            _handleLongPress(details.localPosition);
+          };
+        },
+      ),
     };
   }
 
@@ -461,12 +451,9 @@ class FusionPieInteractiveState extends ChangeNotifier
     dataPoint.onLongPress?.call(dataPoint, hitIndex);
 
     // 3. Show tooltip (long press activation)
-    final effectiveMode = _tooltipBehavior.getEffectiveActivationMode(
-      TargetPlatform.android,
-    );
+    final effectiveMode = _tooltipBehavior.getEffectiveActivationMode(TargetPlatform.android);
 
-    if (effectiveMode == FusionTooltipActivationMode.longPress ||
-        config.enableTooltip) {
+    if (effectiveMode == FusionTooltipActivationMode.longPress || config.enableTooltip) {
       _showTooltipEnhanced(hitIndex, position, true);
     }
 
@@ -611,8 +598,7 @@ class FusionPieInteractiveState extends ChangeNotifier
     if (config.explodeOnSelection) {
       for (final index in _selectedIndices) {
         if (!series.explodeAll &&
-            (index >= series.dataPoints.length ||
-                !series.dataPoints[index].explode)) {
+            (index >= series.dataPoints.length || !series.dataPoints[index].explode)) {
           _explodedIndices.remove(index);
         }
       }
@@ -748,4 +734,31 @@ class FusionPieInteractiveState extends ChangeNotifier
     _segmentCache.invalidate();
     super.dispose();
   }
+
+  @override
+  bool get isAnimatingZoom => false;
+
+  @override
+  bool get isSelectionZoomActive => false;
+
+  @override
+  Offset? get selectionCurrent => null;
+
+  @override
+  Rect? get selectionRect => null;
+
+  @override
+  Offset? get selectionStart => null;
+
+  @override
+  double get zoomAnimationProgress => 1.0;
+
+  @override
+  void reset() {}
+
+  @override
+  void zoomIn() {}
+
+  @override
+  void zoomOut() {}
 }

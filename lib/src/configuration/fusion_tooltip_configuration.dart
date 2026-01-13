@@ -14,6 +14,10 @@ import '../data/fusion_data_point.dart';
 class FusionTooltipBehavior {
   const FusionTooltipBehavior({
     // Basic configuration
+    @Deprecated(
+      'Use FusionChartConfiguration.enableTooltip instead. '
+      'This field is ignored and will be removed in v2.0.0.',
+    )
     this.enable = true,
 
     // 🚀 POSITION CONTROL - NEW!
@@ -63,6 +67,10 @@ class FusionTooltipBehavior {
 
     // Advanced
     this.hapticFeedback = true,
+    @Deprecated(
+      'This option is no longer used. Tooltips are now hidden completely '
+      'during pan/zoom gestures for better UX. Will be removed in v2.0.0.',
+    )
     this.fadeOutOnPanZoom = true,
   });
 
@@ -70,7 +78,14 @@ class FusionTooltipBehavior {
   // CORE PROPERTIES
   // ========================================================================
 
-  /// Enables or disables tooltip
+  /// Enables or disables tooltip.
+  ///
+  /// @deprecated Use [FusionChartConfiguration.enableTooltip] instead.
+  /// This field is ignored and will be removed in v2.0.0.
+  @Deprecated(
+    'Use FusionChartConfiguration.enableTooltip instead. '
+    'This field is ignored and will be removed in v2.0.0.',
+  )
   final bool enable;
 
   // ========================================================================
@@ -257,7 +272,15 @@ class FusionTooltipBehavior {
   /// Provide haptic feedback on tooltip show
   final bool hapticFeedback;
 
-  /// Fade out tooltip during pan/zoom gestures
+  /// Fade out tooltip during pan/zoom gestures.
+  ///
+  /// @deprecated This option is no longer used. Tooltips are now hidden
+  /// completely during pan/zoom gestures for better UX. This field will
+  /// be removed in v2.0.0.
+  @Deprecated(
+    'This option is no longer used. Tooltips are now hidden completely '
+    'during pan/zoom gestures for better UX. Will be removed in v2.0.0.',
+  )
   final bool fadeOutOnPanZoom;
 
   // ========================================================================
@@ -325,6 +348,10 @@ class FusionTooltipBehavior {
   // ========================================================================
 
   FusionTooltipBehavior copyWith({
+    @Deprecated(
+      'Use FusionChartConfiguration.enableTooltip instead. '
+      'This field is ignored and will be removed in v2.0.0.',
+    )
     bool? enable,
     FusionTooltipPosition? position,
     bool? showTrackballLine,
@@ -356,6 +383,10 @@ class FusionTooltipBehavior {
     Color? borderColor,
     Color? shadowColor,
     bool? hapticFeedback,
+    @Deprecated(
+      'This option is no longer used. Tooltips are now hidden completely '
+      'during pan/zoom gestures for better UX. Will be removed in v2.0.0.',
+    )
     bool? fadeOutOnPanZoom,
   }) {
     return FusionTooltipBehavior(

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../configuration/fusion_pie_chart_configuration.dart';
+import '../../controllers/fusion_chart_controller.dart';
 import '../../data/fusion_data_point.dart';
 import '../../rendering/engine/fusion_paint_pool.dart';
 import '../../rendering/layers/fusion_pie_tooltip_layer.dart';
@@ -78,6 +79,7 @@ class FusionPieChart extends StatefulWidget {
     this.config,
     this.title,
     this.subtitle,
+    this.controller,
     this.onSegmentTap,
     this.onSegmentLongPress,
     this.onSelectionChanged,
@@ -96,6 +98,12 @@ class FusionPieChart extends StatefulWidget {
 
   /// Optional chart subtitle.
   final String? subtitle;
+
+  /// Controller for programmatic control.
+  ///
+  /// Note: Pie charts don't support zoom/pan, but the controller is
+  /// accepted for API consistency across chart types.
+  final FusionChartController? controller;
 
   /// Callback when a segment is tapped.
   final void Function(int index, FusionPieSeries series)? onSegmentTap;
@@ -134,6 +142,15 @@ class _FusionPieChartState extends State<FusionPieChart>
     super.initState();
     _initAnimation();
     _initInteractiveState();
+    _attachController();
+  }
+
+  void _attachController() {
+    widget.controller?.attach(_interactiveState);
+  }
+
+  void _detachController() {
+    widget.controller?.detach();
   }
 
   void _initAnimation() {
@@ -181,13 +198,22 @@ class _FusionPieChartState extends State<FusionPieChart>
       _animationController.reset();
       _animationController.forward();
 
+      _detachController();
       _interactiveState.dispose();
       _initInteractiveState();
+      _attachController();
+    }
+
+    // Handle controller changes
+    if (widget.controller != oldWidget.controller) {
+      oldWidget.controller?.detach();
+      widget.controller?.attach(_interactiveState);
     }
   }
 
   @override
   void dispose() {
+    _detachController();
     _animationController.dispose();
     _interactiveState.dispose();
     super.dispose();

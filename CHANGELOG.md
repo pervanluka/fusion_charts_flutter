@@ -102,6 +102,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.1] - 2026-01-13
+
+### Added
+
+#### Programmatic Control API
+- `FusionChartController` — Full programmatic control over zoom and pan operations
+  - `zoomIn()`, `zoomOut()`, `zoomToFit()`, `resetZoom()` methods
+  - `panTo()`, `panBy()` for programmatic panning
+  - `setZoomLevel()` with animation support
+  - Event streams for zoom/pan state changes
+  - Attach/detach to any interactive chart
+
+#### New Widgets
+- `FusionZoomControls` — Ready-to-use zoom control widget with customizable buttons
+- `FusionScrollInterceptWrapper` — Desktop scroll wheel zoom support with proper event handling
+
+#### New Utilities
+- `FusionDesktopHelper` — Platform detection utilities for desktop-specific behaviors
+- `FusionZoomAnimationMixin` — Smooth animated zoom transitions with configurable curves
+- `FusionSelectionRectLayer` — Box selection rendering for zoom-to-region functionality
+
+#### Axis Configuration
+- `labelGenerator` callback in `FusionAxisConfiguration` for complete control over axis label positioning
+  - Receives axis bounds, available size, and orientation
+  - Returns list of values where labels should appear
+  - Supports use cases like:
+    - Edge-inclusive labels (always show min/max)
+    - Percentage-based labels (0%, 25%, 50%, 75%, 100%)
+    - Powers of 10 (log-scale style)
+    - Fibonacci sequence positioning
+    - Custom business thresholds
+    - DateTime patterns (first of month, every Monday)
+    - Density-based responsive labels
+
+#### Examples
+- New `zoom_pan_showcase.dart` — Comprehensive example with 27 zoom/pan demonstrations
+
+### Changed
+- `enableCrosshair` default changed from `true` to `false` for cleaner out-of-box experience
+  - Charts now render without crosshair by default
+  - Explicitly set `enableCrosshair: true` to enable
+
+### Fixed
+- Fixed zoom and pan gestures being interrupted mid-interaction due to gesture recognizer recreation
+- Fixed gesture recognizer caching not being populated in `FusionInteractiveChartState`
+- Added gesture recognizer caching to `FusionBarInteractiveState` and `FusionStackedBarInteractiveState`
+- Fixed unnecessary widget rebuilds during pan/zoom start that killed in-progress gestures
+- Fixed `FusionInteractionHandler` being recreated during active gestures, which reset `_lastScale` and broke incremental pinch-zoom calculations
+- **Fixed zoom state being reset on widget rebuild** — coordinate system updates during active gestures now preserve zoomed data bounds while only updating screen dimensions
+- Fixed timer cleanup in multi-touch interaction tests
+
+### Deprecated
+The following fields are ignored and will be removed in v2.0.0. Use the top-level configuration flags instead:
+
+- `FusionZoomConfiguration.enabled` → Use `FusionChartConfiguration.enableZoom`
+- `FusionPanConfiguration.enabled` → Use `FusionChartConfiguration.enablePanning`
+- `FusionTooltipBehavior.enable` → Use `FusionChartConfiguration.enableTooltip`
+- `FusionCrosshairConfiguration.enabled` → Use `FusionChartConfiguration.enableCrosshair`
+
+---
+
 ## [Unreleased]
 
 ### Planned
@@ -121,6 +182,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
-| Version | Date       | Description     |
-|---------|------------|-----------------|
-| 1.0.0   | 2026-01-01 | Initial release |
+| Version | Date       | Description                                                      |
+|---------|------------|------------------------------------------------------------------|
+| 1.0.1   | 2026-01-13 | Programmatic control API, labelGenerator, zoom/pan fixes, deprecations |
+| 1.0.0   | 2026-01-01 | Initial release                                                  |

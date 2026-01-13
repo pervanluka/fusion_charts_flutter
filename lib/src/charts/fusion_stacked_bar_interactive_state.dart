@@ -4,13 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
 import '../configuration/fusion_chart_configuration.dart';
 import '../configuration/fusion_tooltip_configuration.dart';
+import '../configuration/fusion_zoom_configuration.dart';
 import '../core/enums/fusion_zoom_mode.dart';
 import '../data/fusion_data_point.dart';
 import '../rendering/fusion_coordinate_system.dart';
 import '../rendering/fusion_interaction_handler.dart';
 import '../rendering/fusion_stacked_bar_hit_tester.dart';
 import '../series/fusion_stacked_bar_series.dart';
+import '../utils/fusion_desktop_helper.dart';
 import 'base/fusion_interactive_state_base.dart';
+import 'mixins/fusion_zoom_animation_mixin.dart';
 
 /// Tooltip data specifically for stacked bars.
 ///
@@ -44,6 +47,7 @@ class StackedTooltipData extends FusionTooltipDataBase {
 /// Implements [FusionInteractiveStateBase] for compatibility with
 /// the base chart widget architecture.
 class FusionStackedBarInteractiveState extends ChangeNotifier
+    with FusionZoomAnimationMixin
     implements FusionInteractiveStateBase {
   FusionStackedBarInteractiveState({
     required this.config,
@@ -59,8 +63,7 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
 
   FusionCoordinateSystem _currentCoordSystem;
   final FusionCoordinateSystem _originalCoordSystem;
-  final FusionStackedBarHitTester _hitTester =
-      const FusionStackedBarHitTester();
+  final FusionStackedBarHitTester _hitTester = const FusionStackedBarHitTester();
   FusionInteractionHandler? _interactionHandler;
 
   // Tooltip state
@@ -78,10 +81,16 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
   // Zoom/Pan state
   bool _isPanning = false;
   bool _isZooming = false;
+  bool _hasActiveZoom = false; // Tracks if user has zoomed (persists after gesture ends)
+  double _lastScale = 1.0; // For converting cumulative scale to delta
 
   // Timers
   Timer? _tooltipHideTimer;
   Timer? _crosshairHideTimer;
+
+  // Cached gesture recognizers - prevents recreation on rebuild which kills in-progress gestures
+  Map<Type, GestureRecognizerFactory>? _cachedGestureRecognizers;
+  int? _lastGestureConfigHash;
 
   // Getters
   @override
@@ -95,9 +104,52 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
   @override
   FusionDataPoint? get crosshairPoint => null; // Stacked bars don't use crosshair points
   @override
-  bool get isInteracting => _isPanning || _isZooming;
+  bool get isInteracting => _isPanning || _isZooming || isAnimatingZoom;
   @override
   bool get isPointerDown => _isPointerDown;
+
+  // ===========================================================================
+  // ZOOM ANIMATION MIXIN IMPLEMENTATION
+  // ===========================================================================
+
+  @override
+  FusionZoomConfiguration get zoomConfig => config.zoomBehavior;
+
+  @override
+  FusionCoordinateSystem get currentCoordSystem => _currentCoordSystem;
+
+  @override
+  FusionCoordinateSystem get originalCoordSystem => _originalCoordSystem;
+
+  @override
+  set currentCoordSystemValue(FusionCoordinateSystem value) {
+    _currentCoordSystem = value;
+  }
+
+  @override
+  void onZoomAnimationUpdate() {
+    notifyListeners();
+  }
+
+  @override
+  void onZoomComplete() {
+    // Check if we're back to original bounds
+    final isAtOriginal =
+        (_currentCoordSystem.dataXMin - _originalCoordSystem.dataXMin).abs() < 0.001 &&
+        (_currentCoordSystem.dataXMax - _originalCoordSystem.dataXMax).abs() < 0.001 &&
+        (_currentCoordSystem.dataYMin - _originalCoordSystem.dataYMin).abs() < 0.001 &&
+        (_currentCoordSystem.dataYMax - _originalCoordSystem.dataYMax).abs() < 0.001;
+
+    _hasActiveZoom = !isAtOriginal;
+    _rebuildInteractionHandler();
+  }
+
+  /// Public methods for zoom controls
+  @override
+  void zoomIn() => zoomInByControl();
+
+  @override
+  void zoomOut() => zoomOutByControl();
 
   @override
   void initialize() {
@@ -112,12 +164,24 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
     );
   }
 
-  /// Updates the coordinate system when chart dimensions change.
-  /// Always updates without comparison to ensure proper responsiveness.
   @override
   void updateCoordinateSystem(FusionCoordinateSystem newCoordSystem) {
-    _currentCoordSystem = newCoordSystem;
-    _rebuildInteractionHandler();
+    if (isInteracting || _hasActiveZoom) {
+      _currentCoordSystem = FusionCoordinateSystem(
+        chartArea: newCoordSystem.chartArea,
+        dataXMin: _currentCoordSystem.dataXMin,
+        dataXMax: _currentCoordSystem.dataXMax,
+        dataYMin: _currentCoordSystem.dataYMin,
+        dataYMax: _currentCoordSystem.dataYMax,
+        devicePixelRatio: newCoordSystem.devicePixelRatio,
+      );
+      if (!isInteracting) {
+        _rebuildInteractionHandler();
+      }
+    } else {
+      _currentCoordSystem = newCoordSystem;
+      _rebuildInteractionHandler();
+    }
   }
 
   // ========================================================================
@@ -237,54 +301,38 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
         return;
       }
 
-      final scaleFactor = _interactionHandler!.calculateMouseWheelZoom(
-        event.scrollDelta.dy,
+      // Check for modifier key requirement (Ctrl/Cmd + scroll to zoom)
+      if (config.zoomBehavior.requireModifierForWheelZoom) {
+        final hasModifier = FusionDesktopHelper.isControlPressed ||
+            FusionDesktopHelper.isMetaPressed;
+        if (!hasModifier) {
+          return;
+        }
+      }
+
+      // Register with pointer signal resolver to consume the event.
+      // This prevents the scroll from propagating to parent scrollables.
+      GestureBinding.instance.pointerSignalResolver.register(
+        event,
+        (PointerSignalEvent resolvedEvent) {
+          if (resolvedEvent is PointerScrollEvent) {
+            final scaleFactor = _interactionHandler!.calculateMouseWheelZoom(
+              resolvedEvent.scrollDelta.dy,
+            );
+            _applyZoom(scaleFactor, resolvedEvent.localPosition);
+          }
+        },
       );
-      _applyZoom(scaleFactor, event.localPosition);
     }
   }
 
   void _applyZoom(double scaleFactor, Offset focalPoint) {
-    final currentXMin = _currentCoordSystem.dataXMin;
-    final currentXMax = _currentCoordSystem.dataXMax;
-    final currentYMin = _currentCoordSystem.dataYMin;
-    final currentYMax = _currentCoordSystem.dataYMax;
-
-    final newBounds = _interactionHandler!.calculateZoomedBounds(
+    applyZoom(
       scaleFactor,
       focalPoint,
-      currentXMin,
-      currentXMax,
-      currentYMin,
-      currentYMax,
+      _interactionHandler!,
+      (value) => _hasActiveZoom = value,
     );
-
-    final originalXMin = _originalCoordSystem.dataXMin;
-    final originalXMax = _originalCoordSystem.dataXMax;
-    final originalYMin = _originalCoordSystem.dataYMin;
-    final originalYMax = _originalCoordSystem.dataYMax;
-
-    final constrainedBounds = _interactionHandler!.constrainBounds(
-      newBounds.xMin,
-      newBounds.xMax,
-      newBounds.yMin,
-      newBounds.yMax,
-      originalXMin,
-      originalXMax,
-      originalYMin,
-      originalYMax,
-    );
-
-    _currentCoordSystem = FusionCoordinateSystem(
-      chartArea: _currentCoordSystem.chartArea,
-      dataXMin: constrainedBounds.xMin,
-      dataXMax: constrainedBounds.xMax,
-      dataYMin: constrainedBounds.yMin,
-      dataYMax: constrainedBounds.yMax,
-      devicePixelRatio: _currentCoordSystem.devicePixelRatio,
-    );
-
-    notifyListeners();
   }
 
   // ========================================================================
@@ -295,11 +343,11 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
     if (!config.enablePanning) return;
     _isPanning = true;
 
-    if (config.tooltipBehavior.fadeOutOnPanZoom && _tooltipData != null) {
-      _tooltipOpacity = 0.3;
+    if (_tooltipData != null) {
+      _tooltipData = null;
+      _tooltipOpacity = 0.0;
+      notifyListeners();
     }
-
-    notifyListeners();
   }
 
   void _handlePanUpdate(Offset delta) {
@@ -338,11 +386,7 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
 
   void _handlePanEnd() {
     _isPanning = false;
-
-    if (_tooltipData != null) {
-      _tooltipOpacity = 1.0;
-    }
-
+    _rebuildInteractionHandler();
     notifyListeners();
   }
 
@@ -356,12 +400,13 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
     if (config.zoomBehavior.zoomMode == FusionZoomMode.none) return;
 
     _isZooming = true;
+    _lastScale = 1.0;
 
-    if (config.tooltipBehavior.fadeOutOnPanZoom && _tooltipData != null) {
-      _tooltipOpacity = 0.3;
+    if (_tooltipData != null) {
+      _tooltipData = null;
+      _tooltipOpacity = 0.0;
+      notifyListeners();
     }
-
-    notifyListeners();
   }
 
   void _handleScaleUpdate(double scaleFactor, Offset focalPoint) {
@@ -374,11 +419,7 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
 
   void _handleScaleEnd() {
     _isZooming = false;
-
-    if (_tooltipData != null) {
-      _tooltipOpacity = 1.0;
-    }
-
+    _rebuildInteractionHandler();
     notifyListeners();
   }
 
@@ -386,8 +427,10 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
   // RESET
   // ========================================================================
 
+  @override
   void reset() {
     _currentCoordSystem = _originalCoordSystem;
+    _hasActiveZoom = false;
     _hideTooltip();
     _hideCrosshair();
     notifyListeners();
@@ -405,10 +448,7 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
     }
 
     // Position tooltip at the top center of the stack
-    final tooltipPosition = Offset(
-      hitResult.stackRect.center.dx,
-      hitResult.stackRect.top,
-    );
+    final tooltipPosition = Offset(hitResult.stackRect.center.dx, hitResult.stackRect.top);
 
     _tooltipData = StackedTooltipData(
       categoryLabel: hitResult.categoryLabel,
@@ -460,14 +500,8 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
     final dataX = _currentCoordSystem.screenXToDataX(position.dx);
     final dataY = _currentCoordSystem.screenYToDataY(position.dy);
 
-    final clampedDataX = dataX.clamp(
-      _currentCoordSystem.dataXMin,
-      _currentCoordSystem.dataXMax,
-    );
-    final clampedDataY = dataY.clamp(
-      _currentCoordSystem.dataYMin,
-      _currentCoordSystem.dataYMax,
-    );
+    final clampedDataX = dataX.clamp(_currentCoordSystem.dataXMin, _currentCoordSystem.dataXMax);
+    final clampedDataY = dataY.clamp(_currentCoordSystem.dataYMin, _currentCoordSystem.dataYMax);
 
     final clampedPosition = Offset(
       _currentCoordSystem.dataXToScreenX(clampedDataX),
@@ -495,25 +529,62 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
   // GESTURE RECOGNIZERS
   // ========================================================================
 
+  /// Computes a hash of configuration options that affect gesture behavior.
+  /// Used to determine when gesture recognizers need to be recreated.
+  int _computeGestureConfigHash() {
+    return Object.hash(
+      config.enableTooltip,
+      config.enableSelection,
+      config.enableCrosshair,
+      config.enableZoom,
+      config.enablePanning,
+      config.zoomBehavior.enablePinchZoom,
+      config.zoomBehavior.enableDoubleTapZoom,
+      config.zoomBehavior.zoomMode,
+    );
+  }
+
   @override
   Map<Type, GestureRecognizerFactory> getGestureRecognizers() {
+    final currentHash = _computeGestureConfigHash();
+    if (_cachedGestureRecognizers != null && _lastGestureConfigHash == currentHash) {
+      return _cachedGestureRecognizers!;
+    }
+
     final recognizers = <Type, GestureRecognizerFactory>{};
 
     if (config.enableTooltip || config.enableSelection) {
       recognizers[TapGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
-            TapGestureRecognizer.new,
-            (recognizer) {
-              recognizer.onTapDown = (details) {
-                final hitResult = _hitTester.hitTest(
-                  screenPosition: details.localPosition,
-                  allSeries: series,
-                  coordSystem: _currentCoordSystem,
-                  isStacked100: isStacked100,
-                );
+          GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(TapGestureRecognizer.new, (
+            recognizer,
+          ) {
+            recognizer.onTapDown = (details) {
+              final hitResult = _hitTester.hitTest(
+                screenPosition: details.localPosition,
+                allSeries: series,
+                coordSystem: _currentCoordSystem,
+                isStacked100: isStacked100,
+              );
 
-                if (hitResult != null && config.enableTooltip) {
-                  _showTooltip(hitResult);
+              if (hitResult != null && config.enableTooltip) {
+                _showTooltip(hitResult);
+              }
+            };
+          });
+    }
+
+    // Double-tap to zoom in/reset
+    if (config.enableZoom && config.zoomBehavior.enableDoubleTapZoom) {
+      recognizers[DoubleTapGestureRecognizer] =
+          GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
+            DoubleTapGestureRecognizer.new,
+            (recognizer) {
+              recognizer.onDoubleTapDown = (details) {
+                _lastPointerPosition = details.localPosition;
+              };
+              recognizer.onDoubleTap = () {
+                if (_lastPointerPosition != null) {
+                  handleDoubleTapZoom(_lastPointerPosition!, hasActiveZoom: _hasActiveZoom);
                 }
               };
             },
@@ -553,81 +624,84 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
           );
     }
 
-    // Use ScaleGestureRecognizer when both zoom and pan are enabled
     if (config.enableZoom && config.enablePanning) {
       recognizers[ScaleGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
-            ScaleGestureRecognizer.new,
-            (recognizer) {
-              recognizer
-                ..onStart = (details) {
-                  _handleScaleStart(details.localFocalPoint);
+          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(ScaleGestureRecognizer.new, (
+            recognizer,
+          ) {
+            recognizer
+              ..onStart = (details) {
+                _lastPointerPosition = details.localFocalPoint;
+                _handleScaleStart(details.localFocalPoint);
+              }
+              ..onUpdate = (details) {
+                if (details.scale == 1.0) {
+                  if (!_isPanning) {
+                    _handlePanStart(details.localFocalPoint);
+                  }
+                  if (_lastPointerPosition != null) {
+                    final delta = details.localFocalPoint - _lastPointerPosition!;
+                    _handlePanUpdate(delta);
+                  }
+                  _lastPointerPosition = details.localFocalPoint;
+                } else {
+                  final scaleDelta = details.scale / _lastScale;
+                  _lastScale = details.scale;
+                  _handleScaleUpdate(scaleDelta, details.localFocalPoint);
                 }
-                ..onUpdate = (details) {
-                  if (details.scale == 1.0) {
-                    // Pan gesture
-                    if (!_isPanning) {
-                      _handlePanStart(details.localFocalPoint);
-                    }
-                    if (_lastPointerPosition != null) {
-                      final delta =
-                          details.localFocalPoint - _lastPointerPosition!;
-                      _handlePanUpdate(delta);
-                    }
-                    _lastPointerPosition = details.localFocalPoint;
-                  } else {
-                    // Pinch zoom
-                    _handleScaleUpdate(details.scale, details.localFocalPoint);
-                  }
+              }
+              ..onEnd = (details) {
+                if (_isPanning) {
+                  _handlePanEnd();
                 }
-                ..onEnd = (details) {
-                  if (_isPanning) {
-                    _handlePanEnd();
-                  }
-                  if (_isZooming) {
-                    _handleScaleEnd();
-                  }
-                  _lastPointerPosition = null;
-                };
-            },
-          );
+                if (_isZooming) {
+                  _handleScaleEnd();
+                }
+                _lastPointerPosition = null;
+                _lastScale = 1.0;
+              };
+          });
     } else if (config.enablePanning) {
       recognizers[PanGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(
-            PanGestureRecognizer.new,
-            (recognizer) {
-              recognizer
-                ..onStart = (details) {
-                  _handlePanStart(details.localPosition);
-                }
-                ..onUpdate = (details) {
-                  _handlePanUpdate(details.delta);
-                }
-                ..onEnd = (details) {
-                  _handlePanEnd();
-                };
-            },
-          );
+          GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(PanGestureRecognizer.new, (
+            recognizer,
+          ) {
+            recognizer
+              ..onStart = (details) {
+                _handlePanStart(details.localPosition);
+              }
+              ..onUpdate = (details) {
+                _handlePanUpdate(details.delta);
+              }
+              ..onEnd = (details) {
+                _handlePanEnd();
+              };
+          });
     } else if (config.enableZoom) {
       recognizers[ScaleGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
-            ScaleGestureRecognizer.new,
-            (recognizer) {
-              recognizer
-                ..onStart = (details) {
-                  _handleScaleStart(details.localFocalPoint);
+          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(ScaleGestureRecognizer.new, (
+            recognizer,
+          ) {
+            recognizer
+              ..onStart = (details) {
+                _handleScaleStart(details.localFocalPoint);
+              }
+              ..onUpdate = (details) {
+                if (details.scale != 1.0) {
+                  final scaleDelta = details.scale / _lastScale;
+                  _lastScale = details.scale;
+                  _handleScaleUpdate(scaleDelta, details.localFocalPoint);
                 }
-                ..onUpdate = (details) {
-                  if (details.scale != 1.0) {
-                    _handleScaleUpdate(details.scale, details.localFocalPoint);
-                  }
-                }
-                ..onEnd = (details) {
-                  _handleScaleEnd();
-                };
-            },
-          );
+              }
+              ..onEnd = (details) {
+                _handleScaleEnd();
+                _lastScale = 1.0;
+              };
+          });
     }
+
+    _cachedGestureRecognizers = recognizers;
+    _lastGestureConfigHash = currentHash;
 
     return recognizers;
   }
@@ -636,6 +710,7 @@ class FusionStackedBarInteractiveState extends ChangeNotifier
   void dispose() {
     _tooltipHideTimer?.cancel();
     _crosshairHideTimer?.cancel();
+    disposeZoomAnimation();
     super.dispose();
   }
 }

@@ -36,6 +36,10 @@ class FusionCrosshairConfiguration {
   /// Creates a crosshair configuration.
   const FusionCrosshairConfiguration({
     // Core
+    @Deprecated(
+      'Use FusionChartConfiguration.enableCrosshair instead. '
+      'This field is ignored and will be removed in v2.0.0.',
+    )
     this.enabled = true,
 
     this.activationMode = FusionCrosshairActivationMode.longPress,
@@ -74,6 +78,13 @@ class FusionCrosshairConfiguration {
   // ==========================================================================
 
   /// Whether the crosshair is enabled.
+  ///
+  /// @deprecated Use [FusionChartConfiguration.enableCrosshair] instead.
+  /// This field is ignored and will be removed in v2.0.0.
+  @Deprecated(
+    'Use FusionChartConfiguration.enableCrosshair instead. '
+    'This field is ignored and will be removed in v2.0.0.',
+  )
   final bool enabled;
 
   /// How the crosshair is activated.
@@ -236,6 +247,10 @@ class FusionCrosshairConfiguration {
 
   /// Creates a copy with modified values.
   FusionCrosshairConfiguration copyWith({
+    @Deprecated(
+      'Use FusionChartConfiguration.enableCrosshair instead. '
+      'This field is ignored and will be removed in v2.0.0.',
+    )
     bool? enabled,
     FusionCrosshairActivationMode? activationMode,
     FusionDismissStrategy? dismissStrategy,

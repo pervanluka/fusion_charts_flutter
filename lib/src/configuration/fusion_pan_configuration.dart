@@ -6,6 +6,10 @@ import '../core/enums/fusion_pan_mode.dart';
 @immutable
 class FusionPanConfiguration {
   const FusionPanConfiguration({
+    @Deprecated(
+      'Use FusionChartConfiguration.enablePanning instead. '
+      'This field is ignored and will be removed in v2.0.0.',
+    )
     this.enabled = false,
     this.panMode = FusionPanMode.both,
     this.enableInertia = true,
@@ -15,6 +19,13 @@ class FusionPanConfiguration {
   });
 
   /// Whether panning is enabled.
+  ///
+  /// @deprecated Use [FusionChartConfiguration.enablePanning] instead.
+  /// This field is ignored and will be removed in v2.0.0.
+  @Deprecated(
+    'Use FusionChartConfiguration.enablePanning instead. '
+    'This field is ignored and will be removed in v2.0.0.',
+  )
   final bool enabled;
 
   /// Which axes can be panned.

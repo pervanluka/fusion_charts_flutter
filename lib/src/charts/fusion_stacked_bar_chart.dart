@@ -8,10 +8,12 @@ import '../configuration/fusion_stacked_bar_chart_configuration.dart';
 import '../configuration/fusion_stacked_tooltip_builder.dart';
 import '../configuration/fusion_tooltip_configuration.dart';
 import '../configuration/fusion_zoom_configuration.dart';
+import '../controllers/fusion_chart_controller.dart';
 import '../data/fusion_data_point.dart';
 import '../rendering/engine/fusion_paint_pool.dart';
 import '../rendering/engine/fusion_shader_cache.dart';
 import '../rendering/fusion_coordinate_system.dart';
+import '../rendering/layers/fusion_selection_rect_layer.dart';
 import '../rendering/painters/fusion_stacked_bar_chart_painter.dart';
 import '../series/fusion_stacked_bar_series.dart';
 import '../utils/chart_bounds_calculator.dart';
@@ -84,6 +86,7 @@ class FusionStackedBarChart extends StatefulWidget {
     this.yAxis,
     this.title,
     this.subtitle,
+    this.controller,
     this.onBarTap,
     this.onBarLongPress,
   }) : assert(series.length > 0, 'At least one series is required');
@@ -114,6 +117,9 @@ class FusionStackedBarChart extends StatefulWidget {
 
   /// Optional chart subtitle.
   final String? subtitle;
+
+  /// Controller for programmatic zoom/pan control.
+  final FusionChartController? controller;
 
   /// Callback when a bar segment is tapped.
   final void Function(FusionDataPoint point, String seriesName)? onBarTap;
@@ -172,6 +178,15 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
     super.initState();
     _initAnimation();
     _initInteractiveState();
+    _attachController();
+  }
+
+  void _attachController() {
+    widget.controller?.attach(_interactiveState);
+  }
+
+  void _detachController() {
+    widget.controller?.detach();
   }
 
   void _initAnimation() {
@@ -281,13 +296,22 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
       _animationController.reset();
       _animationController.forward();
 
+      _detachController();
       _interactiveState.dispose();
       _initInteractiveState();
+      _attachController();
+    }
+
+    // Handle controller changes
+    if (widget.controller != oldWidget.controller) {
+      oldWidget.controller?.detach();
+      widget.controller?.attach(_interactiveState);
     }
   }
 
   @override
   void dispose() {
+    _detachController();
     _animationController.dispose();
     _interactiveState.dispose();
     super.dispose();
@@ -335,28 +359,43 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
                       onPointerSignal: _interactiveState.handlePointerSignal,
                       child: RawGestureDetector(
                         gestures: _interactiveState.getGestureRecognizers(),
-                        child: CustomPaint(
-                          size: size,
-                          painter: FusionStackedBarChartPainter(
-                            series: widget.series,
-                            coordSystem: _interactiveState.coordSystem,
-                            theme: theme,
-                            xAxis: widget.xAxis,
-                            yAxis: widget.yAxis,
-                            animationProgress: _animation.value,
-                            // Only pass tooltip data if NOT using custom builder
-                            stackedTooltipData: hasCustomBuilder
-                                ? null
-                                : _interactiveState.tooltipData,
-                            crosshairPosition: null,
-                            crosshairPoint: null,
-                            config: config,
-                            paintPool: _paintPool,
-                            shaderCache: _shaderCache,
-                            isStacked100: config.isStacked100,
-                            tooltipValueFormatter: config.tooltipValueFormatter,
-                            tooltipTotalFormatter: config.tooltipTotalFormatter,
-                          ),
+                        child: Stack(
+                          children: [
+                            CustomPaint(
+                              size: size,
+                              painter: FusionStackedBarChartPainter(
+                                series: widget.series,
+                                coordSystem: _interactiveState.coordSystem,
+                                theme: theme,
+                                xAxis: widget.xAxis,
+                                yAxis: widget.yAxis,
+                                animationProgress: _animation.value,
+                                // Only pass tooltip data if NOT using custom builder
+                                stackedTooltipData: hasCustomBuilder
+                                    ? null
+                                    : _interactiveState.tooltipData,
+                                crosshairPosition: null,
+                                crosshairPoint: null,
+                                config: config,
+                                paintPool: _paintPool,
+                                shaderCache: _shaderCache,
+                                isStacked100: config.isStacked100,
+                                tooltipValueFormatter: config.tooltipValueFormatter,
+                                tooltipTotalFormatter: config.tooltipTotalFormatter,
+                              ),
+                            ),
+                            // Selection rectangle overlay
+                            if (_interactiveState.selectionRect != null)
+                              Positioned.fill(
+                                child: CustomPaint(
+                                  painter: FusionSelectionRectLayer(
+                                    selectionRect: _interactiveState.selectionRect!,
+                                    fillColor: theme.primaryColor.withValues(alpha: 0.1),
+                                    borderColor: theme.primaryColor,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     );

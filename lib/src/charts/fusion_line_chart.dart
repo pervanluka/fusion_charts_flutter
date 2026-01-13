@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../configuration/fusion_axis_configuration.dart';
 import '../configuration/fusion_chart_configuration.dart';
+import '../controllers/fusion_chart_controller.dart';
 import '../data/fusion_data_point.dart';
 import '../rendering/engine/fusion_paint_pool.dart';
 import '../rendering/engine/fusion_shader_cache.dart';
 import '../rendering/fusion_coordinate_system.dart';
+import '../rendering/layers/fusion_selection_rect_layer.dart';
 import '../rendering/painters/fusion_line_chart_painter.dart';
 import '../series/fusion_line_series.dart';
 import '../series/series_with_data_points.dart';
@@ -23,6 +25,7 @@ class FusionLineChart extends StatefulWidget {
     this.yAxis,
     this.title,
     this.subtitle,
+    this.controller,
     this.onPointTap,
     this.onPointLongPress,
   }) : assert(series.length > 0, 'At least one series is required');
@@ -33,6 +36,10 @@ class FusionLineChart extends StatefulWidget {
   final FusionAxisConfiguration? yAxis;
   final String? title;
   final String? subtitle;
+
+  /// Controller for programmatic zoom/pan control.
+  final FusionChartController? controller;
+
   final void Function(FusionDataPoint point, String seriesName)? onPointTap;
   final void Function(FusionDataPoint point, String seriesName)?
   onPointLongPress;
@@ -56,6 +63,15 @@ class _FusionLineChartState extends State<FusionLineChart>
     super.initState();
     _initAnimation();
     _initInteractiveState();
+    _attachController();
+  }
+
+  void _attachController() {
+    widget.controller?.attach(_interactiveState);
+  }
+
+  void _detachController() {
+    widget.controller?.detach();
   }
 
   void _initAnimation() {
@@ -159,17 +175,26 @@ class _FusionLineChartState extends State<FusionLineChart>
       _animationController.forward();
 
       // Update interactive state with new series
+      _detachController();
       _interactiveState.dispose();
       _initInteractiveState();
+      _attachController();
     }
 
     if (widget.config != oldWidget.config) {
       _initAnimation();
     }
+
+    // Handle controller changes
+    if (widget.controller != oldWidget.controller) {
+      oldWidget.controller?.detach();
+      widget.controller?.attach(_interactiveState);
+    }
   }
 
   @override
   void dispose() {
+    _detachController();
     _animationController.dispose();
     _interactiveState.dispose();
     super.dispose();
@@ -224,23 +249,38 @@ class _FusionLineChartState extends State<FusionLineChart>
                       },
                       child: RawGestureDetector(
                         gestures: _interactiveState.getGestureRecognizers(),
-                        child: CustomPaint(
-                          size: size,
-                          painter: FusionLineChartPainter(
-                            series: widget.series,
-                            coordSystem: _interactiveState.coordSystem,
-                            theme: theme,
-                            xAxis: widget.xAxis,
-                            yAxis: widget.yAxis,
-                            animationProgress: _animation.value,
-                            tooltipData: _interactiveState.tooltipData,
-                            crosshairPosition:
-                                _interactiveState.crosshairPosition,
-                            crosshairPoint: _interactiveState.crosshairPoint,
-                            config: config,
-                            paintPool: _paintPool,
-                            shaderCache: _shaderCache,
-                          ),
+                        child: Stack(
+                          children: [
+                            CustomPaint(
+                              size: size,
+                              painter: FusionLineChartPainter(
+                                series: widget.series,
+                                coordSystem: _interactiveState.coordSystem,
+                                theme: theme,
+                                xAxis: widget.xAxis,
+                                yAxis: widget.yAxis,
+                                animationProgress: _animation.value,
+                                tooltipData: _interactiveState.tooltipData,
+                                crosshairPosition:
+                                    _interactiveState.crosshairPosition,
+                                crosshairPoint: _interactiveState.crosshairPoint,
+                                config: config,
+                                paintPool: _paintPool,
+                                shaderCache: _shaderCache,
+                              ),
+                            ),
+                            // Selection rectangle overlay
+                            if (_interactiveState.selectionRect != null)
+                              Positioned.fill(
+                                child: CustomPaint(
+                                  painter: FusionSelectionRectLayer(
+                                    selectionRect: _interactiveState.selectionRect!,
+                                    fillColor: theme.primaryColor.withValues(alpha: 0.1),
+                                    borderColor: theme.primaryColor,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     );

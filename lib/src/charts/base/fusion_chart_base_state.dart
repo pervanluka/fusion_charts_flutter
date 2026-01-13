@@ -370,11 +370,14 @@ abstract class FusionChartBaseState<
       onPointerSignal: _interactiveState.handlePointerSignal,
       child: RawGestureDetector(
         gestures: _interactiveState.getGestureRecognizers(),
-        child: CustomPaint(
-          size: size,
-          painter: createPainter(
-            coordSystem: _interactiveState.coordSystem,
-            animationProgress: _animation.value,
+        // CRITICAL: Clip the chart content to prevent overflow when zoomed
+        child: ClipRect(
+          child: CustomPaint(
+            size: size,
+            painter: createPainter(
+              coordSystem: _interactiveState.coordSystem,
+              animationProgress: _animation.value,
+            ),
           ),
         ),
       ),
