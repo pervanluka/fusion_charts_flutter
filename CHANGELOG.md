@@ -102,6 +102,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-02-19
+
+### Added
+
+#### Live Chart Streaming
+- **`FusionLiveChartController`** — Real-time data streaming with automatic viewport management
+  - `addDataPoint()` / `addDataPoints()` for streaming data
+  - `pause()` / `resume()` for stream control
+  - Configurable viewport modes: `sliding`, `expanding`, `fixed`
+  - Auto-scroll with configurable window duration
+- **LTTB Downsampling** — Largest Triangle Three Buckets algorithm for `DownsampledPolicy`
+  - Archive storage for older data combined with recent full-resolution points
+  - Maintains visual fidelity while reducing point count
+- **Live Tooltip Probe Mode** — Real-time data tracking at fixed screen position
+  - `updateLiveTooltip()` method for proper tooltip updates during streaming
+- **`FusionLiveChartMixin`** — Reusable mixin for live streaming functionality
+
+#### Crosshair Enhancements
+- `FusionCrosshairLabelFormatter` — Custom axis label formatting callback
+- `FusionCrosshairLabelBuilder` — Custom label widget builder
+- `InteractionAnchorMode` — Persistent crosshair anchoring modes
+
+#### Performance Optimizations
+- Batch grid line and tick rendering using Path (reduces N drawLine calls to 1 drawPath)
+- Cache `TextPainter` instances and label sizes in axis renderers
+- Binary search for nearest point lookup (O(log n) vs O(n))
+- Quick sorted-data detection to choose optimal search algorithm
+
+#### Comprehensive Test Suite
+- Added 54 new test files covering all major components
+- Total test count: **3,626 tests**
+- Test coverage increased from ~60% to **75.86%** (8,864/11,685 lines)
+- Full coverage for axis renderers, tooltip system, data labels, interactive states
+- Extensive tests for DST handling, render pipeline, chart themes, error boundaries
+
+#### Examples
+- New `live_chart_showcase.dart` — Comprehensive example with live streaming demonstrations
+
+### Changed
+- Removed deprecated `enabled` field from `FusionZoomConfiguration` (use `FusionChartConfiguration.enableZoom`)
+- Removed deprecated `enabled` field from `FusionPanConfiguration` (use `FusionChartConfiguration.enablePanning`)
+- Migrated deprecated `Color.value` to `Color.toARGB32()` throughout codebase
+- Replaced unnecessary lambdas with method tearoffs for better performance
+- Updated `withOpacity` calls to `withValues(alpha:)` for Flutter 3.22+ compatibility
+
+### Fixed
+- Fixed multi-series live chart tooltip incorrectly switching to first series when mouse stops moving
+- Fixed dual timer inconsistency in `hideTooltip()` causing stale callbacks
+- Added disposal protection to prevent "disposed EngineFlutterView" errors
+- Resolved all lint warnings for clean static analysis
+
+### Quality
+- **Pana Score**: 160/160 (perfect score)
+- **Static Analysis**: 0 issues
+- All tests passing
+
+---
+
 ## [1.0.1] - 2026-01-13
 
 ### Added
@@ -174,7 +232,6 @@ The following fields are ignored and will be removed in v2.0.0. Use the top-leve
 - Funnel charts
 - Multiple Y-axes
 - Annotations and plot bands
-- Real-time streaming data API
 - Export to image (PNG, SVG)
 - Accessibility improvements (Semantics)
 
@@ -184,5 +241,6 @@ The following fields are ignored and will be removed in v2.0.0. Use the top-leve
 
 | Version | Date       | Description                                                      |
 |---------|------------|------------------------------------------------------------------|
+| 1.1.0   | 2026-02-19 | Live chart streaming, LTTB downsampling, 75.86% test coverage    |
 | 1.0.1   | 2026-01-13 | Programmatic control API, labelGenerator, zoom/pan fixes, deprecations |
 | 1.0.0   | 2026-01-01 | Initial release                                                  |

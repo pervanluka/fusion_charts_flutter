@@ -71,6 +71,14 @@ class NumericAxisRenderer extends FusionAxisRenderer {
   AxisBounds? _cachedBounds;
   List<AxisLabel>? _cachedLabels;
 
+  /// OPTIMIZATION: Reusable TextPainter instance to avoid recreation per label.
+  TextPainter? _cachedTextPainter;
+
+  /// OPTIMIZATION: Cache measured label sizes keyed by label text.
+  /// This avoids redundant TextPainter.layout() calls when labels don't change.
+  Map<String, Size>? _cachedLabelSizes;
+  TextStyle? _lastLabelStyle;
+
   // ==========================================================================
   // EFFECTIVE VALUE GETTERS (Configuration → Axis → Default)
   // ==========================================================================
@@ -409,22 +417,43 @@ class NumericAxisRenderer extends FusionAxisRenderer {
 
     if (labels.isEmpty) return Size.zero;
 
-    final textPainter = TextPainter(textDirection: TextDirection.ltr);
-
-    double maxWidth = 0;
-    double maxHeight = 0;
-
     final labelStyle =
         configuration.labelStyle ??
         theme?.axisLabelStyle ??
         const TextStyle(fontSize: 12);
 
-    for (final label in labels) {
-      textPainter.text = TextSpan(text: label.text, style: labelStyle);
-      textPainter.layout();
+    // OPTIMIZATION: Invalidate cache if style changed
+    if (_lastLabelStyle != labelStyle) {
+      _cachedLabelSizes = null;
+      _lastLabelStyle = labelStyle;
+    }
 
-      maxWidth = math.max(maxWidth, textPainter.width);
-      maxHeight = math.max(maxHeight, textPainter.height);
+    // OPTIMIZATION: Reuse TextPainter instance
+    _cachedTextPainter ??= TextPainter(textDirection: TextDirection.ltr);
+    final textPainter = _cachedTextPainter!;
+
+    // OPTIMIZATION: Initialize or reuse label size cache
+    _cachedLabelSizes ??= {};
+    final sizeCache = _cachedLabelSizes!;
+
+    double maxWidth = 0;
+    double maxHeight = 0;
+
+    for (final label in labels) {
+      Size labelSize;
+
+      // OPTIMIZATION: Check cache before measuring
+      if (sizeCache.containsKey(label.text)) {
+        labelSize = sizeCache[label.text]!;
+      } else {
+        textPainter.text = TextSpan(text: label.text, style: labelStyle);
+        textPainter.layout();
+        labelSize = Size(textPainter.width, textPainter.height);
+        sizeCache[label.text] = labelSize;
+      }
+
+      maxWidth = math.max(maxWidth, labelSize.width);
+      maxHeight = math.max(maxHeight, labelSize.height);
     }
 
     const padding = 8.0;
@@ -492,47 +521,61 @@ class NumericAxisRenderer extends FusionAxisRenderer {
     final tickLength = configuration.majorTickLength ?? 6.0;
     final labels = _cachedLabels ?? generateLabels(bounds);
 
+    // OPTIMIZATION: Batch all tick lines into a single Path
+    final path = Path();
+
     for (final label in labels) {
       final position = label.position;
 
       if (isVertical) {
         final y = axisArea.bottom - (position * axisArea.height);
         final snappedY = y.roundToDouble();
-        canvas.drawLine(
-          Offset(axisArea.right, snappedY),
-          Offset(axisArea.right + tickLength, snappedY),
-          paint,
-        );
+        path.moveTo(axisArea.right, snappedY);
+        path.lineTo(axisArea.right + tickLength, snappedY);
       } else {
         final x = axisArea.left + (position * axisArea.width);
         final snappedX = x.roundToDouble();
-        canvas.drawLine(
-          Offset(snappedX, axisArea.top),
-          Offset(snappedX, axisArea.top + tickLength),
-          paint,
-        );
+        path.moveTo(snappedX, axisArea.top);
+        path.lineTo(snappedX, axisArea.top + tickLength);
       }
     }
+
+    canvas.drawPath(path, paint);
   }
 
   void _drawLabels(Canvas canvas, Rect axisArea, AxisBounds bounds) {
     final labels = _cachedLabels ?? generateLabels(bounds);
-
-    final textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-      textAlign: TextAlign.center,
-    );
 
     final labelStyle =
         configuration.labelStyle ??
         theme?.axisLabelStyle ??
         const TextStyle(fontSize: 12);
 
+    // OPTIMIZATION: Reuse TextPainter instance
+    _cachedTextPainter ??= TextPainter(textDirection: TextDirection.ltr);
+    final textPainter = _cachedTextPainter!;
+    textPainter.textAlign = TextAlign.center;
+
+    // OPTIMIZATION: Ensure size cache exists
+    _cachedLabelSizes ??= {};
+    final sizeCache = _cachedLabelSizes!;
+
     final rotation = configuration.labelRotation ?? 0.0;
 
     for (final label in labels) {
-      textPainter.text = TextSpan(text: label.text, style: labelStyle);
-      textPainter.layout();
+      // OPTIMIZATION: Get cached size or measure and cache
+      Size labelSize;
+      if (sizeCache.containsKey(label.text)) {
+        labelSize = sizeCache[label.text]!;
+        // Still need to set text for painting
+        textPainter.text = TextSpan(text: label.text, style: labelStyle);
+        textPainter.layout();
+      } else {
+        textPainter.text = TextSpan(text: label.text, style: labelStyle);
+        textPainter.layout();
+        labelSize = Size(textPainter.width, textPainter.height);
+        sizeCache[label.text] = labelSize;
+      }
 
       final position = label.position;
 
@@ -540,8 +583,8 @@ class NumericAxisRenderer extends FusionAxisRenderer {
         final y = axisArea.bottom - (position * axisArea.height);
         final snappedY = y.roundToDouble();
         final offset = Offset(
-          axisArea.left - textPainter.width - 8,
-          snappedY - (textPainter.height / 2),
+          axisArea.left - labelSize.width - 8,
+          snappedY - (labelSize.height / 2),
         );
         textPainter.paint(canvas, offset);
       } else {
@@ -553,11 +596,11 @@ class NumericAxisRenderer extends FusionAxisRenderer {
           canvas.save();
           canvas.translate(snappedX, axisArea.top + 8);
           canvas.rotate(rotation * (math.pi / 180));
-          textPainter.paint(canvas, Offset(-textPainter.width / 2, 0));
+          textPainter.paint(canvas, Offset(-labelSize.width / 2, 0));
           canvas.restore();
         } else {
           final offset = Offset(
-            snappedX - (textPainter.width / 2),
+            snappedX - (labelSize.width / 2),
             axisArea.top + 8,
           );
           textPainter.paint(canvas, offset);
@@ -586,27 +629,27 @@ class NumericAxisRenderer extends FusionAxisRenderer {
 
     final labels = _cachedLabels ?? generateLabels(bounds);
 
+    // OPTIMIZATION: Batch all grid lines into a single Path for better performance
+    // This reduces 100+ drawLine calls to a single drawPath call
+    final path = Path();
+
     for (final label in labels) {
       final position = label.position;
 
       if (isVertical) {
         final y = plotArea.bottom - (position * plotArea.height);
         final snappedY = y.roundToDouble();
-        canvas.drawLine(
-          Offset(plotArea.left, snappedY),
-          Offset(plotArea.right, snappedY),
-          paint,
-        );
+        path.moveTo(plotArea.left, snappedY);
+        path.lineTo(plotArea.right, snappedY);
       } else {
         final x = plotArea.left + (position * plotArea.width);
         final snappedX = x.roundToDouble();
-        canvas.drawLine(
-          Offset(snappedX, plotArea.top),
-          Offset(snappedX, plotArea.bottom),
-          paint,
-        );
+        path.moveTo(snappedX, plotArea.top);
+        path.lineTo(snappedX, plotArea.bottom);
       }
     }
+
+    canvas.drawPath(path, paint);
   }
 
   // ==========================================================================
@@ -617,6 +660,10 @@ class NumericAxisRenderer extends FusionAxisRenderer {
   void dispose() {
     _cachedBounds = null;
     _cachedLabels = null;
+    _cachedTextPainter?.dispose();
+    _cachedTextPainter = null;
+    _cachedLabelSizes = null;
+    _lastLabelStyle = null;
   }
 
   @override

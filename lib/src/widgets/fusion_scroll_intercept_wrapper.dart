@@ -44,21 +44,19 @@ class FusionScrollInterceptWrapper extends StatelessWidget {
 
         // Check for modifier key if required
         if (requireModifier) {
-          final hasModifier = FusionDesktopHelper.isControlPressed ||
+          final hasModifier =
+              FusionDesktopHelper.isControlPressed ||
               FusionDesktopHelper.isMetaPressed;
           if (!hasModifier) return;
         }
 
         // Consume the event by resolving the pointer signal
         // This prevents the scroll from propagating to parent scrollables
-        GestureBinding.instance.pointerSignalResolver.register(
-          event,
-          (event) {
-            if (event is PointerScrollEvent) {
-              onScrollZoom(event);
-            }
-          },
-        );
+        GestureBinding.instance.pointerSignalResolver.register(event, (event) {
+          if (event is PointerScrollEvent) {
+            onScrollZoom(event);
+          }
+        });
       },
       child: child,
     );

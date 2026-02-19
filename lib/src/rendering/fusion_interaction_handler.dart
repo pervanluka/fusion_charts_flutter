@@ -251,7 +251,7 @@ class FusionInteractionHandler {
   /// Calculates zoom factor with zoomSpeed applied.
   double applyZoomSpeed(double rawScaleFactor) {
     if (rawScaleFactor == 1.0) return 1.0;
-    
+
     final delta = rawScaleFactor - 1.0;
     final adjustedDelta = delta * zoomConfig.zoomSpeed;
     return 1.0 + adjustedDelta;
@@ -470,7 +470,8 @@ class FusionInteractionHandler {
   ///
   /// When zoomed in (`constrainedXRange < maxPanXRange`):
   /// - `minXCenter < maxXCenter` → panning is allowed within this range
-  ({double xMin, double xMax, double yMin, double yMax}) _constrainPanBoundaries(
+  ({double xMin, double xMax, double yMin, double yMax})
+  _constrainPanBoundaries(
     ({double xMin, double xMax, double yMin, double yMax}) bounds,
     double dataXMin,
     double dataXMax,

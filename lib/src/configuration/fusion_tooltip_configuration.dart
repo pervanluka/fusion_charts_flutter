@@ -13,30 +13,23 @@ import '../data/fusion_data_point.dart';
 @immutable
 class FusionTooltipBehavior {
   const FusionTooltipBehavior({
-    // Basic configuration
-    @Deprecated(
-      'Use FusionChartConfiguration.enableTooltip instead. '
-      'This field is ignored and will be removed in v2.0.0.',
-    )
-    this.enable = true,
-
-    // 🚀 POSITION CONTROL - NEW!
+    // 🚀 POSITION CONTROL
     this.position = FusionTooltipPosition.floating,
     this.showTrackballLine = true,
     this.trackballLineColor,
     this.trackballLineWidth = 1.0,
     this.trackballLineDashPattern,
 
-    // 🚀 ACTIVATION CONTROL - Superior
+    // 🚀 ACTIVATION CONTROL
     this.activationMode = FusionTooltipActivationMode.auto,
     this.activationDelay = Duration.zero,
 
-    // 🚀 DISMISS CONTROL - Revolutionary!
+    // 🚀 DISMISS CONTROL
     this.dismissStrategy = FusionDismissStrategy.onRelease,
     this.dismissDelay = const Duration(milliseconds: 300),
     this.duration = const Duration(milliseconds: 3000),
 
-    // 🚀 TRACKBALL MODE - Enhanced
+    // 🚀 TRACKBALL MODE
     this.trackballMode = FusionTooltipTrackballMode.none,
     this.trackballUpdateThreshold = 5.0,
     this.trackballSnapRadius = 20.0,
@@ -67,29 +60,37 @@ class FusionTooltipBehavior {
 
     // Advanced
     this.hapticFeedback = true,
-    @Deprecated(
-      'This option is no longer used. Tooltips are now hidden completely '
-      'during pan/zoom gestures for better UX. Will be removed in v2.0.0.',
-    )
-    this.fadeOutOnPanZoom = true,
-  });
+  }) : assert(
+         trackballSnapRadius > 0,
+         'trackballSnapRadius must be positive. Got: $trackballSnapRadius',
+       ),
+       assert(
+         trackballUpdateThreshold >= 0,
+         'trackballUpdateThreshold must be non-negative. Got: $trackballUpdateThreshold',
+       ),
+       assert(
+         opacity >= 0 && opacity <= 1,
+         'opacity must be between 0 and 1. Got: $opacity',
+       ),
+       assert(
+         trackballLineWidth > 0,
+         'trackballLineWidth must be positive. Got: $trackballLineWidth',
+       ),
+       assert(
+         borderWidth >= 0,
+         'borderWidth must be non-negative. Got: $borderWidth',
+       ),
+       assert(
+         decimalPlaces >= 0,
+         'decimalPlaces must be non-negative. Got: $decimalPlaces',
+       ),
+       assert(
+         elevation >= 0,
+         'elevation must be non-negative. Got: $elevation',
+       );
 
   // ========================================================================
-  // CORE PROPERTIES
-  // ========================================================================
-
-  /// Enables or disables tooltip.
-  ///
-  /// @deprecated Use [FusionChartConfiguration.enableTooltip] instead.
-  /// This field is ignored and will be removed in v2.0.0.
-  @Deprecated(
-    'Use FusionChartConfiguration.enableTooltip instead. '
-    'This field is ignored and will be removed in v2.0.0.',
-  )
-  final bool enable;
-
-  // ========================================================================
-  // 🚀 POSITION CONTROL (NEW!)
+  // 🚀 POSITION CONTROL
   // ========================================================================
 
   /// Tooltip position relative to the chart area.
@@ -158,7 +159,7 @@ class FusionTooltipBehavior {
   final Duration activationDelay;
 
   // ========================================================================
-  // 🚀 DISMISS CONTROL (Revolutionary!)
+  // 🚀 DISMISS CONTROL
   // ========================================================================
 
   /// Strategy for dismissing tooltip
@@ -272,17 +273,6 @@ class FusionTooltipBehavior {
   /// Provide haptic feedback on tooltip show
   final bool hapticFeedback;
 
-  /// Fade out tooltip during pan/zoom gestures.
-  ///
-  /// @deprecated This option is no longer used. Tooltips are now hidden
-  /// completely during pan/zoom gestures for better UX. This field will
-  /// be removed in v2.0.0.
-  @Deprecated(
-    'This option is no longer used. Tooltips are now hidden completely '
-    'during pan/zoom gestures for better UX. Will be removed in v2.0.0.',
-  )
-  final bool fadeOutOnPanZoom;
-
   // ========================================================================
   // HELPER METHODS
   // ========================================================================
@@ -344,15 +334,266 @@ class FusionTooltipBehavior {
   }
 
   // ========================================================================
+  // CONFIGURATION VALIDATION
+  // ========================================================================
+
+  /// Validates the tooltip configuration and returns warnings for potentially
+  /// confusing or suboptimal combinations.
+  ///
+  /// Call this method during development to check for configuration issues.
+  /// Returns a list of warning messages. An empty list means the configuration
+  /// is fully optimal.
+  ///
+  /// Example:
+  /// ```dart
+  /// final config = FusionTooltipBehavior(
+  ///   position: FusionTooltipPosition.floating,
+  ///   showTrackballLine: true, // Warning: ignored for floating position
+  /// );
+  ///
+  /// final warnings = config.validateConfiguration();
+  /// for (final warning in warnings) {
+  ///   debugPrint('⚠️ Tooltip config: $warning');
+  /// }
+  /// ```
+  List<String> validateConfiguration({
+    bool isLiveMode = false,
+    int seriesCount = 1,
+  }) {
+    final warnings = <String>[];
+
+    // Check shared tooltip with single series
+    if (shared && seriesCount == 1) {
+      warnings.add(
+        'shared: true has no effect with a single series. '
+        'Consider setting shared: false for cleaner configuration.',
+      );
+    }
+
+    // Check trackball line configuration
+    if (position == FusionTooltipPosition.floating && showTrackballLine) {
+      warnings.add(
+        'showTrackballLine is ignored when position is floating. '
+        'Use position: top or bottom for trackball line support.',
+      );
+    }
+
+    // Check trackball mode related settings
+    if (trackballMode == FusionTooltipTrackballMode.none) {
+      if (trackballSnapRadius != 20.0) {
+        warnings.add(
+          'trackballSnapRadius is ignored when trackballMode is none.',
+        );
+      }
+      if (trackballUpdateThreshold != 5.0) {
+        warnings.add(
+          'trackballUpdateThreshold is ignored when trackballMode is none.',
+        );
+      }
+    }
+
+    // Check dismiss strategy with trackball mode
+    if (dismissStrategy == FusionDismissStrategy.never &&
+        (trackballMode == FusionTooltipTrackballMode.follow ||
+            trackballMode == FusionTooltipTrackballMode.magnetic)) {
+      warnings.add(
+        'dismissStrategy: never with trackballMode: ${trackballMode.name} '
+        'means tooltip will follow finger but never dismiss. Consider using '
+        'trackballMode: snapToX for live chart probe mode instead.',
+      );
+    }
+
+    // Check activation mode
+    if (activationMode == FusionTooltipActivationMode.none &&
+        dismissStrategy == FusionDismissStrategy.never) {
+      warnings.add(
+        'activationMode: none with dismissStrategy: never means tooltip '
+        'can only be controlled programmatically. Ensure you have code '
+        'to show/hide the tooltip.',
+      );
+    }
+
+    // Check live mode specific configurations
+    if (isLiveMode) {
+      if (dismissStrategy != FusionDismissStrategy.never &&
+          dismissStrategy != FusionDismissStrategy.onRelease) {
+        warnings.add(
+          'Live mode charts work best with dismissStrategy: never (for '
+          'persistent probe tooltip) or onRelease. Current strategy '
+          '(${dismissStrategy.name}) may cause unexpected behavior as '
+          'data streams in.',
+        );
+      }
+    }
+
+    // Check shared tooltip with specific trackball modes
+    if (shared && trackballMode == FusionTooltipTrackballMode.follow) {
+      warnings.add(
+        'shared: true with trackballMode: follow will show all series '
+        'at the tapped position but the tooltip position will follow '
+        'the finger. Consider trackballMode: snapToX for better UX.',
+      );
+    }
+
+    // Check dismiss delay without appropriate strategy
+    if (dismissDelay != const Duration(milliseconds: 300) &&
+        dismissStrategy != FusionDismissStrategy.onReleaseDelayed &&
+        dismissStrategy != FusionDismissStrategy.smart) {
+      warnings.add(
+        'dismissDelay is only used with dismissStrategy: onReleaseDelayed '
+        'or smart. Current strategy (${dismissStrategy.name}) ignores this value.',
+      );
+    }
+
+    // Check duration without appropriate strategy
+    if (duration != const Duration(milliseconds: 3000) &&
+        dismissStrategy != FusionDismissStrategy.onTimer &&
+        dismissStrategy != FusionDismissStrategy.smart) {
+      warnings.add(
+        'duration is only used with dismissStrategy: onTimer or smart. '
+        'Current strategy (${dismissStrategy.name}) ignores this value.',
+      );
+    }
+
+    return warnings;
+  }
+
+  /// Asserts that the configuration is valid for development builds.
+  ///
+  /// This is called automatically by the chart widgets in debug mode.
+  /// Throws [AssertionError] with helpful messages for invalid configurations.
+  ///
+  /// ## Configuration Rules
+  ///
+  /// ### Always Valid Combinations
+  /// - Any `position` with any `shared` setting
+  /// - Any `dismissStrategy` with any `activationMode`
+  /// - Any `trackballMode` with any number of series
+  ///
+  /// ### Live Mode Support
+  /// - Live mode with `dismissStrategy: never` enables "probe mode"
+  /// - Live mode with `shared: true` shows all series at probe position
+  ///
+  /// ### Multi-Series Support
+  /// - Dynamic threshold automatically adjusts based on line proximity
+  /// - `shared: true` bypasses threshold and shows all series
+  /// - Series selection uses Y-position when multiple series at same X
+  void assertValid({bool isLiveMode = false, int seriesCount = 1}) {
+    // Series count validation
+    assert(
+      seriesCount >= 0,
+      'seriesCount must be non-negative. Got: $seriesCount',
+    );
+
+    // Note: shared: true with single series is allowed (no-op, but not an error)
+    // It's reported as a warning in validateConfiguration() instead
+
+    // Validate trackball dash pattern
+    if (trackballLineDashPattern != null) {
+      assert(
+        trackballLineDashPattern!.isNotEmpty,
+        'trackballLineDashPattern must not be empty if specified.',
+      );
+      assert(
+        trackballLineDashPattern!.every((v) => v > 0),
+        'trackballLineDashPattern values must all be positive.',
+      );
+    }
+  }
+
+  // ========================================================================
+  // SUPPORTED CONFIGURATION DOCUMENTATION
+  // ========================================================================
+
+  /// Returns documentation of all supported configuration combinations.
+  ///
+  /// Use this for debugging or generating documentation.
+  static String get configurationGuide => '''
+FusionTooltipBehavior Configuration Guide
+==========================================
+
+## Position Options
+- floating: Tooltip floats near data point (default)
+- top: Tooltip anchored at top with trackball line
+- bottom: Tooltip anchored at bottom with trackball line
+
+## Activation Modes
+- auto: Detects platform (tap on mobile, hover on desktop)
+- singleTap: Single tap to show
+- longPress: Long press to show
+- doubleTap: Double tap to show
+- hover: Hover to show (desktop/web)
+- none: Programmatic control only
+
+## Dismiss Strategies
+- onRelease: Dismiss when finger lifts (best mobile UX)
+- onTimer: Dismiss after duration
+- onReleaseDelayed: Dismiss after delay when finger lifts
+- never: Never auto-dismiss (for probe mode)
+- smart: Adapts to interaction pattern
+
+## Trackball Modes
+- none: No trackball following
+- follow: Follows finger by 2D distance
+- snapToX: Snaps to nearest point by X only
+- snap: Snaps when within radius
+- magnetic: Smooth magnetic snapping
+- snapToY: Snaps to nearest Y at current X
+
+## Multi-Series Behavior
+- shared: false → Selects single closest series with dynamic threshold
+- shared: true → Shows all series at X position (bypasses threshold)
+- Dynamic threshold = min(maxThreshold, distanceToNearest / 2)
+
+## Live Chart Mode
+- Use dismissStrategy: never for persistent "probe" tooltip
+- Probe position stays fixed as data streams
+- updateLiveTooltip() updates tooltip with new data at probe position
+
+## Recommended Configurations
+
+### Standard Line Chart (Static)
+```dart
+FusionTooltipBehavior(
+  activationMode: FusionTooltipActivationMode.auto,
+  dismissStrategy: FusionDismissStrategy.onRelease,
+  trackballMode: FusionTooltipTrackballMode.snapToX,
+)
+```
+
+### Multi-Series with Shared Tooltip
+```dart
+FusionTooltipBehavior(
+  shared: true,
+  position: FusionTooltipPosition.top,
+  trackballMode: FusionTooltipTrackballMode.snapToX,
+)
+```
+
+### Live Streaming Chart
+```dart
+FusionTooltipBehavior(
+  dismissStrategy: FusionDismissStrategy.never,
+  trackballMode: FusionTooltipTrackballMode.snapToX,
+)
+```
+
+### Financial Chart (Non-Intrusive)
+```dart
+FusionTooltipBehavior(
+  position: FusionTooltipPosition.top,
+  trackballMode: FusionTooltipTrackballMode.snapToX,
+  showTrackballLine: true,
+  trackballLineDashPattern: [4, 4],
+)
+```
+''';
+
+  // ========================================================================
   // COPY WITH
   // ========================================================================
 
   FusionTooltipBehavior copyWith({
-    @Deprecated(
-      'Use FusionChartConfiguration.enableTooltip instead. '
-      'This field is ignored and will be removed in v2.0.0.',
-    )
-    bool? enable,
     FusionTooltipPosition? position,
     bool? showTrackballLine,
     Color? trackballLineColor,
@@ -383,14 +624,8 @@ class FusionTooltipBehavior {
     Color? borderColor,
     Color? shadowColor,
     bool? hapticFeedback,
-    @Deprecated(
-      'This option is no longer used. Tooltips are now hidden completely '
-      'during pan/zoom gestures for better UX. Will be removed in v2.0.0.',
-    )
-    bool? fadeOutOnPanZoom,
   }) {
     return FusionTooltipBehavior(
-      enable: enable ?? this.enable,
       position: position ?? this.position,
       showTrackballLine: showTrackballLine ?? this.showTrackballLine,
       trackballLineColor: trackballLineColor ?? this.trackballLineColor,
@@ -423,7 +658,6 @@ class FusionTooltipBehavior {
       borderColor: borderColor ?? this.borderColor,
       shadowColor: shadowColor ?? this.shadowColor,
       hapticFeedback: hapticFeedback ?? this.hapticFeedback,
-      fadeOutOnPanZoom: fadeOutOnPanZoom ?? this.fadeOutOnPanZoom,
     );
   }
 }

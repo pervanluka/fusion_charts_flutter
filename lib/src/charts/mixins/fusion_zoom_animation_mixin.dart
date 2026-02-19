@@ -140,8 +140,10 @@ mixin FusionZoomAnimationMixin on ChangeNotifier {
       var newYMax = tapDataY + newYRange / 2;
 
       // Constrain to original bounds
-      final origXRange = originalCoordSystem.dataXMax - originalCoordSystem.dataXMin;
-      final origYRange = originalCoordSystem.dataYMax - originalCoordSystem.dataYMin;
+      final origXRange =
+          originalCoordSystem.dataXMax - originalCoordSystem.dataXMin;
+      final origYRange =
+          originalCoordSystem.dataYMax - originalCoordSystem.dataYMin;
 
       // Check max zoom level
       final minXRange = origXRange / zoomConfig.maxZoomLevel;
@@ -186,7 +188,12 @@ mixin FusionZoomAnimationMixin on ChangeNotifier {
   // ===========================================================================
 
   /// Animates zoom to specified bounds.
-  void animateZoomTo(double targetXMin, double targetXMax, double targetYMin, double targetYMax) {
+  void animateZoomTo(
+    double targetXMin,
+    double targetXMax,
+    double targetYMin,
+    double targetYMax,
+  ) {
     if (!zoomConfig.animateZoom) {
       // No animation - immediate update
       _applyZoomBounds(targetXMin, targetXMax, targetYMin, targetYMax);
@@ -219,32 +226,33 @@ mixin FusionZoomAnimationMixin on ChangeNotifier {
     final totalFrames = (duration.inMilliseconds / (1000 / frameRate)).round();
     var currentFrame = 0;
 
-    _zoomAnimationTimer = Timer.periodic(Duration(milliseconds: (1000 / frameRate).round()), (
-      timer,
-    ) {
-      currentFrame++;
-      _zoomAnimationProgress = (currentFrame / totalFrames).clamp(0.0, 1.0);
+    _zoomAnimationTimer = Timer.periodic(
+      Duration(milliseconds: (1000 / frameRate).round()),
+      (timer) {
+        currentFrame++;
+        _zoomAnimationProgress = (currentFrame / totalFrames).clamp(0.0, 1.0);
 
-      // Apply easing curve
-      final easedProgress = curve.transform(_zoomAnimationProgress);
+        // Apply easing curve
+        final easedProgress = curve.transform(_zoomAnimationProgress);
 
-      // Interpolate bounds
-      final xMin = _lerpDouble(_animStartXMin, _animEndXMin, easedProgress);
-      final xMax = _lerpDouble(_animStartXMax, _animEndXMax, easedProgress);
-      final yMin = _lerpDouble(_animStartYMin, _animEndYMin, easedProgress);
-      final yMax = _lerpDouble(_animStartYMax, _animEndYMax, easedProgress);
+        // Interpolate bounds
+        final xMin = _lerpDouble(_animStartXMin, _animEndXMin, easedProgress);
+        final xMax = _lerpDouble(_animStartXMax, _animEndXMax, easedProgress);
+        final yMin = _lerpDouble(_animStartYMin, _animEndYMin, easedProgress);
+        final yMax = _lerpDouble(_animStartYMax, _animEndYMax, easedProgress);
 
-      _applyZoomBounds(xMin, xMax, yMin, yMax);
+        _applyZoomBounds(xMin, xMax, yMin, yMax);
 
-      if (_zoomAnimationProgress >= 1.0) {
-        timer.cancel();
-        _isAnimatingZoom = false;
-        _zoomAnimationTimer = null;
-        onZoomComplete();
-      }
+        if (_zoomAnimationProgress >= 1.0) {
+          timer.cancel();
+          _isAnimatingZoom = false;
+          _zoomAnimationTimer = null;
+          onZoomComplete();
+        }
 
-      onZoomAnimationUpdate();
-    });
+        onZoomAnimationUpdate();
+      },
+    );
   }
 
   /// Linear interpolation helper.
@@ -305,7 +313,9 @@ mixin FusionZoomAnimationMixin on ChangeNotifier {
     // Convert screen rect to data bounds
     final dataXMin = currentCoordSystem.screenXToDataX(rect.left);
     final dataXMax = currentCoordSystem.screenXToDataX(rect.right);
-    final dataYMin = currentCoordSystem.screenYToDataY(rect.bottom); // Y inverted
+    final dataYMin = currentCoordSystem.screenYToDataY(
+      rect.bottom,
+    ); // Y inverted
     final dataYMax = currentCoordSystem.screenYToDataY(rect.top);
 
     // Clear selection state
@@ -334,18 +344,24 @@ mixin FusionZoomAnimationMixin on ChangeNotifier {
 
   /// Zooms in by control zoom factor, centered on chart.
   void zoomInByControl() {
-    final centerX = (currentCoordSystem.dataXMin + currentCoordSystem.dataXMax) / 2;
-    final centerY = (currentCoordSystem.dataYMin + currentCoordSystem.dataYMax) / 2;
+    final centerX =
+        (currentCoordSystem.dataXMin + currentCoordSystem.dataXMax) / 2;
+    final centerY =
+        (currentCoordSystem.dataYMin + currentCoordSystem.dataYMax) / 2;
 
-    final currentXRange = currentCoordSystem.dataXMax - currentCoordSystem.dataXMin;
-    final currentYRange = currentCoordSystem.dataYMax - currentCoordSystem.dataYMin;
+    final currentXRange =
+        currentCoordSystem.dataXMax - currentCoordSystem.dataXMin;
+    final currentYRange =
+        currentCoordSystem.dataYMax - currentCoordSystem.dataYMin;
 
     final newXRange = currentXRange / _controlZoomFactor;
     final newYRange = currentYRange / _controlZoomFactor;
 
     // Check max zoom level
-    final origXRange = originalCoordSystem.dataXMax - originalCoordSystem.dataXMin;
-    final origYRange = originalCoordSystem.dataYMax - originalCoordSystem.dataYMin;
+    final origXRange =
+        originalCoordSystem.dataXMax - originalCoordSystem.dataXMin;
+    final origYRange =
+        originalCoordSystem.dataYMax - originalCoordSystem.dataYMin;
     final minXRange = origXRange / zoomConfig.maxZoomLevel;
     final minYRange = origYRange / zoomConfig.maxZoomLevel;
 
@@ -362,18 +378,24 @@ mixin FusionZoomAnimationMixin on ChangeNotifier {
 
   /// Zooms out by control zoom factor, centered on chart.
   void zoomOutByControl() {
-    final centerX = (currentCoordSystem.dataXMin + currentCoordSystem.dataXMax) / 2;
-    final centerY = (currentCoordSystem.dataYMin + currentCoordSystem.dataYMax) / 2;
+    final centerX =
+        (currentCoordSystem.dataXMin + currentCoordSystem.dataXMax) / 2;
+    final centerY =
+        (currentCoordSystem.dataYMin + currentCoordSystem.dataYMax) / 2;
 
-    final currentXRange = currentCoordSystem.dataXMax - currentCoordSystem.dataXMin;
-    final currentYRange = currentCoordSystem.dataYMax - currentCoordSystem.dataYMin;
+    final currentXRange =
+        currentCoordSystem.dataXMax - currentCoordSystem.dataXMin;
+    final currentYRange =
+        currentCoordSystem.dataYMax - currentCoordSystem.dataYMin;
 
     final newXRange = currentXRange * _controlZoomFactor;
     final newYRange = currentYRange * _controlZoomFactor;
 
     // Check min zoom level (max zoom out)
-    final origXRange = originalCoordSystem.dataXMax - originalCoordSystem.dataXMin;
-    final origYRange = originalCoordSystem.dataYMax - originalCoordSystem.dataYMin;
+    final origXRange =
+        originalCoordSystem.dataXMax - originalCoordSystem.dataXMin;
+    final origYRange =
+        originalCoordSystem.dataYMax - originalCoordSystem.dataYMin;
     final maxXRange = origXRange / zoomConfig.minZoomLevel;
     final maxYRange = origYRange / zoomConfig.minZoomLevel;
 

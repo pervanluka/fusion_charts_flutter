@@ -711,6 +711,211 @@ void main() {
     });
 
     // ==========================================================================
+    // POINTER EXIT HANDLING (Desktop/Web)
+    // ==========================================================================
+    group('Pointer Exit Handling', () {
+      testWidgets('tooltip hides when mouse exits chart area', (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                width: 400,
+                height: 300,
+                child: FusionLineChart(
+                  series: [
+                    FusionLineSeries(
+                      name: 'Test',
+                      dataPoints: [
+                        FusionDataPoint(0, 10),
+                        FusionDataPoint(1, 50),
+                        FusionDataPoint(2, 30),
+                      ],
+                      color: Colors.blue,
+                    ),
+                  ],
+                  config: const FusionChartConfiguration(
+                    enableTooltip: true,
+                    enableAnimation: false,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Create a mouse hover gesture
+        final gesture = await tester.createGesture(
+          kind: PointerDeviceKind.mouse,
+        );
+
+        // Hover over chart
+        await gesture.addPointer(location: const Offset(200, 150));
+        await tester.pump();
+        await gesture.moveTo(const Offset(250, 150));
+        await tester.pump();
+
+        // Exit chart area (move outside widget bounds)
+        await gesture.moveTo(const Offset(450, 350));
+        await tester.pump();
+
+        // Chart should still be rendered without crash
+        expect(find.byType(FusionLineChart), findsOneWidget);
+
+        await gesture.removePointer();
+      });
+
+      testWidgets('crosshair hides when mouse exits chart area', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                width: 400,
+                height: 300,
+                child: FusionLineChart(
+                  series: [
+                    FusionLineSeries(
+                      name: 'Test',
+                      dataPoints: [
+                        FusionDataPoint(0, 10),
+                        FusionDataPoint(1, 50),
+                        FusionDataPoint(2, 30),
+                      ],
+                      color: Colors.blue,
+                    ),
+                  ],
+                  config: const FusionChartConfiguration(
+                    enableCrosshair: true,
+                    enableAnimation: false,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Long press to show crosshair
+        await tester.longPressAt(const Offset(200, 150));
+        await tester.pump();
+
+        // Create mouse gesture and exit
+        final gesture = await tester.createGesture(
+          kind: PointerDeviceKind.mouse,
+        );
+        await gesture.addPointer(location: const Offset(200, 150));
+        await tester.pump();
+
+        // Exit chart area
+        await gesture.moveTo(const Offset(450, 350));
+        await tester.pump();
+
+        expect(find.byType(FusionLineChart), findsOneWidget);
+
+        await gesture.removePointer();
+      });
+
+      testWidgets('bar chart handles pointer exit', (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                width: 400,
+                height: 300,
+                child: FusionBarChart(
+                  series: [
+                    FusionBarSeries(
+                      name: 'Test',
+                      dataPoints: [
+                        FusionDataPoint(0, 30, label: 'A'),
+                        FusionDataPoint(1, 50, label: 'B'),
+                      ],
+                      color: Colors.blue,
+                    ),
+                  ],
+                  config: const FusionBarChartConfiguration(
+                    enableTooltip: true,
+                    enableAnimation: false,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        final gesture = await tester.createGesture(
+          kind: PointerDeviceKind.mouse,
+        );
+        await gesture.addPointer(location: const Offset(200, 150));
+        await tester.pump();
+
+        // Exit chart
+        await gesture.moveTo(const Offset(450, 350));
+        await tester.pump();
+
+        expect(find.byType(FusionBarChart), findsOneWidget);
+
+        await gesture.removePointer();
+      });
+
+      testWidgets(
+        'pie chart handles pointer exit and collapses hover-exploded segment',
+        (tester) async {
+          await tester.pumpWidget(
+            MaterialApp(
+              home: Scaffold(
+                body: SizedBox(
+                  width: 400,
+                  height: 300,
+                  child: FusionPieChart(
+                    series: FusionPieSeries(
+                      name: 'Sales',
+                      dataPoints: [
+                        FusionPieDataPoint(30, label: 'A', color: Colors.blue),
+                        FusionPieDataPoint(40, label: 'B', color: Colors.red),
+                        FusionPieDataPoint(30, label: 'C', color: Colors.green),
+                      ],
+                    ),
+                    config: const FusionPieChartConfiguration(
+                      enableTooltip: true,
+                      enableHover: true,
+                      explodeOnHover: true,
+                      enableAnimation: false,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+
+          await tester.pumpAndSettle();
+
+          final gesture = await tester.createGesture(
+            kind: PointerDeviceKind.mouse,
+          );
+
+          // Hover over pie slice
+          await gesture.addPointer(location: const Offset(200, 150));
+          await tester.pump();
+
+          // Exit chart
+          await gesture.moveTo(const Offset(450, 350));
+          await tester.pump();
+
+          expect(find.byType(FusionPieChart), findsOneWidget);
+
+          await gesture.removePointer();
+        },
+      );
+    });
+
+    // ==========================================================================
     // EDGE CASE INTERACTIONS
     // ==========================================================================
     group('Edge Case Interactions', () {

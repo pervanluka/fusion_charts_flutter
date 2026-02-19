@@ -5,7 +5,8 @@ import 'package:fusion_charts_flutter/fusion_charts_flutter.dart';
 import 'package:fusion_charts_flutter/src/charts/base/fusion_interactive_state_base.dart';
 
 /// Mock implementation of FusionInteractiveStateBase for testing.
-class MockInteractiveState extends ChangeNotifier implements FusionInteractiveStateBase {
+class MockInteractiveState extends ChangeNotifier
+    implements FusionInteractiveStateBase {
   int zoomInCallCount = 0;
   int zoomOutCallCount = 0;
   int resetCallCount = 0;
@@ -100,6 +101,9 @@ class MockInteractiveState extends ChangeNotifier implements FusionInteractiveSt
 
   @override
   void handlePointerSignal(PointerSignalEvent event) {}
+
+  @override
+  void handlePointerExit(PointerExitEvent event) {}
 
   @override
   Map<Type, GestureRecognizerFactory> getGestureRecognizers() => {};

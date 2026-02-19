@@ -23,7 +23,7 @@ class FusionCrosshairLayer extends FusionRenderLayer {
 
   @override
   void paint(Canvas canvas, Size size, FusionRenderContext context) {
-    if (!crosshairConfig.enabled || position == null) return;
+    if (position == null) return;
 
     final actualPosition =
         snappedPoint != null && crosshairConfig.snapToDataPoint
@@ -50,9 +50,14 @@ class FusionCrosshairLayer extends FusionRenderLayer {
 
       // Draw X-axis label
       if (crosshairConfig.showLabel && snappedPoint != null) {
+        // Use the formatter if available, otherwise fall back to label or raw value
+        final xLabel = crosshairConfig.getFormattedXLabel(
+          snappedPoint!.x,
+          snappedPoint,
+        );
         _paintAxisLabel(
           canvas,
-          snappedPoint!.label ?? snappedPoint!.x.toStringAsFixed(1),
+          xLabel,
           Offset(actualPosition.dx, context.chartArea.bottom + 5),
           true,
           context,
@@ -72,9 +77,14 @@ class FusionCrosshairLayer extends FusionRenderLayer {
 
       // Draw Y-axis label
       if (crosshairConfig.showLabel && snappedPoint != null) {
+        // Use the formatter if available, otherwise fall back to raw value
+        final yLabel = crosshairConfig.getFormattedYLabel(
+          snappedPoint!.y,
+          snappedPoint,
+        );
         _paintAxisLabel(
           canvas,
-          snappedPoint!.y.toStringAsFixed(1),
+          yLabel,
           Offset(context.chartArea.left - 5, actualPosition.dy),
           false,
           context,

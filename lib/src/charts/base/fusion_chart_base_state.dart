@@ -361,22 +361,25 @@ abstract class FusionChartBaseState<
   /// when overriding [buildChartArea] to wrap the chart.
   @protected
   Widget buildInteractiveChart(Size size) {
-    return Listener(
-      onPointerDown: _interactiveState.handlePointerDown,
-      onPointerMove: _interactiveState.handlePointerMove,
-      onPointerUp: _interactiveState.handlePointerUp,
-      onPointerCancel: _interactiveState.handlePointerCancel,
-      onPointerHover: _interactiveState.handlePointerHover,
-      onPointerSignal: _interactiveState.handlePointerSignal,
-      child: RawGestureDetector(
-        gestures: _interactiveState.getGestureRecognizers(),
-        // CRITICAL: Clip the chart content to prevent overflow when zoomed
-        child: ClipRect(
-          child: CustomPaint(
-            size: size,
-            painter: createPainter(
-              coordSystem: _interactiveState.coordSystem,
-              animationProgress: _animation.value,
+    return MouseRegion(
+      onExit: _interactiveState.handlePointerExit,
+      child: Listener(
+        onPointerDown: _interactiveState.handlePointerDown,
+        onPointerMove: _interactiveState.handlePointerMove,
+        onPointerUp: _interactiveState.handlePointerUp,
+        onPointerCancel: _interactiveState.handlePointerCancel,
+        onPointerHover: _interactiveState.handlePointerHover,
+        onPointerSignal: _interactiveState.handlePointerSignal,
+        child: RawGestureDetector(
+          gestures: _interactiveState.getGestureRecognizers(),
+          // CRITICAL: Clip the chart content to prevent overflow when zoomed
+          child: ClipRect(
+            child: CustomPaint(
+              size: size,
+              painter: createPainter(
+                coordSystem: _interactiveState.coordSystem,
+                animationProgress: _animation.value,
+              ),
             ),
           ),
         ),

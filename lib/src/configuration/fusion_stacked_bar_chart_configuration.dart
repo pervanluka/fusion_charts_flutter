@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/enums/interaction_anchor_mode.dart';
 import '../themes/fusion_chart_theme.dart';
 import 'fusion_chart_configuration.dart';
 import 'fusion_crosshair_configuration.dart';
@@ -67,6 +68,7 @@ class FusionStackedBarChartConfiguration extends FusionChartConfiguration {
     super.crosshairBehavior,
     super.zoomBehavior,
     super.panBehavior,
+    super.interactionAnchorMode,
     super.enableAnimation,
     super.enableTooltip,
     super.enableCrosshair,
@@ -170,6 +172,7 @@ class FusionStackedBarChartConfiguration extends FusionChartConfiguration {
     FusionCrosshairConfiguration? crosshairBehavior,
     FusionZoomConfiguration? zoomBehavior,
     FusionPanConfiguration? panBehavior,
+    InteractionAnchorMode? interactionAnchorMode,
     bool? enableAnimation,
     bool? enableTooltip,
     bool? enableCrosshair,
@@ -199,6 +202,8 @@ class FusionStackedBarChartConfiguration extends FusionChartConfiguration {
       crosshairBehavior: crosshairBehavior ?? this.crosshairBehavior,
       zoomBehavior: zoomBehavior ?? this.zoomBehavior,
       panBehavior: panBehavior ?? this.panBehavior,
+      interactionAnchorMode:
+          interactionAnchorMode ?? this.interactionAnchorMode,
       enableAnimation: enableAnimation ?? this.enableAnimation,
       enableTooltip: enableTooltip ?? this.enableTooltip,
       enableCrosshair: enableCrosshair ?? this.enableCrosshair,

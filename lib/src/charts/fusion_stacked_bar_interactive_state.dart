@@ -1,19 +1,9 @@
-import 'dart:async';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show HapticFeedback;
-import '../configuration/fusion_chart_configuration.dart';
 import '../configuration/fusion_tooltip_configuration.dart';
-import '../configuration/fusion_zoom_configuration.dart';
-import '../core/enums/fusion_zoom_mode.dart';
 import '../data/fusion_data_point.dart';
-import '../rendering/fusion_coordinate_system.dart';
-import '../rendering/fusion_interaction_handler.dart';
 import '../rendering/fusion_stacked_bar_hit_tester.dart';
 import '../series/fusion_stacked_bar_series.dart';
-import '../utils/fusion_desktop_helper.dart';
-import 'base/fusion_interactive_state_base.dart';
-import 'mixins/fusion_zoom_animation_mixin.dart';
+import 'base/fusion_bar_interactive_state_base.dart';
 
 /// Tooltip data specifically for stacked bars.
 ///
@@ -46,671 +36,76 @@ class StackedTooltipData extends FusionTooltipDataBase {
 ///
 /// Implements [FusionInteractiveStateBase] for compatibility with
 /// the base chart widget architecture.
-class FusionStackedBarInteractiveState extends ChangeNotifier
-    with FusionZoomAnimationMixin
-    implements FusionInteractiveStateBase {
+class FusionStackedBarInteractiveState
+    extends
+        FusionBarInteractiveStateBase<
+          FusionStackedBarSeries,
+          StackedBarHitTestResult,
+          StackedTooltipData
+        > {
   FusionStackedBarInteractiveState({
-    required this.config,
-    required FusionCoordinateSystem initialCoordSystem,
-    required this.series,
+    required super.config,
+    required super.initialCoordSystem,
+    required super.series,
     required this.isStacked100,
-  }) : _currentCoordSystem = initialCoordSystem,
-       _originalCoordSystem = initialCoordSystem;
+  });
 
-  final FusionChartConfiguration config;
-  final List<FusionStackedBarSeries> series;
   final bool isStacked100;
+  final FusionStackedBarHitTester _hitTester =
+      const FusionStackedBarHitTester();
 
-  FusionCoordinateSystem _currentCoordSystem;
-  final FusionCoordinateSystem _originalCoordSystem;
-  final FusionStackedBarHitTester _hitTester = const FusionStackedBarHitTester();
-  FusionInteractionHandler? _interactionHandler;
-
-  // Tooltip state
-  StackedTooltipData? _tooltipData;
-  double _tooltipOpacity = 0.0;
-
-  // Crosshair state
-  Offset? _crosshairPosition;
-
-  // Pointer state
-  bool _isPointerDown = false;
-  DateTime? _pointerDownTime;
-  Offset? _lastPointerPosition;
-
-  // Zoom/Pan state
-  bool _isPanning = false;
-  bool _isZooming = false;
-  bool _hasActiveZoom = false; // Tracks if user has zoomed (persists after gesture ends)
-  double _lastScale = 1.0; // For converting cumulative scale to delta
-
-  // Timers
-  Timer? _tooltipHideTimer;
-  Timer? _crosshairHideTimer;
-
-  // Cached gesture recognizers - prevents recreation on rebuild which kills in-progress gestures
-  Map<Type, GestureRecognizerFactory>? _cachedGestureRecognizers;
-  int? _lastGestureConfigHash;
-
-  // Getters
+  // Stacked bars don't use crosshair points
   @override
-  FusionCoordinateSystem get coordSystem => _currentCoordSystem;
-  @override
-  StackedTooltipData? get tooltipData => _tooltipData;
-  @override
-  double get tooltipOpacity => _tooltipOpacity;
-  @override
-  Offset? get crosshairPosition => _crosshairPosition;
-  @override
-  FusionDataPoint? get crosshairPoint => null; // Stacked bars don't use crosshair points
-  @override
-  bool get isInteracting => _isPanning || _isZooming || isAnimatingZoom;
-  @override
-  bool get isPointerDown => _isPointerDown;
+  FusionDataPoint? get crosshairPoint => null;
 
   // ===========================================================================
-  // ZOOM ANIMATION MIXIN IMPLEMENTATION
+  // ABSTRACT METHOD IMPLEMENTATIONS
   // ===========================================================================
 
   @override
-  FusionZoomConfiguration get zoomConfig => config.zoomBehavior;
-
-  @override
-  FusionCoordinateSystem get currentCoordSystem => _currentCoordSystem;
-
-  @override
-  FusionCoordinateSystem get originalCoordSystem => _originalCoordSystem;
-
-  @override
-  set currentCoordSystemValue(FusionCoordinateSystem value) {
-    _currentCoordSystem = value;
-  }
-
-  @override
-  void onZoomAnimationUpdate() {
-    notifyListeners();
-  }
-
-  @override
-  void onZoomComplete() {
-    // Check if we're back to original bounds
-    final isAtOriginal =
-        (_currentCoordSystem.dataXMin - _originalCoordSystem.dataXMin).abs() < 0.001 &&
-        (_currentCoordSystem.dataXMax - _originalCoordSystem.dataXMax).abs() < 0.001 &&
-        (_currentCoordSystem.dataYMin - _originalCoordSystem.dataYMin).abs() < 0.001 &&
-        (_currentCoordSystem.dataYMax - _originalCoordSystem.dataYMax).abs() < 0.001;
-
-    _hasActiveZoom = !isAtOriginal;
-    _rebuildInteractionHandler();
-  }
-
-  /// Public methods for zoom controls
-  @override
-  void zoomIn() => zoomInByControl();
-
-  @override
-  void zoomOut() => zoomOutByControl();
-
-  @override
-  void initialize() {
-    _rebuildInteractionHandler();
-  }
-
-  void _rebuildInteractionHandler() {
-    _interactionHandler = FusionInteractionHandler(
-      coordSystem: _currentCoordSystem,
-      zoomConfig: config.zoomBehavior,
-      panConfig: config.panBehavior,
-    );
-  }
-
-  @override
-  void updateCoordinateSystem(FusionCoordinateSystem newCoordSystem) {
-    if (isInteracting || _hasActiveZoom) {
-      _currentCoordSystem = FusionCoordinateSystem(
-        chartArea: newCoordSystem.chartArea,
-        dataXMin: _currentCoordSystem.dataXMin,
-        dataXMax: _currentCoordSystem.dataXMax,
-        dataYMin: _currentCoordSystem.dataYMin,
-        dataYMax: _currentCoordSystem.dataYMax,
-        devicePixelRatio: newCoordSystem.devicePixelRatio,
-      );
-      if (!isInteracting) {
-        _rebuildInteractionHandler();
-      }
-    } else {
-      _currentCoordSystem = newCoordSystem;
-      _rebuildInteractionHandler();
-    }
-  }
-
-  // ========================================================================
-  // POINTER EVENT HANDLERS
-  // ========================================================================
-
-  @override
-  void handlePointerDown(PointerDownEvent event) {
-    _isPointerDown = true;
-    _pointerDownTime = DateTime.now();
-    _lastPointerPosition = event.localPosition;
-    _tooltipHideTimer?.cancel();
-
-    if (!config.enableTooltip) return;
-
-    final hitResult = _hitTester.hitTest(
-      screenPosition: event.localPosition,
+  StackedBarHitTestResult? performHitTest(Offset screenPosition) {
+    return _hitTester.hitTest(
+      screenPosition: screenPosition,
       allSeries: series,
-      coordSystem: _currentCoordSystem,
+      coordSystem: coordSystem,
       isStacked100: isStacked100,
     );
-
-    if (hitResult != null) {
-      _showTooltip(hitResult);
-    } else {
-      _hideTooltip();
-    }
   }
 
   @override
-  void handlePointerMove(PointerMoveEvent event) {
-    if (!_isPointerDown) return;
-
-    _lastPointerPosition = event.localPosition;
-
-    if (!config.enableTooltip) return;
-
-    final hitResult = _hitTester.hitTest(
-      screenPosition: event.localPosition,
-      allSeries: series,
-      coordSystem: _currentCoordSystem,
-      isStacked100: isStacked100,
-    );
-
-    if (hitResult != null) {
-      _showTooltip(hitResult);
-    } else {
-      _hideTooltip();
-    }
-  }
-
-  @override
-  void handlePointerUp(PointerUpEvent event) {
-    _isPointerDown = false;
-
-    final pressDuration = _pointerDownTime != null
-        ? DateTime.now().difference(_pointerDownTime!)
-        : Duration.zero;
-    final wasLongPress = pressDuration.inMilliseconds > 500;
-
-    if (config.enableTooltip && _tooltipData != null) {
-      final delay = config.tooltipBehavior.getDismissDelay(wasLongPress);
-      if (delay == Duration.zero) {
-        _hideTooltip();
-      } else {
-        _startHideTimer(delay);
-      }
-    }
-
-    if (config.enableCrosshair && _crosshairPosition != null) {
-      _hideCrosshair();
-    }
-
-    _pointerDownTime = null;
-    _lastPointerPosition = null;
-  }
-
-  @override
-  void handlePointerCancel(PointerCancelEvent event) {
-    _isPointerDown = false;
-    _pointerDownTime = null;
-    _lastPointerPosition = null;
-    _hideTooltip();
-    _hideCrosshair();
-  }
-
-  @override
-  void handlePointerHover(PointerHoverEvent event) {
-    if (!config.enableTooltip) return;
-
-    final hitResult = _hitTester.hitTest(
-      screenPosition: event.localPosition,
-      allSeries: series,
-      coordSystem: _currentCoordSystem,
-      isStacked100: isStacked100,
-    );
-
-    if (hitResult != null) {
-      _showTooltip(hitResult);
-    } else {
-      _hideTooltip();
-    }
-  }
-
-  // ========================================================================
-  // MOUSE WHEEL ZOOM (Desktop Support)
-  // ========================================================================
-
-  @override
-  void handlePointerSignal(PointerSignalEvent event) {
-    if (!config.enableZoom) return;
-    if (!config.zoomBehavior.enableMouseWheelZoom) return;
-    if (config.zoomBehavior.zoomMode == FusionZoomMode.none) return;
-
-    if (event is PointerScrollEvent) {
-      if (!_currentCoordSystem.chartArea.contains(event.localPosition)) {
-        return;
-      }
-
-      // Check for modifier key requirement (Ctrl/Cmd + scroll to zoom)
-      if (config.zoomBehavior.requireModifierForWheelZoom) {
-        final hasModifier = FusionDesktopHelper.isControlPressed ||
-            FusionDesktopHelper.isMetaPressed;
-        if (!hasModifier) {
-          return;
-        }
-      }
-
-      // Register with pointer signal resolver to consume the event.
-      // This prevents the scroll from propagating to parent scrollables.
-      GestureBinding.instance.pointerSignalResolver.register(
-        event,
-        (PointerSignalEvent resolvedEvent) {
-          if (resolvedEvent is PointerScrollEvent) {
-            final scaleFactor = _interactionHandler!.calculateMouseWheelZoom(
-              resolvedEvent.scrollDelta.dy,
-            );
-            _applyZoom(scaleFactor, resolvedEvent.localPosition);
-          }
-        },
-      );
-    }
-  }
-
-  void _applyZoom(double scaleFactor, Offset focalPoint) {
-    applyZoom(
-      scaleFactor,
-      focalPoint,
-      _interactionHandler!,
-      (value) => _hasActiveZoom = value,
-    );
-  }
-
-  // ========================================================================
-  // PAN HANDLING
-  // ========================================================================
-
-  void _handlePanStart(Offset position) {
-    if (!config.enablePanning) return;
-    _isPanning = true;
-
-    if (_tooltipData != null) {
-      _tooltipData = null;
-      _tooltipOpacity = 0.0;
-      notifyListeners();
-    }
-  }
-
-  void _handlePanUpdate(Offset delta) {
-    if (!config.enablePanning || !_isPanning) return;
-
-    final newBounds = _interactionHandler!.calculatePannedBounds(
-      delta,
-      _currentCoordSystem.dataXMin,
-      _currentCoordSystem.dataXMax,
-      _currentCoordSystem.dataYMin,
-      _currentCoordSystem.dataYMax,
-    );
-
-    final constrainedBounds = _interactionHandler!.constrainBounds(
-      newBounds.xMin,
-      newBounds.xMax,
-      newBounds.yMin,
-      newBounds.yMax,
-      _originalCoordSystem.dataXMin,
-      _originalCoordSystem.dataXMax,
-      _originalCoordSystem.dataYMin,
-      _originalCoordSystem.dataYMax,
-    );
-
-    _currentCoordSystem = FusionCoordinateSystem(
-      chartArea: _currentCoordSystem.chartArea,
-      dataXMin: constrainedBounds.xMin,
-      dataXMax: constrainedBounds.xMax,
-      dataYMin: constrainedBounds.yMin,
-      dataYMax: constrainedBounds.yMax,
-      devicePixelRatio: _currentCoordSystem.devicePixelRatio,
-    );
-
-    notifyListeners();
-  }
-
-  void _handlePanEnd() {
-    _isPanning = false;
-    _rebuildInteractionHandler();
-    notifyListeners();
-  }
-
-  // ========================================================================
-  // ZOOM HANDLING
-  // ========================================================================
-
-  void _handleScaleStart(Offset focalPoint) {
-    if (!config.enableZoom) return;
-    if (!config.zoomBehavior.enablePinchZoom) return;
-    if (config.zoomBehavior.zoomMode == FusionZoomMode.none) return;
-
-    _isZooming = true;
-    _lastScale = 1.0;
-
-    if (_tooltipData != null) {
-      _tooltipData = null;
-      _tooltipOpacity = 0.0;
-      notifyListeners();
-    }
-  }
-
-  void _handleScaleUpdate(double scaleFactor, Offset focalPoint) {
-    if (!config.enableZoom || !_isZooming) return;
-    if (!config.zoomBehavior.enablePinchZoom) return;
-    if (config.zoomBehavior.zoomMode == FusionZoomMode.none) return;
-
-    _applyZoom(scaleFactor, focalPoint);
-  }
-
-  void _handleScaleEnd() {
-    _isZooming = false;
-    _rebuildInteractionHandler();
-    notifyListeners();
-  }
-
-  // ========================================================================
-  // RESET
-  // ========================================================================
-
-  @override
-  void reset() {
-    _currentCoordSystem = _originalCoordSystem;
-    _hasActiveZoom = false;
-    _hideTooltip();
-    _hideCrosshair();
-    notifyListeners();
-  }
-
-  // ========================================================================
-  // TOOLTIP MANAGEMENT
-  // ========================================================================
-
-  void _showTooltip(StackedBarHitTestResult hitResult) {
-    _tooltipHideTimer?.cancel();
-
-    if (config.tooltipBehavior.hapticFeedback && _tooltipData == null) {
-      HapticFeedback.selectionClick();
-    }
-
+  void showTooltipForHitResult(
+    StackedBarHitTestResult hitResult,
+    Offset pointerPosition,
+  ) {
     // Position tooltip at the top center of the stack
-    final tooltipPosition = Offset(hitResult.stackRect.center.dx, hitResult.stackRect.top);
-
-    _tooltipData = StackedTooltipData(
-      categoryLabel: hitResult.categoryLabel,
-      segments: hitResult.segments,
-      totalValue: hitResult.totalValue,
-      screenPosition: tooltipPosition,
-      isStacked100: isStacked100,
-      hitSegmentIndex: hitResult.hitSegmentIndex,
+    final tooltipPosition = Offset(
+      hitResult.stackRect.center.dx,
+      hitResult.stackRect.top,
     );
 
-    _tooltipOpacity = 1.0;
-    notifyListeners();
-  }
-
-  void _hideTooltip() {
-    if (_tooltipData != null) {
-      _tooltipHideTimer?.cancel();
-      _tooltipData = null;
-      _tooltipOpacity = 0.0;
-      notifyListeners();
-    }
-  }
-
-  void _startHideTimer(Duration delay) {
-    _tooltipHideTimer?.cancel();
-    _tooltipHideTimer = Timer(delay, () {
-      if (!_isPointerDown) {
-        _hideTooltip();
-      }
-    });
-  }
-
-  // ========================================================================
-  // CROSSHAIR MANAGEMENT
-  // ========================================================================
-
-  void _showCrosshair(Offset position) {
-    _crosshairHideTimer?.cancel();
-    _crosshairPosition = position;
-    notifyListeners();
-  }
-
-  /// Updates crosshair position during drag, with coordinate system clamping.
-  void _updateCrosshairPosition(Offset position) {
-    _crosshairHideTimer?.cancel();
-
-    // CRITICAL FIX: Clamp in data space using coordinate system
-    // This is more natural than clamping to pixel bounds
-    final dataX = _currentCoordSystem.screenXToDataX(position.dx);
-    final dataY = _currentCoordSystem.screenYToDataY(position.dy);
-
-    final clampedDataX = dataX.clamp(_currentCoordSystem.dataXMin, _currentCoordSystem.dataXMax);
-    final clampedDataY = dataY.clamp(_currentCoordSystem.dataYMin, _currentCoordSystem.dataYMax);
-
-    final clampedPosition = Offset(
-      _currentCoordSystem.dataXToScreenX(clampedDataX),
-      _currentCoordSystem.dataYToScreenY(clampedDataY),
-    );
-
-    _crosshairPosition = clampedPosition;
-    notifyListeners();
-  }
-
-  void _hideCrosshair() {
-    _crosshairHideTimer?.cancel();
-    if (_crosshairPosition != null) {
-      _crosshairPosition = null;
-      notifyListeners();
-    }
-  }
-
-  void _startCrosshairHideTimer(Duration delay) {
-    _crosshairHideTimer?.cancel();
-    _crosshairHideTimer = Timer(delay, _hideCrosshair);
-  }
-
-  // ========================================================================
-  // GESTURE RECOGNIZERS
-  // ========================================================================
-
-  /// Computes a hash of configuration options that affect gesture behavior.
-  /// Used to determine when gesture recognizers need to be recreated.
-  int _computeGestureConfigHash() {
-    return Object.hash(
-      config.enableTooltip,
-      config.enableSelection,
-      config.enableCrosshair,
-      config.enableZoom,
-      config.enablePanning,
-      config.zoomBehavior.enablePinchZoom,
-      config.zoomBehavior.enableDoubleTapZoom,
-      config.zoomBehavior.zoomMode,
+    setBarTooltipData(
+      StackedTooltipData(
+        categoryLabel: hitResult.categoryLabel,
+        segments: hitResult.segments,
+        totalValue: hitResult.totalValue,
+        screenPosition: tooltipPosition,
+        isStacked100: isStacked100,
+        hitSegmentIndex: hitResult.hitSegmentIndex,
+      ),
     );
   }
 
   @override
-  Map<Type, GestureRecognizerFactory> getGestureRecognizers() {
-    final currentHash = _computeGestureConfigHash();
-    if (_cachedGestureRecognizers != null && _lastGestureConfigHash == currentHash) {
-      return _cachedGestureRecognizers!;
-    }
-
-    final recognizers = <Type, GestureRecognizerFactory>{};
-
-    if (config.enableTooltip || config.enableSelection) {
-      recognizers[TapGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(TapGestureRecognizer.new, (
-            recognizer,
-          ) {
-            recognizer.onTapDown = (details) {
-              final hitResult = _hitTester.hitTest(
-                screenPosition: details.localPosition,
-                allSeries: series,
-                coordSystem: _currentCoordSystem,
-                isStacked100: isStacked100,
-              );
-
-              if (hitResult != null && config.enableTooltip) {
-                _showTooltip(hitResult);
-              }
-            };
-          });
-    }
-
-    // Double-tap to zoom in/reset
-    if (config.enableZoom && config.zoomBehavior.enableDoubleTapZoom) {
-      recognizers[DoubleTapGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
-            DoubleTapGestureRecognizer.new,
-            (recognizer) {
-              recognizer.onDoubleTapDown = (details) {
-                _lastPointerPosition = details.localPosition;
-              };
-              recognizer.onDoubleTap = () {
-                if (_lastPointerPosition != null) {
-                  handleDoubleTapZoom(_lastPointerPosition!, hasActiveZoom: _hasActiveZoom);
-                }
-              };
-            },
-          );
-    }
-
-    if (config.enableCrosshair) {
-      recognizers[LongPressGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
-            LongPressGestureRecognizer.new,
-            (recognizer) {
-              recognizer
-                ..onLongPressStart = (details) {
-                  _showCrosshair(details.localPosition);
-                }
-                ..onLongPressMoveUpdate = (details) {
-                  // CRITICAL FIX: Enable crosshair drag on stacked bar charts
-                  if (_crosshairPosition != null) {
-                    _updateCrosshairPosition(details.localPosition);
-                  }
-                }
-                ..onLongPressEnd = (details) {
-                  // Handle crosshair hide based on dismiss strategy
-                  final crosshairBehavior = config.crosshairBehavior;
-                  if (crosshairBehavior.shouldDismissOnRelease()) {
-                    final delay = crosshairBehavior.getDismissDelay(true);
-                    if (delay == Duration.zero) {
-                      _hideCrosshair();
-                    } else {
-                      _startCrosshairHideTimer(delay);
-                    }
-                  } else if (crosshairBehavior.shouldUseTimer()) {
-                    _startCrosshairHideTimer(crosshairBehavior.duration);
-                  }
-                };
-            },
-          );
-    }
-
-    if (config.enableZoom && config.enablePanning) {
-      recognizers[ScaleGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(ScaleGestureRecognizer.new, (
-            recognizer,
-          ) {
-            recognizer
-              ..onStart = (details) {
-                _lastPointerPosition = details.localFocalPoint;
-                _handleScaleStart(details.localFocalPoint);
-              }
-              ..onUpdate = (details) {
-                if (details.scale == 1.0) {
-                  if (!_isPanning) {
-                    _handlePanStart(details.localFocalPoint);
-                  }
-                  if (_lastPointerPosition != null) {
-                    final delta = details.localFocalPoint - _lastPointerPosition!;
-                    _handlePanUpdate(delta);
-                  }
-                  _lastPointerPosition = details.localFocalPoint;
-                } else {
-                  final scaleDelta = details.scale / _lastScale;
-                  _lastScale = details.scale;
-                  _handleScaleUpdate(scaleDelta, details.localFocalPoint);
-                }
-              }
-              ..onEnd = (details) {
-                if (_isPanning) {
-                  _handlePanEnd();
-                }
-                if (_isZooming) {
-                  _handleScaleEnd();
-                }
-                _lastPointerPosition = null;
-                _lastScale = 1.0;
-              };
-          });
-    } else if (config.enablePanning) {
-      recognizers[PanGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(PanGestureRecognizer.new, (
-            recognizer,
-          ) {
-            recognizer
-              ..onStart = (details) {
-                _handlePanStart(details.localPosition);
-              }
-              ..onUpdate = (details) {
-                _handlePanUpdate(details.delta);
-              }
-              ..onEnd = (details) {
-                _handlePanEnd();
-              };
-          });
-    } else if (config.enableZoom) {
-      recognizers[ScaleGestureRecognizer] =
-          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(ScaleGestureRecognizer.new, (
-            recognizer,
-          ) {
-            recognizer
-              ..onStart = (details) {
-                _handleScaleStart(details.localFocalPoint);
-              }
-              ..onUpdate = (details) {
-                if (details.scale != 1.0) {
-                  final scaleDelta = details.scale / _lastScale;
-                  _lastScale = details.scale;
-                  _handleScaleUpdate(scaleDelta, details.localFocalPoint);
-                }
-              }
-              ..onEnd = (details) {
-                _handleScaleEnd();
-                _lastScale = 1.0;
-              };
-          });
-    }
-
-    _cachedGestureRecognizers = recognizers;
-    _lastGestureConfigHash = currentHash;
-
-    return recognizers;
+  void showCrosshairAtPosition(
+    Offset position,
+    StackedBarHitTestResult? hitResult,
+  ) {
+    setBarCrosshairPosition(position);
   }
 
   @override
-  void dispose() {
-    _tooltipHideTimer?.cancel();
-    _crosshairHideTimer?.cancel();
-    disposeZoomAnimation();
-    super.dispose();
+  void updateCrosshairDuringDrag(Offset position) {
+    final clampedPosition = clampPositionToCoordSystem(position);
+    setBarCrosshairPosition(clampedPosition);
   }
 }

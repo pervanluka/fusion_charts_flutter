@@ -6,6 +6,7 @@ import '../../rendering/engine/fusion_paint_pool.dart';
 import '../../rendering/polar/fusion_pie_segment.dart';
 import '../../series/fusion_pie_series.dart';
 import '../../themes/fusion_chart_theme.dart';
+import '../../utils/fusion_color_palette.dart';
 
 /// High-performance painter for pie and donut charts.
 ///
@@ -286,7 +287,12 @@ class FusionPieChartPainter extends CustomPainter {
         config.labelStyle ?? series.labelStyle ?? theme.dataLabelStyle;
 
     // Auto-contrast: pick text color based on segment background luminance
-    final contrastColor = _getContrastingTextColor(segment.color);
+    // Use 0.4 threshold to bias toward white text (more readable with shadows)
+    final contrastColor = FusionColorPalette.getContrastingTextColor(
+      segment.color,
+      threshold: 0.4,
+      darkColor: const Color(0xFF1F2937), // Soft dark gray
+    );
     final style = baseStyle.copyWith(color: contrastColor);
 
     // Calculate available arc width at centroid
@@ -346,25 +352,6 @@ class FusionPieChartPainter extends CustomPainter {
     );
 
     textPainter.paint(canvas, offset);
-  }
-
-  /// Returns a contrasting text color (dark or light) based on background luminance.
-  ///
-  /// Uses WCAG relative luminance formula for accurate contrast calculation.
-  /// - Light backgrounds (luminance > 0.5) → dark text
-  /// - Dark backgrounds (luminance <= 0.5) → light text
-  Color _getContrastingTextColor(Color backgroundColor) {
-    final luminance = backgroundColor.computeLuminance();
-
-    // Use a slightly lower threshold (0.4) to bias toward white text
-    // since white text with slight shadow is often more readable
-    if (luminance > 0.4) {
-      // Light background → dark text
-      return const Color(0xFF1F2937); // Dark gray, softer than pure black
-    } else {
-      // Dark background → light text
-      return Colors.white;
-    }
   }
 
   /// Formats a short label (percentage only) for small segments

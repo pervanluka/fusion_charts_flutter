@@ -4,6 +4,8 @@ import '../configuration/fusion_axis_configuration.dart';
 import '../configuration/fusion_chart_configuration.dart';
 import '../controllers/fusion_chart_controller.dart';
 import '../data/fusion_data_point.dart';
+import '../live/fusion_live_chart_controller.dart';
+import '../live/live_viewport_mode.dart';
 import '../rendering/engine/fusion_paint_pool.dart';
 import '../rendering/engine/fusion_shader_cache.dart';
 import '../rendering/fusion_coordinate_system.dart';
@@ -26,6 +28,8 @@ class FusionLineChart extends StatefulWidget {
     this.title,
     this.subtitle,
     this.controller,
+    this.liveController,
+    this.liveViewportMode,
     this.onPointTap,
     this.onPointLongPress,
   }) : assert(series.length > 0, 'At least one series is required');
@@ -40,9 +44,42 @@ class FusionLineChart extends StatefulWidget {
   /// Controller for programmatic zoom/pan control.
   final FusionChartController? controller;
 
+  /// Controller for live/real-time data streaming.
+  ///
+  /// When provided, data points are pulled from this controller instead of
+  /// the static [series] data. The series objects still define styling
+  /// (color, line width, name), but data comes from the controller.
+  ///
+  /// Example:
+  /// ```dart
+  /// final liveController = FusionLiveChartController(
+  ///   retentionPolicy: RetentionPolicy.rollingCount(500),
+  /// );
+  ///
+  /// // Add data from any source
+  /// websocket.onMessage((data) {
+  ///   liveController.addPoint('price', FusionDataPoint(now, data.price));
+  /// });
+  ///
+  /// FusionLineChart(
+  ///   liveController: liveController,
+  ///   series: [FusionLineSeries(name: 'price', color: Colors.blue)],
+  /// )
+  /// ```
+  final FusionLiveChartController? liveController;
+
+  /// Viewport behavior for live data mode.
+  ///
+  /// Defaults to [AutoScrollViewport] with 60 seconds visible duration.
+  /// Only used when [liveController] is provided.
+  final LiveViewportMode? liveViewportMode;
+
   final void Function(FusionDataPoint point, String seriesName)? onPointTap;
   final void Function(FusionDataPoint point, String seriesName)?
   onPointLongPress;
+
+  /// Whether this chart is in live mode.
+  bool get isLiveMode => liveController != null;
 
   @override
   State<FusionLineChart> createState() => _FusionLineChartState();
@@ -58,12 +95,19 @@ class _FusionLineChartState extends State<FusionLineChart>
 
   FusionCoordinateSystem? _coordSystem;
 
+  /// Cached series with live data merged in.
+  List<FusionLineSeries>? _liveSeries;
+
+  /// Whether user has interacted (pausing auto-scroll).
+  bool _userInteracted = false;
+
   @override
   void initState() {
     super.initState();
     _initAnimation();
     _initInteractiveState();
     _attachController();
+    _attachLiveController();
   }
 
   void _attachController() {
@@ -72,6 +116,173 @@ class _FusionLineChartState extends State<FusionLineChart>
 
   void _detachController() {
     widget.controller?.detach();
+  }
+
+  void _attachLiveController() {
+    widget.liveController?.addListener(_onLiveDataChanged);
+  }
+
+  void _detachLiveController() {
+    widget.liveController?.removeListener(_onLiveDataChanged);
+  }
+
+  void _onLiveDataChanged() {
+    // Invalidate cached series
+    _liveSeries = null;
+
+    // Update interactive state with new series data (critical for tooltip hit testing)
+    final effectiveSeries = _effectiveSeries;
+    _interactiveState.series = effectiveSeries.cast<SeriesWithDataPoints>();
+
+    // Update coordinate system for auto-scroll
+    if (widget.isLiveMode && !_userInteracted) {
+      _updateLiveViewport();
+    }
+
+    // Update live tooltip AFTER viewport is updated (requires correct coordinate system)
+    _interactiveState.updateLiveTooltip();
+
+    setState(() {});
+  }
+
+  /// Get the effective series (with live data if in live mode).
+  List<FusionLineSeries> get _effectiveSeries {
+    if (!widget.isLiveMode) {
+      return widget.series;
+    }
+
+    // Return cached if available
+    if (_liveSeries != null) return _liveSeries!;
+
+    // Build series with data from live controller
+    final controller = widget.liveController!;
+    _liveSeries = widget.series.map((series) {
+      final livePoints = controller.getPoints(series.name);
+      if (livePoints.isEmpty) {
+        return series;
+      }
+      // Create a copy of the series with live data
+      return series.copyWith(dataPoints: livePoints);
+    }).toList();
+
+    return _liveSeries!;
+  }
+
+  /// Update viewport for live data auto-scroll.
+  void _updateLiveViewport() {
+    if (!widget.isLiveMode || _coordSystem == null) return;
+
+    final controller = widget.liveController!;
+    final viewportMode =
+        widget.liveViewportMode ??
+        const LiveViewportMode.autoScroll(
+          visibleDuration: Duration(seconds: 60),
+        );
+
+    // Get the latest data point across all series
+    double? latestX;
+    for (final series in widget.series) {
+      final latest = controller.getLatestPoint(series.name);
+      if (latest != null) {
+        if (latestX == null || latest.x > latestX) {
+          latestX = latest.x;
+        }
+      }
+    }
+
+    if (latestX == null) return;
+
+    switch (viewportMode) {
+      case AutoScrollViewport(
+        visibleDuration: final duration,
+        leadingPadding: final leading,
+      ):
+        // Calculate viewport range based on duration
+        final visibleMs = duration.inMilliseconds.toDouble();
+        final leadingMs = leading.inMilliseconds.toDouble();
+
+        final maxX = latestX + leadingMs;
+        final minX = maxX - visibleMs;
+
+        _interactiveState.setViewportRange(minX: minX, maxX: maxX);
+
+      case AutoScrollPointsViewport(
+        visiblePoints: final count,
+        leadingPoints: final leading,
+      ):
+        // Get all points to determine range
+        final allPoints = _effectiveSeries
+            .where((s) => s.visible)
+            .expand((s) => s.dataPoints)
+            .toList();
+
+        if (allPoints.length < 2) return;
+
+        // Sort by x and take last N points
+        allPoints.sort((a, b) => a.x.compareTo(b.x));
+        final startIndex = (allPoints.length - count - leading).clamp(
+          0,
+          allPoints.length - 1,
+        );
+        final minX = allPoints[startIndex].x;
+        final maxX = latestX;
+
+        _interactiveState.setViewportRange(minX: minX, maxX: maxX);
+
+      case FixedViewport(initialRange: final range):
+        if (range != null) {
+          _interactiveState.setViewportRange(minX: range.$1, maxX: range.$2);
+        }
+      // Fixed viewport doesn't auto-scroll
+
+      case AutoScrollUntilInteractionViewport(
+        visibleDuration: final duration,
+        leadingPadding: final leading,
+      ):
+        if (_userInteracted) return; // User has taken control
+
+        final visibleMs = duration.inMilliseconds.toDouble();
+        final leadingMs = leading.inMilliseconds.toDouble();
+
+        final maxX = latestX + leadingMs;
+        final minX = maxX - visibleMs;
+
+        _interactiveState.setViewportRange(minX: minX, maxX: maxX);
+
+      case FillThenScrollViewport(
+        maxDuration: final maxDuration,
+        leadingPadding: final leading,
+      ):
+        // Get oldest point
+        double? oldestX;
+        for (final series in widget.series) {
+          final oldest = controller.getOldestPoint(series.name);
+          if (oldest != null) {
+            if (oldestX == null || oldest.x < oldestX) {
+              oldestX = oldest.x;
+            }
+          }
+        }
+
+        if (oldestX == null) return;
+
+        final dataSpan = latestX - oldestX;
+        final maxMs = maxDuration.inMilliseconds.toDouble();
+        final leadingMs = leading.inMilliseconds.toDouble();
+
+        if (dataSpan < maxMs) {
+          // Still filling - show all data with some padding
+          _interactiveState.setViewportRange(
+            minX: oldestX,
+            maxX: latestX + leadingMs,
+          );
+        } else {
+          // Filled - now scroll
+          final maxX = latestX + leadingMs;
+          final minX = maxX - maxMs;
+          _interactiveState.setViewportRange(minX: minX, maxX: maxX);
+        }
+    }
   }
 
   void _initAnimation() {
@@ -99,7 +310,8 @@ class _FusionLineChartState extends State<FusionLineChart>
   void _initInteractiveState() {
     // Create initial coord system from data bounds
     // This will be updated with proper chartArea in first build
-    final allPoints = widget.series
+    final effectiveSeries = _effectiveSeries;
+    final allPoints = effectiveSeries
         .where((s) => s.visible)
         .expand((s) => s.dataPoints)
         .toList();
@@ -154,13 +366,32 @@ class _FusionLineChartState extends State<FusionLineChart>
     _interactiveState = FusionInteractiveChartState(
       config: config,
       initialCoordSystem: _coordSystem!,
-      series: widget.series.cast<SeriesWithDataPoints>(),
+      series: effectiveSeries.cast<SeriesWithDataPoints>(),
+      isLiveMode: widget.isLiveMode,
     );
     _interactiveState.initialize();
     _interactiveState.addListener(_onInteractionChanged);
+
+    // Reset live viewport flag to ensure first setViewportRange() can properly
+    // initialize the coordinate system (avoids stale placeholder bounds)
+    if (widget.isLiveMode) {
+      _interactiveState.resetLiveViewport();
+    }
   }
 
   void _onInteractionChanged() {
+    // Track user interaction for AutoScrollUntilInteraction mode
+    // If user has zoomed or panned, mark as interacted
+    if (widget.isLiveMode && !_userInteracted) {
+      final viewportMode = widget.liveViewportMode;
+      if (viewportMode is AutoScrollUntilInteractionViewport) {
+        // Check if this is a zoom/pan interaction (not just tooltip/crosshair)
+        if (_interactiveState.isInteracting) {
+          _userInteracted = true;
+        }
+      }
+    }
+
     setState(() {
       // Rebuild when interaction state changes (tooltip, crosshair, zoom, pan)
     });
@@ -170,9 +401,27 @@ class _FusionLineChartState extends State<FusionLineChart>
   void didUpdateWidget(FusionLineChart oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    // Handle live controller changes
+    if (widget.liveController != oldWidget.liveController) {
+      oldWidget.liveController?.removeListener(_onLiveDataChanged);
+      widget.liveController?.addListener(_onLiveDataChanged);
+      _liveSeries = null; // Invalidate cache
+      _userInteracted = false; // Reset user interaction state
+
+      // Reset live viewport so new controller can set proper bounds
+      if (widget.isLiveMode) {
+        _interactiveState.resetLiveViewport();
+      }
+    }
+
     if (widget.series != oldWidget.series) {
-      _animationController.reset();
-      _animationController.forward();
+      _liveSeries = null; // Invalidate cache
+
+      // Only animate for non-live mode or significant series changes
+      if (!widget.isLiveMode) {
+        _animationController.reset();
+        _animationController.forward();
+      }
 
       // Update interactive state with new series
       _detachController();
@@ -195,6 +444,7 @@ class _FusionLineChartState extends State<FusionLineChart>
   @override
   void dispose() {
     _detachController();
+    _detachLiveController();
     _animationController.dispose();
     _interactiveState.dispose();
     super.dispose();
@@ -228,59 +478,70 @@ class _FusionLineChartState extends State<FusionLineChart>
                     final dpr = MediaQuery.devicePixelRatioOf(context);
                     _updateCoordinateSystem(size, dpr);
 
-                    return Listener(
-                      onPointerDown: (event) {
-                        _interactiveState.handlePointerDown(event);
+                    return MouseRegion(
+                      onExit: (event) {
+                        _interactiveState.handlePointerExit(event);
                       },
-                      onPointerMove: (event) {
-                        _interactiveState.handlePointerMove(event);
-                      },
-                      onPointerUp: (event) {
-                        _interactiveState.handlePointerUp(event);
-                      },
-                      onPointerCancel: (event) {
-                        _interactiveState.handlePointerCancel(event);
-                      },
-                      onPointerHover: (event) {
-                        _interactiveState.handlePointerHover(event);
-                      },
-                      onPointerSignal: (event) {
-                        _interactiveState.handlePointerSignal(event);
-                      },
-                      child: RawGestureDetector(
-                        gestures: _interactiveState.getGestureRecognizers(),
-                        child: Stack(
-                          children: [
-                            CustomPaint(
-                              size: size,
-                              painter: FusionLineChartPainter(
-                                series: widget.series,
-                                coordSystem: _interactiveState.coordSystem,
-                                theme: theme,
-                                xAxis: widget.xAxis,
-                                yAxis: widget.yAxis,
-                                animationProgress: _animation.value,
-                                tooltipData: _interactiveState.tooltipData,
-                                crosshairPosition:
-                                    _interactiveState.crosshairPosition,
-                                crosshairPoint: _interactiveState.crosshairPoint,
-                                config: config,
-                                paintPool: _paintPool,
-                                shaderCache: _shaderCache,
-                              ),
-                            ),
-                            // Selection rectangle overlay
-                            if (_interactiveState.selectionRect != null)
-                              Positioned.fill(
-                                child: CustomPaint(
-                                  painter: FusionSelectionRectLayer(
-                                    selectionRect: _interactiveState.selectionRect!,
-                                    fillColor: theme.primaryColor.withValues(alpha: 0.1),
-                                    borderColor: theme.primaryColor,
-                                  ),
+                      child: Listener(
+                        onPointerDown: (event) {
+                          _interactiveState.handlePointerDown(event);
+                        },
+                        onPointerMove: (event) {
+                          _interactiveState.handlePointerMove(event);
+                        },
+                        onPointerUp: (event) {
+                          _interactiveState.handlePointerUp(event);
+                        },
+                        onPointerCancel: (event) {
+                          _interactiveState.handlePointerCancel(event);
+                        },
+                        onPointerHover: (event) {
+                          _interactiveState.handlePointerHover(event);
+                        },
+                        onPointerSignal: (event) {
+                          _interactiveState.handlePointerSignal(event);
+                        },
+                        child: RawGestureDetector(
+                          gestures: _interactiveState.getGestureRecognizers(),
+                          child: Stack(
+                            children: [
+                              CustomPaint(
+                                size: size,
+                                painter: FusionLineChartPainter(
+                                  series: _effectiveSeries,
+                                  coordSystem: _interactiveState.coordSystem,
+                                  theme: theme,
+                                  xAxis: widget.xAxis,
+                                  yAxis: widget.yAxis,
+                                  animationProgress: widget.isLiveMode
+                                      ? 1.0
+                                      : _animation.value,
+                                  tooltipData: _interactiveState.tooltipData,
+                                  crosshairPosition:
+                                      _interactiveState.crosshairPosition,
+                                  crosshairPoint:
+                                      _interactiveState.crosshairPoint,
+                                  config: config,
+                                  paintPool: _paintPool,
+                                  shaderCache: _shaderCache,
                                 ),
                               ),
-                          ],
+                              // Selection rectangle overlay
+                              if (_interactiveState.selectionRect != null)
+                                Positioned.fill(
+                                  child: CustomPaint(
+                                    painter: FusionSelectionRectLayer(
+                                      selectionRect:
+                                          _interactiveState.selectionRect!,
+                                      fillColor: theme.primaryColor.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      borderColor: theme.primaryColor,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -298,8 +559,9 @@ class _FusionLineChartState extends State<FusionLineChart>
     // Skip if size is invalid
     if (size.width <= 0 || size.height <= 0) return;
 
-    // Calculate data bounds from all series
-    final allPoints = widget.series
+    // Calculate data bounds from all series (use effective series for live mode)
+    final effectiveSeries = _effectiveSeries;
+    final allPoints = effectiveSeries
         .where((s) => s.visible)
         .expand((s) => s.dataPoints)
         .toList();

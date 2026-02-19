@@ -397,15 +397,18 @@ class _FusionPieChartState extends State<FusionPieChart>
     }
 
     // Wrap in gesture handlers
-    Widget chart = Listener(
-      onPointerDown: _interactiveState.handlePointerDown,
-      onPointerMove: _interactiveState.handlePointerMove,
-      onPointerUp: _interactiveState.handlePointerUp,
-      onPointerCancel: _interactiveState.handlePointerCancel,
-      onPointerHover: _interactiveState.handlePointerHover,
-      child: RawGestureDetector(
-        gestures: _interactiveState.getGestureRecognizers(),
-        child: Stack(children: layers),
+    Widget chart = MouseRegion(
+      onExit: _interactiveState.handlePointerExit,
+      child: Listener(
+        onPointerDown: _interactiveState.handlePointerDown,
+        onPointerMove: _interactiveState.handlePointerMove,
+        onPointerUp: _interactiveState.handlePointerUp,
+        onPointerCancel: _interactiveState.handlePointerCancel,
+        onPointerHover: _interactiveState.handlePointerHover,
+        child: RawGestureDetector(
+          gestures: _interactiveState.getGestureRecognizers(),
+          child: Stack(children: layers),
+        ),
       ),
     );
 

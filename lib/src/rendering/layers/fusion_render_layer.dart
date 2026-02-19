@@ -152,7 +152,7 @@ class FusionGridLayer extends FusionRenderLayer {
     final dataBounds = context.effectiveViewport;
     final coordSystem = context.coordSystem;
     final yAxisX = coordSystem.dataXToScreenX(coordSystem.dataXMin);
-    
+
     // CRITICAL: Clip grid lines to chartArea to prevent overflow when zoomed
     canvas.save();
     canvas.clipRect(chartArea);
@@ -300,7 +300,7 @@ class FusionGridLayer extends FusionRenderLayer {
 
       context.returnPaint(paint);
     }
-    
+
     // Restore canvas state after grid clipping
     canvas.restore();
   }

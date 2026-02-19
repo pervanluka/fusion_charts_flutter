@@ -126,14 +126,8 @@ class FusionZoomControls extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.all(spacing),
         child: direction == Axis.vertical
-            ? Column(
-                mainAxisSize: MainAxisSize.min,
-                children: buttons,
-              )
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: buttons,
-              ),
+            ? Column(mainAxisSize: MainAxisSize.min, children: buttons)
+            : Row(mainAxisSize: MainAxisSize.min, children: buttons),
       ),
     );
   }
@@ -167,11 +161,7 @@ class _ZoomButton extends StatelessWidget {
           width: size,
           height: size,
           child: Center(
-            child: Icon(
-              icon,
-              size: iconSize,
-              color: color,
-            ),
+            child: Icon(icon, size: iconSize, color: color),
           ),
         ),
       ),

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/src/configuration/fusion_tooltip_configuration.dart';
+import '../core/enums/interaction_anchor_mode.dart';
 import '../themes/fusion_chart_theme.dart';
 import '../themes/fusion_light_theme.dart';
 import 'fusion_crosshair_configuration.dart';
@@ -53,6 +54,7 @@ class FusionChartConfiguration {
     this.crosshairBehavior = const FusionCrosshairConfiguration(),
     this.zoomBehavior = const FusionZoomConfiguration(),
     this.panBehavior = const FusionPanConfiguration(),
+    this.interactionAnchorMode = InteractionAnchorMode.screenPosition,
     this.enableAnimation = true,
     this.enableTooltip = true,
     this.enableCrosshair = false,
@@ -116,6 +118,27 @@ class FusionChartConfiguration {
   /// )
   /// ```
   final FusionPanConfiguration panBehavior;
+
+  /// Determines how interactive elements (crosshair, tooltip, data labels)
+  /// are anchored during chart interactions.
+  ///
+  /// This is particularly important for live/streaming charts where data
+  /// continuously arrives and the viewport scrolls.
+  ///
+  /// - [InteractionAnchorMode.screenPosition]: Interaction elements stay at
+  ///   the touched screen position. Different data passes under as chart scrolls.
+  ///   This is the default behavior.
+  ///
+  /// - [InteractionAnchorMode.dataPoint]: Interaction elements stay locked to
+  ///   the touched data point. They move with the point as the chart scrolls,
+  ///   until the point exits the visible area.
+  ///
+  /// ```dart
+  /// config: FusionChartConfiguration(
+  ///   interactionAnchorMode: InteractionAnchorMode.dataPoint,
+  /// )
+  /// ```
+  final InteractionAnchorMode interactionAnchorMode;
 
   // ==========================================================================
   // FEATURE FLAGS (Common to all charts)
@@ -241,6 +264,7 @@ class FusionChartConfiguration {
     FusionCrosshairConfiguration? crosshairBehavior,
     FusionZoomConfiguration? zoomBehavior,
     FusionPanConfiguration? panBehavior,
+    InteractionAnchorMode? interactionAnchorMode,
     bool? enableAnimation,
     bool? enableTooltip,
     bool? enableCrosshair,
@@ -262,6 +286,8 @@ class FusionChartConfiguration {
       crosshairBehavior: crosshairBehavior ?? this.crosshairBehavior,
       zoomBehavior: zoomBehavior ?? this.zoomBehavior,
       panBehavior: panBehavior ?? this.panBehavior,
+      interactionAnchorMode:
+          interactionAnchorMode ?? this.interactionAnchorMode,
       enableAnimation: enableAnimation ?? this.enableAnimation,
       enableTooltip: enableTooltip ?? this.enableTooltip,
       enableCrosshair: enableCrosshair ?? this.enableCrosshair,
@@ -288,6 +314,7 @@ class FusionChartConfiguration {
         other.crosshairBehavior == crosshairBehavior &&
         other.zoomBehavior == zoomBehavior &&
         other.panBehavior == panBehavior &&
+        other.interactionAnchorMode == interactionAnchorMode &&
         other.enableAnimation == enableAnimation &&
         other.enableTooltip == enableTooltip &&
         other.enableCrosshair == enableCrosshair &&
@@ -312,6 +339,7 @@ class FusionChartConfiguration {
       crosshairBehavior,
       zoomBehavior,
       panBehavior,
+      interactionAnchorMode,
       enableAnimation,
       enableTooltip,
       enableCrosshair,

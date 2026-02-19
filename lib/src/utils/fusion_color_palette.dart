@@ -167,4 +167,24 @@ class FusionColorPalette {
         .withLightness((hsl.lightness - amount).clamp(0.0, 1.0))
         .toColor();
   }
+
+  /// Returns a contrasting text color (dark or light) based on background luminance.
+  ///
+  /// Uses the WCAG relative luminance formula for accurate contrast calculation.
+  /// - Light backgrounds (luminance > threshold) → dark text
+  /// - Dark backgrounds (luminance <= threshold) → light text
+  ///
+  /// [backgroundColor] The background color to contrast against.
+  /// [threshold] Luminance threshold (default 0.5). Lower values bias toward light text.
+  /// [darkColor] Color to use on light backgrounds (default Colors.black).
+  /// [lightColor] Color to use on dark backgrounds (default Colors.white).
+  static Color getContrastingTextColor(
+    Color backgroundColor, {
+    double threshold = 0.5,
+    Color darkColor = Colors.black,
+    Color lightColor = Colors.white,
+  }) {
+    final luminance = backgroundColor.computeLuminance();
+    return luminance > threshold ? darkColor : lightColor;
+  }
 }

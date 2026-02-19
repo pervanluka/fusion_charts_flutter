@@ -6,6 +6,7 @@ import 'bar_chart_showcase.dart';
 import 'feature_highlights.dart';
 import 'label_generator_showcase.dart';
 import 'zoom_pan_showcase.dart';
+import 'live_chart_showcase.dart';
 
 void main() {
   runApp(const FusionChartsShowcaseApp());
@@ -19,7 +20,8 @@ class FusionChartsShowcaseApp extends StatefulWidget {
   const FusionChartsShowcaseApp({super.key});
 
   @override
-  State<FusionChartsShowcaseApp> createState() => _FusionChartsShowcaseAppState();
+  State<FusionChartsShowcaseApp> createState() =>
+      _FusionChartsShowcaseAppState();
 }
 
 class _FusionChartsShowcaseAppState extends State<FusionChartsShowcaseApp> {
@@ -27,7 +29,9 @@ class _FusionChartsShowcaseAppState extends State<FusionChartsShowcaseApp> {
 
   void _toggleTheme() {
     setState(() {
-      _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+      _themeMode = _themeMode == ThemeMode.light
+          ? ThemeMode.dark
+          : ThemeMode.light;
     });
   }
 
@@ -45,7 +49,9 @@ class _FusionChartsShowcaseAppState extends State<FusionChartsShowcaseApp> {
         ),
         cardTheme: CardThemeData(
           elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       ),
       darkTheme: ThemeData(
@@ -56,7 +62,9 @@ class _FusionChartsShowcaseAppState extends State<FusionChartsShowcaseApp> {
         ),
         cardTheme: CardThemeData(
           elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       ),
       home: ShowcaseGalleryHome(onThemeToggle: _toggleTheme),
@@ -84,14 +92,19 @@ class ShowcaseGalleryHome extends StatelessWidget {
               'Fusion Charts Flutter',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            Text('High-Performance Charting Library', style: TextStyle(fontSize: 12)),
+            Text(
+              'High-Performance Charting Library',
+              style: TextStyle(fontSize: 12),
+            ),
           ],
         ),
         elevation: 0,
         actions: [
           IconButton(
             icon: Icon(
-              Theme.of(context).brightness == Brightness.dark ? Icons.light_mode : Icons.dark_mode,
+              Theme.of(context).brightness == Brightness.dark
+                  ? Icons.light_mode
+                  : Icons.dark_mode,
             ),
             onPressed: onThemeToggle,
             tooltip: 'Toggle theme',
@@ -124,10 +137,16 @@ class ShowcaseGalleryHome extends StatelessWidget {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    ),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(Icons.auto_graph, color: Colors.white, size: 32),
+                  child: const Icon(
+                    Icons.auto_graph,
+                    color: Colors.white,
+                    size: 32,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 const Expanded(
@@ -136,7 +155,10 @@ class ShowcaseGalleryHome extends StatelessWidget {
                     children: [
                       Text(
                         'Feature Gallery',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       SizedBox(height: 4),
                       Text('Explore all features with interactive examples'),
@@ -170,9 +192,14 @@ class ShowcaseGalleryHome extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF6366F1).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+        border: Border.all(
+          color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+        ),
       ),
-      child: Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+      child: Text(
+        text,
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+      ),
     );
   }
 
@@ -218,7 +245,9 @@ class ShowcaseGalleryHome extends StatelessWidget {
                 examples: '8 examples',
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const LabelGeneratorShowcase()),
+                  MaterialPageRoute(
+                    builder: (_) => const LabelGeneratorShowcase(),
+                  ),
                 ),
               ),
               _ShowcaseCard(
@@ -265,6 +294,17 @@ class ShowcaseGalleryHome extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => const ZoomPanShowcase()),
                 ),
               ),
+              _ShowcaseCard(
+                title: 'Live Charts',
+                subtitle: 'Real-time streaming',
+                icon: Icons.stream,
+                color: const Color(0xFF10B981),
+                examples: '12 examples',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LiveChartShowcase()),
+                ),
+              ),
             ],
           ),
         ),
@@ -284,7 +324,10 @@ class ShowcaseGalleryHome extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 category.name,
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -316,7 +359,9 @@ class ShowcaseGalleryHome extends StatelessWidget {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => ExampleDetailPage(example: example)),
+            MaterialPageRoute(
+              builder: (context) => ExampleDetailPage(example: example),
+            ),
           );
         },
         child: Column(
@@ -325,7 +370,10 @@ class ShowcaseGalleryHome extends StatelessWidget {
             Expanded(
               child: Container(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                child: Padding(padding: const EdgeInsets.all(8), child: example.builder(context)),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: example.builder(context),
+                ),
               ),
             ),
             Padding(
@@ -335,7 +383,10 @@ class ShowcaseGalleryHome extends StatelessWidget {
                 children: [
                   Text(
                     example.title,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -385,7 +436,10 @@ class _ShowcaseCard extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
+                colors: [
+                  color.withValues(alpha: 0.1),
+                  color.withValues(alpha: 0.05),
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -398,13 +452,19 @@ class _ShowcaseCard extends StatelessWidget {
                 Container(
                   width: 44,
                   height: 44,
-                  decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(11)),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(11),
+                  ),
                   child: Icon(icon, color: Colors.white, size: 22),
                 ),
                 const SizedBox(height: 10),
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -419,8 +479,14 @@ class _ShowcaseCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   child: Text(
                     examples,
                     style: const TextStyle(
@@ -460,14 +526,20 @@ class ExampleDetailPage extends StatelessWidget {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Text(example.description, style: const TextStyle(fontSize: 16)),
+                child: Text(
+                  example.description,
+                  style: const TextStyle(fontSize: 16),
+                ),
               ),
             ),
             const SizedBox(height: 16),
             Card(
               child: SizedBox(
                 height: 400,
-                child: Padding(padding: const EdgeInsets.all(16), child: example.builder(context)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: example.builder(context),
+                ),
               ),
             ),
           ],
@@ -486,7 +558,11 @@ class ShowcaseCategory {
   final IconData icon;
   final List<ShowcaseExample> examples;
 
-  ShowcaseCategory({required this.name, required this.icon, required this.examples});
+  ShowcaseCategory({
+    required this.name,
+    required this.icon,
+    required this.examples,
+  });
 }
 
 class ShowcaseExample {
@@ -494,7 +570,11 @@ class ShowcaseExample {
   final String description;
   final Widget Function(BuildContext) builder;
 
-  ShowcaseExample({required this.title, required this.description, required this.builder});
+  ShowcaseExample({
+    required this.title,
+    required this.description,
+    required this.builder,
+  });
 }
 
 // =============================================================================
@@ -665,7 +745,10 @@ class _PieContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: backgroundColor != null
-          ? BoxDecoration(color: backgroundColor, borderRadius: BorderRadius.circular(8))
+          ? BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(8),
+            )
           : null,
       child: Center(child: AspectRatio(aspectRatio: 1.0, child: child)),
     );
@@ -721,7 +804,11 @@ class RoundedCornersPieExample extends StatelessWidget {
   Widget build(BuildContext context) {
     return _PieContainer(
       child: FusionPieChart(
-        series: FusionPieSeries(dataPoints: _pieData, strokeWidth: 2, strokeColor: Colors.white),
+        series: FusionPieSeries(
+          dataPoints: _pieData,
+          strokeWidth: 2,
+          strokeColor: Colors.white,
+        ),
         config: const FusionPieChartConfiguration(
           innerRadiusPercent: 0.5,
           cornerRadius: 10.0,
@@ -745,10 +832,26 @@ class SmartLabelsPieExample extends StatelessWidget {
       child: FusionPieChart(
         series: FusionPieSeries(
           dataPoints: [
-            FusionPieDataPoint(40, label: 'Dark', color: const Color(0xFF1E293B)),
-            FusionPieDataPoint(30, label: 'Light', color: const Color(0xFFFEF3C7)),
-            FusionPieDataPoint(20, label: 'Blue', color: const Color(0xFF3B82F6)),
-            FusionPieDataPoint(10, label: 'Green', color: const Color(0xFF22C55E)),
+            FusionPieDataPoint(
+              40,
+              label: 'Dark',
+              color: const Color(0xFF1E293B),
+            ),
+            FusionPieDataPoint(
+              30,
+              label: 'Light',
+              color: const Color(0xFFFEF3C7),
+            ),
+            FusionPieDataPoint(
+              20,
+              label: 'Blue',
+              color: const Color(0xFF3B82F6),
+            ),
+            FusionPieDataPoint(
+              10,
+              label: 'Green',
+              color: const Color(0xFF22C55E),
+            ),
           ],
         ),
         config: const FusionPieChartConfiguration(
@@ -807,7 +910,10 @@ class DarkThemePieExample extends StatelessWidget {
           innerRadiusPercent: 0.5,
           showCenterLabel: true,
           centerLabelText: 'Dark',
-          centerLabelStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          centerLabelStyle: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
           enableLegend: false,
           labelPosition: PieLabelPosition.none,
           padding: EdgeInsets.zero,
@@ -954,7 +1060,9 @@ class GradientLineExample extends StatelessWidget {
           ],
           color: const Color(0xFF8B5CF6),
           lineWidth: 3.0,
-          gradient: const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)]),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
+          ),
           showArea: true,
           areaOpacity: 0.2,
           isCurved: true,
@@ -971,12 +1079,19 @@ class LargeDatasetExample extends StatelessWidget {
   Widget build(BuildContext context) {
     final dataPoints = List.generate(
       500,
-      (i) => FusionDataPoint(i.toDouble(), 20 + (50 * (i % 10 / 10)) + (10 * (i % 3))),
+      (i) => FusionDataPoint(
+        i.toDouble(),
+        20 + (50 * (i % 10 / 10)) + (10 * (i % 3)),
+      ),
     );
 
     return FusionLineChart(
       series: [
-        FusionLineSeries(dataPoints: dataPoints, color: const Color(0xFF6366F1), lineWidth: 1.5),
+        FusionLineSeries(
+          dataPoints: dataPoints,
+          color: const Color(0xFF6366F1),
+          lineWidth: 1.5,
+        ),
       ],
       config: const FusionChartConfiguration(enableAnimation: false),
     );
@@ -1158,7 +1273,11 @@ class ShadowBarsExample extends StatelessWidget {
           barWidth: 0.6,
           borderRadius: 8.0,
           showShadow: true,
-          shadow: const BoxShadow(color: Color(0x40000000), blurRadius: 8, offset: Offset(2, 4)),
+          shadow: const BoxShadow(
+            color: Color(0x40000000),
+            blurRadius: 8,
+            offset: Offset(2, 4),
+          ),
         ),
       ],
     );
@@ -1208,18 +1327,29 @@ class CrosshairExample extends StatelessWidget {
       series: [
         FusionLineSeries(
           dataPoints: [
-            FusionDataPoint(0, 30),
-            FusionDataPoint(1, 50),
-            FusionDataPoint(2, 40),
-            FusionDataPoint(3, 65),
-            FusionDataPoint(4, 55),
-            FusionDataPoint(5, 80),
+            FusionDataPoint(0, 30, label: 'Mon'),
+            FusionDataPoint(1, 50, label: 'Tue'),
+            FusionDataPoint(2, 40, label: 'Wed'),
+            FusionDataPoint(3, 65, label: 'Thu'),
+            FusionDataPoint(4, 55, label: 'Fri'),
+            FusionDataPoint(5, 80, label: 'Sat'),
           ],
           color: const Color(0xFF8B5CF6),
           lineWidth: 2.5,
         ),
       ],
-      config: const FusionChartConfiguration(enableCrosshair: true, enableTooltip: true),
+      config: FusionChartConfiguration(
+        enableCrosshair: true,
+        enableTooltip: true,
+        crosshairBehavior: FusionCrosshairConfiguration(
+          snapToDataPoint: true,
+          // Format X-axis label using the day name
+          xLabelFormatter: (value, point) =>
+              point?.label ?? 'Day ${value.toInt() + 1}',
+          // Format Y-axis label as currency
+          yLabelFormatter: (value, point) => '\$${value.toStringAsFixed(0)}',
+        ),
+      ),
     );
   }
 }
@@ -1236,19 +1366,21 @@ class ZoomPanExample extends StatelessWidget {
 
     return FusionLineChart(
       series: [
-        FusionLineSeries(dataPoints: dataPoints, color: const Color(0xFF3B82F6), lineWidth: 2.0),
+        FusionLineSeries(
+          dataPoints: dataPoints,
+          color: const Color(0xFF3B82F6),
+          lineWidth: 2.0,
+        ),
       ],
       config: const FusionChartConfiguration(
         enableAnimation: false,
         enableZoom: true,
         enablePanning: true,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           enablePinchZoom: true,
           enableMouseWheelZoom: true,
           enableDoubleTapZoom: true,
         ),
-        panBehavior: FusionPanConfiguration(enabled: true),
       ),
     );
   }
@@ -1325,7 +1457,10 @@ class Stacked100BarsExample extends StatelessWidget {
           color: const Color(0xFFF59E0B),
         ),
       ],
-      config: const FusionStackedBarChartConfiguration(isStacked100: true, enableLegend: true),
+      config: const FusionStackedBarChartConfiguration(
+        isStacked100: true,
+        enableLegend: true,
+      ),
     );
   }
 }

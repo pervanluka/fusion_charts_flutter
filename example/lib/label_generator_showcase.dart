@@ -12,7 +12,10 @@ class LabelGeneratorShowcase extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Label Generator Showcase'), elevation: 0),
+      appBar: AppBar(
+        title: const Text('Label Generator Showcase'),
+        elevation: 0,
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -28,7 +31,8 @@ class LabelGeneratorShowcase extends StatelessWidget {
           _buildExample(
             context,
             title: '2. Percentage Labels',
-            description: 'Shows labels at 0%, 25%, 50%, 75%, 100% of the range.',
+            description:
+                'Shows labels at 0%, 25%, 50%, 75%, 100% of the range.',
             child: const PercentageLabelsExample(),
           ),
           _buildExample(
@@ -47,13 +51,15 @@ class LabelGeneratorShowcase extends StatelessWidget {
           _buildExample(
             context,
             title: '5. Custom Fixed Values',
-            description: 'Labels at specific business-meaningful values (e.g., thresholds).',
+            description:
+                'Labels at specific business-meaningful values (e.g., thresholds).',
             child: const CustomFixedValuesExample(),
           ),
           _buildExample(
             context,
             title: '6. DateTime: First of Each Month',
-            description: 'For DateTime axis - shows labels only on the 1st of each month.',
+            description:
+                'For DateTime axis - shows labels only on the 1st of each month.',
             child: const DateTimeMonthStartExample(),
           ),
           _buildExample(
@@ -98,7 +104,10 @@ class LabelGeneratorShowcase extends StatelessWidget {
                     children: [
                       Text(
                         'labelGenerator',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       Text(
                         'v1.1 Feature - Custom Label Positioning',
@@ -146,15 +155,27 @@ class LabelGeneratorShowcase extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(description, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+                  Text(
+                    description,
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  ),
                 ],
               ),
             ),
             SizedBox(
               height: 280,
-              child: Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 16), child: child),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: child,
+              ),
             ),
           ],
         ),
@@ -443,7 +464,9 @@ class DateTimeMonthStartExample extends StatelessWidget {
           final labels = <double>[];
 
           var date = DateTime.fromMillisecondsSinceEpoch(bounds.min.toInt());
-          final maxDate = DateTime.fromMillisecondsSinceEpoch(bounds.max.toInt());
+          final maxDate = DateTime.fromMillisecondsSinceEpoch(
+            bounds.max.toInt(),
+          );
 
           // Move to first of next month if not already on 1st
           if (date.day != 1) {
@@ -498,7 +521,9 @@ class DateTimeMondaysExample extends StatelessWidget {
           final labels = <double>[];
 
           var date = DateTime.fromMillisecondsSinceEpoch(bounds.min.toInt());
-          final maxDate = DateTime.fromMillisecondsSinceEpoch(bounds.max.toInt());
+          final maxDate = DateTime.fromMillisecondsSinceEpoch(
+            bounds.max.toInt(),
+          );
 
           // Move to first Monday
           while (date.weekday != DateTime.monday) {
@@ -555,7 +580,10 @@ class DensityBasedLabelsExample extends StatelessWidget {
           // Calculate label count based on available pixels
           // Aim for ~60 pixels per label
           const pixelsPerLabel = 60.0;
-          final labelCount = (availableSize / pixelsPerLabel).floor().clamp(3, 10);
+          final labelCount = (availableSize / pixelsPerLabel).floor().clamp(
+            3,
+            10,
+          );
 
           final labels = <double>[];
           for (int i = 0; i <= labelCount; i++) {
@@ -570,7 +598,10 @@ class DensityBasedLabelsExample extends StatelessWidget {
         labelGenerator: (bounds, availableSize, isVertical) {
           // Fewer labels for Y axis due to less space
           const pixelsPerLabel = 50.0;
-          final labelCount = (availableSize / pixelsPerLabel).floor().clamp(3, 8);
+          final labelCount = (availableSize / pixelsPerLabel).floor().clamp(
+            3,
+            8,
+          );
 
           final labels = <double>[];
           for (int i = 0; i <= labelCount; i++) {

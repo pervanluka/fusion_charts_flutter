@@ -5,6 +5,7 @@ import '../../core/enums/fusion_tooltip_position.dart';
 import '../../data/fusion_data_point.dart';
 import '../../series/fusion_series.dart';
 import '../../series/series_with_data_points.dart';
+import '../../utils/fusion_color_palette.dart';
 import '../../utils/fusion_data_formatter.dart';
 import '../engine/fusion_render_context.dart';
 import 'fusion_render_layer.dart';
@@ -23,7 +24,7 @@ class FusionTooltipLayer extends FusionRenderLayer {
 
   @override
   void paint(Canvas canvas, Size size, FusionRenderContext context) {
-    if (!tooltipBehavior.enable || tooltipData == null) return;
+    if (tooltipData == null) return;
 
     final point = tooltipData!.point;
     final screenPos = tooltipData!.screenPosition;
@@ -119,7 +120,9 @@ class FusionTooltipLayer extends FusionRenderLayer {
 
     // Use theme background color as fallback
     final bgColor = tooltipBehavior.color ?? theme.tooltipBackgroundColor;
-    final effectiveTextColor = _getContrastingTextColor(bgColor);
+    final effectiveTextColor = FusionColorPalette.getContrastingTextColor(
+      bgColor,
+    );
 
     // Use config style with proper text color, or create from theme
     final baseStyle = tooltipBehavior.textStyle ?? theme.tooltipStyle;
@@ -211,7 +214,9 @@ class FusionTooltipLayer extends FusionRenderLayer {
 
     // Use theme background color as fallback
     final bgColor = tooltipBehavior.color ?? theme.tooltipBackgroundColor;
-    final effectiveTextColor = _getContrastingTextColor(bgColor);
+    final effectiveTextColor = FusionColorPalette.getContrastingTextColor(
+      bgColor,
+    );
 
     // Use config style with proper text color, or create from theme
     final baseStyle = tooltipBehavior.textStyle ?? theme.tooltipStyle;
@@ -402,7 +407,9 @@ class FusionTooltipLayer extends FusionRenderLayer {
   ) {
     final theme = context.theme;
     final bgColor = tooltipBehavior.color ?? theme.tooltipBackgroundColor;
-    final effectiveTextColor = _getContrastingTextColor(bgColor);
+    final effectiveTextColor = FusionColorPalette.getContrastingTextColor(
+      bgColor,
+    );
     final baseStyle = tooltipBehavior.textStyle ?? theme.tooltipStyle;
     final textStyle = baseStyle.copyWith(color: effectiveTextColor);
     final borderRadius = theme.tooltipBorderRadius;
@@ -515,7 +522,9 @@ class FusionTooltipLayer extends FusionRenderLayer {
   ) {
     final theme = context.theme;
     final bgColor = tooltipBehavior.color ?? theme.tooltipBackgroundColor;
-    final effectiveTextColor = _getContrastingTextColor(bgColor);
+    final effectiveTextColor = FusionColorPalette.getContrastingTextColor(
+      bgColor,
+    );
     final baseStyle = tooltipBehavior.textStyle ?? theme.tooltipStyle;
     final textStyle = baseStyle.copyWith(color: effectiveTextColor);
     final borderRadius = theme.tooltipBorderRadius;
@@ -796,12 +805,6 @@ class FusionTooltipLayer extends FusionRenderLayer {
     }
 
     canvas.drawPath(dashedPath, paint);
-  }
-
-  /// Returns a contrasting text color for the given background.
-  Color _getContrastingTextColor(Color backgroundColor) {
-    final luminance = backgroundColor.computeLuminance();
-    return luminance > 0.5 ? Colors.black : Colors.white;
   }
 
   // ==========================================================================

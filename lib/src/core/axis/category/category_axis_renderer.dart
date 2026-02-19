@@ -53,6 +53,14 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
   AxisBounds? _cachedBounds;
   List<AxisLabel>? _cachedLabels;
 
+  /// OPTIMIZATION: Reusable TextPainter instance to avoid recreation per label.
+  TextPainter? _cachedTextPainter;
+
+  /// OPTIMIZATION: Cache measured label sizes keyed by label text.
+  /// This avoids redundant TextPainter.layout() calls when labels don't change.
+  Map<String, Size>? _cachedLabelSizes;
+  TextStyle? _lastLabelStyle;
+
   // ==========================================================================
   // BOUNDS CALCULATION
   // ==========================================================================
@@ -105,22 +113,43 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
 
     if (labels.isEmpty) return Size.zero;
 
-    final textPainter = TextPainter(textDirection: TextDirection.ltr);
-
-    double maxWidth = 0;
-    double maxHeight = 0;
-
     final labelStyle =
         configuration.labelStyle ??
         theme?.axisLabelStyle ??
         const TextStyle(fontSize: 12);
 
-    for (final label in labels) {
-      textPainter.text = TextSpan(text: label.text, style: labelStyle);
-      textPainter.layout();
+    // OPTIMIZATION: Invalidate cache if style changed
+    if (_lastLabelStyle != labelStyle) {
+      _cachedLabelSizes = null;
+      _lastLabelStyle = labelStyle;
+    }
 
-      maxWidth = math.max(maxWidth, textPainter.width);
-      maxHeight = math.max(maxHeight, textPainter.height);
+    // OPTIMIZATION: Reuse TextPainter instance
+    _cachedTextPainter ??= TextPainter(textDirection: TextDirection.ltr);
+    final textPainter = _cachedTextPainter!;
+
+    // OPTIMIZATION: Initialize or reuse label size cache
+    _cachedLabelSizes ??= {};
+    final sizeCache = _cachedLabelSizes!;
+
+    double maxWidth = 0;
+    double maxHeight = 0;
+
+    for (final label in labels) {
+      Size labelSize;
+
+      // OPTIMIZATION: Check cache before measuring
+      if (sizeCache.containsKey(label.text)) {
+        labelSize = sizeCache[label.text]!;
+      } else {
+        textPainter.text = TextSpan(text: label.text, style: labelStyle);
+        textPainter.layout();
+        labelSize = Size(textPainter.width, textPainter.height);
+        sizeCache[label.text] = labelSize;
+      }
+
+      maxWidth = math.max(maxWidth, labelSize.width);
+      maxHeight = math.max(maxHeight, labelSize.height);
     }
 
     // Check for collision (for horizontal axis)
@@ -204,39 +233,42 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
 
     final tickLength = configuration.majorTickLength ?? 6.0;
 
+    // OPTIMIZATION: Batch all tick lines into a single Path for better performance
+    final path = Path();
+
     for (int i = 0; i < categories.length; i++) {
       final position = _getCategoryPosition(i, categories.length);
 
       if (isVertical) {
         final y = axisArea.bottom - (position * axisArea.height);
-        canvas.drawLine(
-          Offset(axisArea.right, y),
-          Offset(axisArea.right + tickLength, y),
-          paint,
-        );
+        path.moveTo(axisArea.right, y);
+        path.lineTo(axisArea.right + tickLength, y);
       } else {
         final x = axisArea.left + (position * axisArea.width);
-        canvas.drawLine(
-          Offset(x, axisArea.top),
-          Offset(x, axisArea.top + tickLength),
-          paint,
-        );
+        path.moveTo(x, axisArea.top);
+        path.lineTo(x, axisArea.top + tickLength);
       }
     }
+
+    canvas.drawPath(path, paint);
   }
 
   void _drawLabels(Canvas canvas, Rect axisArea) {
     final labels = _cachedLabels ?? generateLabels(_cachedBounds!);
 
-    final textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-      textAlign: TextAlign.center,
-    );
-
     final labelStyle =
         configuration.labelStyle ??
         theme?.axisLabelStyle ??
         const TextStyle(fontSize: 12);
+
+    // OPTIMIZATION: Reuse TextPainter instance
+    _cachedTextPainter ??= TextPainter(textDirection: TextDirection.ltr);
+    final textPainter = _cachedTextPainter!;
+    textPainter.textAlign = TextAlign.center;
+
+    // OPTIMIZATION: Ensure size cache exists
+    _cachedLabelSizes ??= {};
+    final sizeCache = _cachedLabelSizes!;
 
     final needsRotation = _shouldRotateLabels(labels, axisArea, labelStyle);
     final rotation = needsRotation
@@ -246,8 +278,19 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
     for (int i = 0; i < labels.length; i++) {
       final label = labels[i];
 
-      textPainter.text = TextSpan(text: label.text, style: labelStyle);
-      textPainter.layout();
+      // OPTIMIZATION: Get cached size or measure and cache
+      Size labelSize;
+      if (sizeCache.containsKey(label.text)) {
+        labelSize = sizeCache[label.text]!;
+        // Still need to set text for painting
+        textPainter.text = TextSpan(text: label.text, style: labelStyle);
+        textPainter.layout();
+      } else {
+        textPainter.text = TextSpan(text: label.text, style: labelStyle);
+        textPainter.layout();
+        labelSize = Size(textPainter.width, textPainter.height);
+        sizeCache[label.text] = labelSize;
+      }
 
       final position = _getCategoryPosition(i, labels.length);
 
@@ -255,8 +298,8 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
       if (isVertical) {
         final y = axisArea.bottom - (position * axisArea.height);
         labelPosition = Offset(
-          axisArea.left - textPainter.width - 8,
-          y - (textPainter.height / 2),
+          axisArea.left - labelSize.width - 8,
+          y - (labelSize.height / 2),
         );
       } else {
         final x = axisArea.left + (position * axisArea.width);
@@ -264,7 +307,7 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
         if (rotation != 0) {
           labelPosition = Offset(x, axisArea.top + 8);
         } else {
-          labelPosition = Offset(x - (textPainter.width / 2), axisArea.top + 8);
+          labelPosition = Offset(x - (labelSize.width / 2), axisArea.top + 8);
         }
       }
 
@@ -278,7 +321,7 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
         } else {
           textPainter.paint(
             canvas,
-            Offset(-textPainter.width / 2, -textPainter.height / 2),
+            Offset(-labelSize.width / 2, -labelSize.height / 2),
           );
         }
 
@@ -302,6 +345,10 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.square;
 
+    // OPTIMIZATION: Batch all grid lines into a single Path for better performance
+    // This reduces N drawLine calls to a single drawPath call
+    final path = Path();
+
     // Draw grid lines between categories
     for (int i = 0; i <= categories.length; i++) {
       final position = i / categories.length;
@@ -309,21 +356,17 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
       if (isVertical) {
         final y = plotArea.bottom - (position * plotArea.height);
         final snappedY = y.roundToDouble();
-        canvas.drawLine(
-          Offset(plotArea.left, snappedY),
-          Offset(plotArea.right, snappedY),
-          paint,
-        );
+        path.moveTo(plotArea.left, snappedY);
+        path.lineTo(plotArea.right, snappedY);
       } else {
         final x = plotArea.left + (position * plotArea.width);
         final snappedX = x.roundToDouble();
-        canvas.drawLine(
-          Offset(snappedX, plotArea.top),
-          Offset(snappedX, plotArea.bottom),
-          paint,
-        );
+        path.moveTo(snappedX, plotArea.top);
+        path.lineTo(snappedX, plotArea.bottom);
       }
     }
+
+    canvas.drawPath(path, paint);
   }
 
   // ==========================================================================
@@ -342,13 +385,23 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
   ) {
     if (isVertical || labels.length <= 1) return false;
 
-    final textPainter = TextPainter(textDirection: TextDirection.ltr);
+    // OPTIMIZATION: Reuse TextPainter and cached sizes
+    _cachedTextPainter ??= TextPainter(textDirection: TextDirection.ltr);
+    final textPainter = _cachedTextPainter!;
+    _cachedLabelSizes ??= {};
+    final sizeCache = _cachedLabelSizes!;
 
     double totalWidth = 0;
     for (final label in labels) {
-      textPainter.text = TextSpan(text: label.text, style: style);
-      textPainter.layout();
-      totalWidth += textPainter.width;
+      if (sizeCache.containsKey(label.text)) {
+        totalWidth += sizeCache[label.text]!.width;
+      } else {
+        textPainter.text = TextSpan(text: label.text, style: style);
+        textPainter.layout();
+        final labelSize = Size(textPainter.width, textPainter.height);
+        sizeCache[label.text] = labelSize;
+        totalWidth += labelSize.width;
+      }
     }
 
     totalWidth += (labels.length - 1) * 8;
@@ -376,6 +429,10 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
   void dispose() {
     _cachedBounds = null;
     _cachedLabels = null;
+    _cachedTextPainter?.dispose();
+    _cachedTextPainter = null;
+    _cachedLabelSizes = null;
+    _lastLabelStyle = null;
   }
 
   @override

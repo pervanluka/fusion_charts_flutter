@@ -80,26 +80,26 @@ abstract class FusionInteractiveStateBase extends ChangeNotifier {
 
   /// Whether pointer is currently down on the chart.
   bool get isPointerDown;
-  
+
   /// Whether zoom animation is currently in progress.
   bool get isAnimatingZoom => false;
-  
+
   /// Current zoom animation progress (0.0 to 1.0).
   double get zoomAnimationProgress => 1.0;
-  
+
   // ===========================================================================
   // SELECTION ZOOM STATE
   // ===========================================================================
-  
+
   /// Whether selection zoom mode is active.
   bool get isSelectionZoomActive => false;
-  
+
   /// Start point of selection rectangle in screen coordinates.
   Offset? get selectionStart => null;
-  
+
   /// Current point of selection rectangle in screen coordinates.
   Offset? get selectionCurrent => null;
-  
+
   /// Selection rectangle in screen coordinates, or null if not active.
   Rect? get selectionRect {
     final start = selectionStart;
@@ -137,6 +137,11 @@ abstract class FusionInteractiveStateBase extends ChangeNotifier {
   /// Handles pointer hover events (desktop/web).
   void handlePointerHover(PointerHoverEvent event);
 
+  /// Handles pointer exit events (desktop/web).
+  ///
+  /// Called when the mouse leaves the chart area.
+  void handlePointerExit(PointerExitEvent event);
+
   /// Handles pointer signal events (scroll wheel).
   void handlePointerSignal(PointerSignalEvent event);
 
@@ -149,17 +154,17 @@ abstract class FusionInteractiveStateBase extends ChangeNotifier {
   /// Used by [RawGestureDetector] to handle complex gestures
   /// like pan and scale (pinch zoom).
   Map<Type, GestureRecognizerFactory> getGestureRecognizers();
-  
+
   // ===========================================================================
   // ZOOM CONTROLS
   // ===========================================================================
-  
+
   /// Zooms in by a fixed factor (default 1.5x) centered on chart.
   void zoomIn() {}
-  
+
   /// Zooms out by a fixed factor (default 1.5x) centered on chart.
   void zoomOut() {}
-  
+
   /// Resets zoom to original bounds.
   void reset() {}
 }

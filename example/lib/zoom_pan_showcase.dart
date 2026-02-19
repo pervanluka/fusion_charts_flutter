@@ -63,13 +63,15 @@ class ZoomPanShowcase extends StatelessWidget {
               _ExampleCard(
                 title: 'Mouse Wheel Zoom',
                 description: 'Scroll to zoom at cursor position',
-                hint: '🖱️ Ctrl + Scroll (Win/Linux) or ⌘ + Scroll (Mac) to zoom',
+                hint:
+                    '🖱️ Ctrl + Scroll (Win/Linux) or ⌘ + Scroll (Mac) to zoom',
                 child: const _MouseWheelZoomExample(),
               ),
               _ExampleCard(
                 title: 'Double-Tap Zoom',
                 description: 'Double-tap to zoom in, repeat to reset',
-                hint: '🖱️ Double-click to zoom 2x • Double-click again to reset',
+                hint:
+                    '🖱️ Double-click to zoom 2x • Double-click again to reset',
                 child: const _DoubleTapZoomExample(),
               ),
               _ExampleCard(
@@ -241,10 +243,16 @@ class ZoomPanShowcase extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.zoom_in, color: Colors.white, size: 28),
+                  child: const Icon(
+                    Icons.zoom_in,
+                    color: Colors.white,
+                    size: 28,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 const Expanded(
@@ -253,7 +261,10 @@ class ZoomPanShowcase extends StatelessWidget {
                     children: [
                       Text(
                         'Zoom & Pan Features',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       SizedBox(height: 4),
                       Text(
@@ -290,13 +301,24 @@ class ZoomPanShowcase extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 4),
-              Text(subtitle, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+              Text(
+                subtitle,
+                style: const TextStyle(fontSize: 13, color: Colors.grey),
+              ),
             ],
           ),
         ),
-        ...examples.map((e) => Padding(padding: const EdgeInsets.only(bottom: 16), child: e)),
+        ...examples.map(
+          (e) => Padding(padding: const EdgeInsets.only(bottom: 16), child: e),
+        ),
         const SizedBox(height: 8),
       ],
     );
@@ -367,7 +389,12 @@ class ZoomPanShowcase extends StatelessWidget {
             ],
           ),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Got it'))],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Got it'),
+          ),
+        ],
       ),
     );
   }
@@ -378,7 +405,11 @@ class _GestureItem extends StatelessWidget {
   final String title;
   final String description;
 
-  const _GestureItem({required this.icon, required this.title, required this.description});
+  const _GestureItem({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -393,8 +424,14 @@ class _GestureItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(description, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  description,
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
+                ),
               ],
             ),
           ),
@@ -430,9 +467,18 @@ class _ExampleCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(description, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                Text(
+                  description,
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
+                ),
               ],
             ),
           ),
@@ -446,7 +492,9 @@ class _ExampleCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+                color: theme.colorScheme.primaryContainer.withValues(
+                  alpha: 0.3,
+                ),
                 border: Border(
                   top: BorderSide(
                     color: theme.colorScheme.outline.withValues(alpha: 0.2),
@@ -466,7 +514,9 @@ class _ExampleCard extends StatelessWidget {
                       hint!,
                       style: TextStyle(
                         fontSize: 12,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.8,
+                        ),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -503,7 +553,6 @@ class _PinchZoomOnlyExample extends StatelessWidget {
         enablePanning: false,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           enablePinchZoom: true,
           enableMouseWheelZoom: false,
           enableDoubleTapZoom: false,
@@ -531,7 +580,6 @@ class _PanOnlyExample extends StatelessWidget {
         enableZoom: false,
         enablePanning: true,
         enableAnimation: false,
-        panBehavior: FusionPanConfiguration(enabled: true),
       ),
     );
   }
@@ -555,8 +603,7 @@ class _ZoomAndPanExample extends StatelessWidget {
         enableZoom: true,
         enablePanning: true,
         enableAnimation: false,
-        zoomBehavior: FusionZoomConfiguration(enabled: true, enablePinchZoom: true),
-        panBehavior: FusionPanConfiguration(enabled: true),
+        zoomBehavior: FusionZoomConfiguration(enablePinchZoom: true),
       ),
     );
   }
@@ -584,7 +631,6 @@ class _MouseWheelZoomExample extends StatelessWidget {
         enableZoom: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           enableMouseWheelZoom: true,
           enablePinchZoom: false,
           enableDoubleTapZoom: false,
@@ -612,7 +658,6 @@ class _DoubleTapZoomExample extends StatelessWidget {
         enableZoom: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           enableDoubleTapZoom: true,
           enablePinchZoom: false,
           enableMouseWheelZoom: false,
@@ -640,7 +685,6 @@ class _SelectionZoomExample extends StatelessWidget {
         enableZoom: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           enableSelectionZoom: true,
           enablePinchZoom: true,
           enableMouseWheelZoom: true,
@@ -674,7 +718,6 @@ class _ZoomXOnlyExample extends StatelessWidget {
         enablePanning: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           zoomMode: FusionZoomMode.x,
           enablePinchZoom: true,
           enableMouseWheelZoom: true,
@@ -703,7 +746,6 @@ class _ZoomYOnlyExample extends StatelessWidget {
         enablePanning: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           zoomMode: FusionZoomMode.y,
           enablePinchZoom: true,
           enableMouseWheelZoom: true,
@@ -732,7 +774,6 @@ class _ZoomBothAxesExample extends StatelessWidget {
         enablePanning: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           zoomMode: FusionZoomMode.both,
           enablePinchZoom: true,
           enableMouseWheelZoom: true,
@@ -763,7 +804,7 @@ class _PanXOnlyExample extends StatelessWidget {
       config: const FusionChartConfiguration(
         enablePanning: true,
         enableAnimation: false,
-        panBehavior: FusionPanConfiguration(enabled: true, panMode: FusionPanMode.x),
+        panBehavior: FusionPanConfiguration(panMode: FusionPanMode.x),
       ),
     );
   }
@@ -786,7 +827,7 @@ class _PanYOnlyExample extends StatelessWidget {
       config: const FusionChartConfiguration(
         enablePanning: true,
         enableAnimation: false,
-        panBehavior: FusionPanConfiguration(enabled: true, panMode: FusionPanMode.y),
+        panBehavior: FusionPanConfiguration(panMode: FusionPanMode.y),
       ),
     );
   }
@@ -809,7 +850,7 @@ class _PanBothAxesExample extends StatelessWidget {
       config: const FusionChartConfiguration(
         enablePanning: true,
         enableAnimation: false,
-        panBehavior: FusionPanConfiguration(enabled: true, panMode: FusionPanMode.both),
+        panBehavior: FusionPanConfiguration(panMode: FusionPanMode.both),
       ),
     );
   }
@@ -838,7 +879,6 @@ class _MaxZoomExample extends StatelessWidget {
         enablePanning: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           maxZoomLevel: 10.0,
           enablePinchZoom: true,
           enableMouseWheelZoom: true,
@@ -867,7 +907,6 @@ class _MinZoomExample extends StatelessWidget {
         enablePanning: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           minZoomLevel: 0.5,
           enablePinchZoom: true,
           enableMouseWheelZoom: true,
@@ -896,7 +935,6 @@ class _ZoomSpeedExample extends StatelessWidget {
         enablePanning: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           zoomSpeed: 0.5,
           enablePinchZoom: true,
           enableMouseWheelZoom: true,
@@ -928,7 +966,6 @@ class _AnimatedZoomExample extends StatelessWidget {
         enableZoom: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           enableDoubleTapZoom: true,
           animateZoom: true,
           zoomAnimationDuration: Duration(milliseconds: 400),
@@ -956,7 +993,6 @@ class _InstantZoomExample extends StatelessWidget {
         enableZoom: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           enableDoubleTapZoom: true,
           animateZoom: false,
         ),
@@ -983,7 +1019,6 @@ class _CustomCurveZoomExample extends StatelessWidget {
         enableZoom: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           enableDoubleTapZoom: true,
           animateZoom: true,
           zoomAnimationDuration: Duration(milliseconds: 600),
@@ -1007,13 +1042,19 @@ class _BarChartZoomExample extends StatelessWidget {
       series: [
         FusionBarSeries(
           name: '2023',
-          dataPoints: List.generate(20, (i) => FusionDataPoint(i.toDouble(), 40 + (i % 5) * 10)),
+          dataPoints: List.generate(
+            20,
+            (i) => FusionDataPoint(i.toDouble(), 40 + (i % 5) * 10),
+          ),
           color: const Color(0xFF6366F1),
           barWidth: 0.35,
         ),
         FusionBarSeries(
           name: '2024',
-          dataPoints: List.generate(20, (i) => FusionDataPoint(i.toDouble(), 50 + (i % 4) * 12)),
+          dataPoints: List.generate(
+            20,
+            (i) => FusionDataPoint(i.toDouble(), 50 + (i % 4) * 12),
+          ),
           color: const Color(0xFF22C55E),
           barWidth: 0.35,
         ),
@@ -1023,7 +1064,6 @@ class _BarChartZoomExample extends StatelessWidget {
         enablePanning: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           enablePinchZoom: true,
           enableMouseWheelZoom: true,
         ),
@@ -1041,17 +1081,26 @@ class _StackedBarZoomExample extends StatelessWidget {
       series: [
         FusionStackedBarSeries(
           name: 'A',
-          dataPoints: List.generate(25, (i) => FusionDataPoint(i.toDouble(), 20 + (i % 3) * 5)),
+          dataPoints: List.generate(
+            25,
+            (i) => FusionDataPoint(i.toDouble(), 20 + (i % 3) * 5),
+          ),
           color: const Color(0xFF6366F1),
         ),
         FusionStackedBarSeries(
           name: 'B',
-          dataPoints: List.generate(25, (i) => FusionDataPoint(i.toDouble(), 25 + (i % 4) * 4)),
+          dataPoints: List.generate(
+            25,
+            (i) => FusionDataPoint(i.toDouble(), 25 + (i % 4) * 4),
+          ),
           color: const Color(0xFF22C55E),
         ),
         FusionStackedBarSeries(
           name: 'C',
-          dataPoints: List.generate(25, (i) => FusionDataPoint(i.toDouble(), 15 + (i % 5) * 3)),
+          dataPoints: List.generate(
+            25,
+            (i) => FusionDataPoint(i.toDouble(), 15 + (i % 5) * 3),
+          ),
           color: const Color(0xFFF59E0B),
         ),
       ],
@@ -1060,7 +1109,6 @@ class _StackedBarZoomExample extends StatelessWidget {
         enablePanning: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           enablePinchZoom: true,
           enableMouseWheelZoom: true,
         ),
@@ -1078,7 +1126,10 @@ class _LargeBarDatasetExample extends StatelessWidget {
       series: [
         FusionBarSeries(
           name: 'Sales',
-          dataPoints: List.generate(100, (i) => FusionDataPoint(i.toDouble(), 30 + (i % 20) * 2.5)),
+          dataPoints: List.generate(
+            100,
+            (i) => FusionDataPoint(i.toDouble(), 30 + (i % 20) * 2.5),
+          ),
           color: const Color(0xFF8B5CF6),
           barWidth: 0.7,
         ),
@@ -1088,7 +1139,6 @@ class _LargeBarDatasetExample extends StatelessWidget {
         enablePanning: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           enablePinchZoom: true,
           enableMouseWheelZoom: true,
           enableDoubleTapZoom: true,
@@ -1122,7 +1172,6 @@ class _ZoomWithTooltipExample extends StatelessWidget {
         enableTooltip: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           enablePinchZoom: true,
           enableMouseWheelZoom: true,
         ),
@@ -1135,7 +1184,8 @@ class _ProgrammaticZoomExample extends StatefulWidget {
   const _ProgrammaticZoomExample();
 
   @override
-  State<_ProgrammaticZoomExample> createState() => _ProgrammaticZoomExampleState();
+  State<_ProgrammaticZoomExample> createState() =>
+      _ProgrammaticZoomExampleState();
 }
 
 class _ProgrammaticZoomExampleState extends State<_ProgrammaticZoomExample> {
@@ -1166,7 +1216,7 @@ class _ProgrammaticZoomExampleState extends State<_ProgrammaticZoomExample> {
               enableZoom: true,
               enablePanning: true,
               enableAnimation: false,
-              zoomBehavior: FusionZoomConfiguration(enabled: true, enablePinchZoom: true),
+              zoomBehavior: FusionZoomConfiguration(enablePinchZoom: true),
             ),
           ),
         ),
@@ -1179,7 +1229,10 @@ class _ProgrammaticZoomExampleState extends State<_ProgrammaticZoomExample> {
               icon: const Icon(Icons.zoom_in, size: 16),
               label: const Text('Zoom In'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
               ),
             ),
             const SizedBox(width: 8),
@@ -1188,7 +1241,10 @@ class _ProgrammaticZoomExampleState extends State<_ProgrammaticZoomExample> {
               icon: const Icon(Icons.zoom_out, size: 16),
               label: const Text('Zoom Out'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
               ),
             ),
             const SizedBox(width: 8),
@@ -1197,7 +1253,10 @@ class _ProgrammaticZoomExampleState extends State<_ProgrammaticZoomExample> {
               icon: const Icon(Icons.refresh, size: 16),
               label: const Text('Reset'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
               ),
             ),
           ],
@@ -1223,14 +1282,24 @@ class _MultiSeriesZoomExample extends StatelessWidget {
         ),
         FusionLineSeries(
           name: 'Costs',
-          dataPoints: _generateSineWave(100, amplitude: 25, offset: 40, phase: 1),
+          dataPoints: _generateSineWave(
+            100,
+            amplitude: 25,
+            offset: 40,
+            phase: 1,
+          ),
           color: const Color(0xFFEF4444),
           lineWidth: 2.5,
           isCurved: true,
         ),
         FusionLineSeries(
           name: 'Profit',
-          dataPoints: _generateSineWave(100, amplitude: 15, offset: 20, phase: 2),
+          dataPoints: _generateSineWave(
+            100,
+            amplitude: 15,
+            offset: 20,
+            phase: 2,
+          ),
           color: const Color(0xFF22C55E),
           lineWidth: 2.5,
           isCurved: true,
@@ -1242,7 +1311,6 @@ class _MultiSeriesZoomExample extends StatelessWidget {
         enableLegend: true,
         enableAnimation: false,
         zoomBehavior: FusionZoomConfiguration(
-          enabled: true,
           enablePinchZoom: true,
           enableMouseWheelZoom: true,
           enableDoubleTapZoom: true,
@@ -1264,7 +1332,10 @@ List<FusionDataPoint> _generateSineWave(
 }) {
   return List.generate(
     count,
-    (i) => FusionDataPoint(i.toDouble(), offset + amplitude * Math.sin((i / 10) + phase)),
+    (i) => FusionDataPoint(
+      i.toDouble(),
+      offset + amplitude * Math.sin((i / 10) + phase),
+    ),
   );
 }
 

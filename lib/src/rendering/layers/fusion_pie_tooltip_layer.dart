@@ -4,6 +4,7 @@ import '../../configuration/fusion_pie_chart_configuration.dart';
 import '../../configuration/fusion_tooltip_configuration.dart';
 import '../../core/enums/fusion_tooltip_position.dart';
 import '../../themes/fusion_chart_theme.dart';
+import '../../utils/fusion_color_palette.dart';
 
 /// Renders tooltip overlay for pie charts with full FusionTooltipBehavior support.
 ///
@@ -31,7 +32,7 @@ class FusionPieTooltipLayer extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (!tooltipBehavior.enable || tooltipData == null) return;
+    if (tooltipData == null) return;
     if (tooltipOpacity <= 0) return;
 
     // Skip tooltip in very small charts (preview cards)
@@ -59,7 +60,9 @@ class FusionPieTooltipLayer extends CustomPainter {
 
   void _paintFloatingTooltip(Canvas canvas, Size size, PieTooltipData data) {
     final bgColor = tooltipBehavior.color ?? theme.tooltipBackgroundColor;
-    final effectiveTextColor = _getContrastingTextColor(bgColor);
+    final effectiveTextColor = FusionColorPalette.getContrastingTextColor(
+      bgColor,
+    );
     final baseStyle = tooltipBehavior.textStyle ?? theme.tooltipStyle;
     final textStyle = baseStyle.copyWith(color: effectiveTextColor);
     final borderRadius = theme.tooltipBorderRadius;
@@ -146,7 +149,9 @@ class FusionPieTooltipLayer extends CustomPainter {
 
   void _paintAnchoredTooltip(Canvas canvas, Size size, PieTooltipData data) {
     final bgColor = tooltipBehavior.color ?? theme.tooltipBackgroundColor;
-    final effectiveTextColor = _getContrastingTextColor(bgColor);
+    final effectiveTextColor = FusionColorPalette.getContrastingTextColor(
+      bgColor,
+    );
     final baseStyle = tooltipBehavior.textStyle ?? theme.tooltipStyle;
     final textStyle = baseStyle.copyWith(color: effectiveTextColor);
     final borderRadius = theme.tooltipBorderRadius;
@@ -470,11 +475,6 @@ class FusionPieTooltipLayer extends CustomPainter {
     }
 
     canvas.drawPath(dashedPath, paint);
-  }
-
-  Color _getContrastingTextColor(Color backgroundColor) {
-    final luminance = backgroundColor.computeLuminance();
-    return luminance > 0.5 ? Colors.black : Colors.white;
   }
 
   @override

@@ -350,52 +350,60 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
                     }
 
                     // Build the chart
-                    Widget chartWidget = Listener(
-                      onPointerDown: _interactiveState.handlePointerDown,
-                      onPointerMove: _interactiveState.handlePointerMove,
-                      onPointerUp: _interactiveState.handlePointerUp,
-                      onPointerCancel: _interactiveState.handlePointerCancel,
-                      onPointerHover: _interactiveState.handlePointerHover,
-                      onPointerSignal: _interactiveState.handlePointerSignal,
-                      child: RawGestureDetector(
-                        gestures: _interactiveState.getGestureRecognizers(),
-                        child: Stack(
-                          children: [
-                            CustomPaint(
-                              size: size,
-                              painter: FusionStackedBarChartPainter(
-                                series: widget.series,
-                                coordSystem: _interactiveState.coordSystem,
-                                theme: theme,
-                                xAxis: widget.xAxis,
-                                yAxis: widget.yAxis,
-                                animationProgress: _animation.value,
-                                // Only pass tooltip data if NOT using custom builder
-                                stackedTooltipData: hasCustomBuilder
-                                    ? null
-                                    : _interactiveState.tooltipData,
-                                crosshairPosition: null,
-                                crosshairPoint: null,
-                                config: config,
-                                paintPool: _paintPool,
-                                shaderCache: _shaderCache,
-                                isStacked100: config.isStacked100,
-                                tooltipValueFormatter: config.tooltipValueFormatter,
-                                tooltipTotalFormatter: config.tooltipTotalFormatter,
-                              ),
-                            ),
-                            // Selection rectangle overlay
-                            if (_interactiveState.selectionRect != null)
-                              Positioned.fill(
-                                child: CustomPaint(
-                                  painter: FusionSelectionRectLayer(
-                                    selectionRect: _interactiveState.selectionRect!,
-                                    fillColor: theme.primaryColor.withValues(alpha: 0.1),
-                                    borderColor: theme.primaryColor,
-                                  ),
+                    Widget chartWidget = MouseRegion(
+                      onExit: _interactiveState.handlePointerExit,
+                      child: Listener(
+                        onPointerDown: _interactiveState.handlePointerDown,
+                        onPointerMove: _interactiveState.handlePointerMove,
+                        onPointerUp: _interactiveState.handlePointerUp,
+                        onPointerCancel: _interactiveState.handlePointerCancel,
+                        onPointerHover: _interactiveState.handlePointerHover,
+                        onPointerSignal: _interactiveState.handlePointerSignal,
+                        child: RawGestureDetector(
+                          gestures: _interactiveState.getGestureRecognizers(),
+                          child: Stack(
+                            children: [
+                              CustomPaint(
+                                size: size,
+                                painter: FusionStackedBarChartPainter(
+                                  series: widget.series,
+                                  coordSystem: _interactiveState.coordSystem,
+                                  theme: theme,
+                                  xAxis: widget.xAxis,
+                                  yAxis: widget.yAxis,
+                                  animationProgress: _animation.value,
+                                  // Only pass tooltip data if NOT using custom builder
+                                  stackedTooltipData: hasCustomBuilder
+                                      ? null
+                                      : _interactiveState.tooltipData,
+                                  crosshairPosition: null,
+                                  crosshairPoint: null,
+                                  config: config,
+                                  paintPool: _paintPool,
+                                  shaderCache: _shaderCache,
+                                  isStacked100: config.isStacked100,
+                                  tooltipValueFormatter:
+                                      config.tooltipValueFormatter,
+                                  tooltipTotalFormatter:
+                                      config.tooltipTotalFormatter,
                                 ),
                               ),
-                          ],
+                              // Selection rectangle overlay
+                              if (_interactiveState.selectionRect != null)
+                                Positioned.fill(
+                                  child: CustomPaint(
+                                    painter: FusionSelectionRectLayer(
+                                      selectionRect:
+                                          _interactiveState.selectionRect!,
+                                      fillColor: theme.primaryColor.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      borderColor: theme.primaryColor,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                     );

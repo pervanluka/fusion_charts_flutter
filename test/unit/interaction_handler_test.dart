@@ -23,9 +23,7 @@ void main() {
           maxZoomLevel: 5.0, // Can zoom in to see 0.2x range
           zoomSpeed: 1.0,
         ),
-        panConfig: const FusionPanConfiguration(
-          panMode: FusionPanMode.both,
-        ),
+        panConfig: const FusionPanConfiguration(panMode: FusionPanMode.both),
       );
     });
 
@@ -111,9 +109,7 @@ void main() {
       test('respects X-only pan mode', () {
         final xOnlyHandler = FusionInteractionHandler(
           coordSystem: coordSystem,
-          panConfig: const FusionPanConfiguration(
-            panMode: FusionPanMode.x,
-          ),
+          panConfig: const FusionPanConfiguration(panMode: FusionPanMode.x),
         );
 
         final result = xOnlyHandler.calculatePannedBounds(
@@ -133,9 +129,7 @@ void main() {
       test('respects Y-only pan mode', () {
         final yOnlyHandler = FusionInteractionHandler(
           coordSystem: coordSystem,
-          panConfig: const FusionPanConfiguration(
-            panMode: FusionPanMode.y,
-          ),
+          panConfig: const FusionPanConfiguration(panMode: FusionPanMode.y),
         );
 
         final result = yOnlyHandler.calculatePannedBounds(
@@ -208,9 +202,7 @@ void main() {
       test('respects X-only zoom mode', () {
         final xOnlyHandler = FusionInteractionHandler(
           coordSystem: coordSystem,
-          zoomConfig: const FusionZoomConfiguration(
-            zoomMode: FusionZoomMode.x,
-          ),
+          zoomConfig: const FusionZoomConfiguration(zoomMode: FusionZoomMode.x),
         );
 
         final result = xOnlyHandler.calculateZoomedBounds(
@@ -231,9 +223,7 @@ void main() {
       test('respects Y-only zoom mode', () {
         final yOnlyHandler = FusionInteractionHandler(
           coordSystem: coordSystem,
-          zoomConfig: const FusionZoomConfiguration(
-            zoomMode: FusionZoomMode.y,
-          ),
+          zoomConfig: const FusionZoomConfiguration(zoomMode: FusionZoomMode.y),
         );
 
         final result = yOnlyHandler.calculateZoomedBounds(
@@ -394,9 +384,7 @@ void main() {
       test('respects zoom speed configuration', () {
         final fastHandler = FusionInteractionHandler(
           coordSystem: coordSystem,
-          zoomConfig: const FusionZoomConfiguration(
-            zoomSpeed: 2.0,
-          ),
+          zoomConfig: const FusionZoomConfiguration(zoomSpeed: 2.0),
         );
 
         final normalZoom = handler.calculateMouseWheelZoom(-100);

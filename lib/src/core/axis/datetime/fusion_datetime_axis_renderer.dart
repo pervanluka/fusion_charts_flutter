@@ -265,11 +265,7 @@ class DateTimeAxisRenderer extends FusionAxisRenderer {
       final position = _calculatePrecisePosition(value, bounds);
 
       labels.add(
-        AxisLabel(
-          value: value,
-          text: text,
-          position: position.clamp(0.0, 1.0),
-        ),
+        AxisLabel(value: value, text: text, position: position.clamp(0.0, 1.0)),
       );
     }
 

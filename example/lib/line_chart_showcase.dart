@@ -85,7 +85,7 @@ FusionLineSeries(
     ),
     _ShowcaseItem(
       title: '5. Crosshair & Trackball',
-      description: 'Precision tracking with snap-to-point',
+      description: 'Precision tracking with custom label formatters',
       code: '''
 FusionChartConfiguration(
   enableCrosshair: true,
@@ -93,6 +93,11 @@ FusionChartConfiguration(
     snapToDataPoint: true,
     showHorizontalLine: true,
     showVerticalLine: true,
+    // Custom label formatters
+    yLabelFormatter: (value, point) =>
+      '\${value.toStringAsFixed(0)} units',
+    xLabelFormatter: (value, point) =>
+      point?.label ?? 'Value \$value',
   ),
 )''',
       builder: _buildCrosshairChart,
@@ -500,7 +505,7 @@ Widget _buildMarkersChart() {
 
 Widget _buildCrosshairChart() {
   return FusionLineChart(
-    title: 'Long press or drag to activate crosshair',
+    title: 'Long press to activate crosshair with formatted labels',
     series: [
       FusionLineSeries(
         dataPoints: _generateMonthlyData(),
@@ -509,16 +514,21 @@ Widget _buildCrosshairChart() {
         isCurved: true,
       ),
     ],
-    config: const FusionChartConfiguration(
+    config: FusionChartConfiguration(
       enableCrosshair: true,
       enableTooltip: true,
       crosshairBehavior: FusionCrosshairConfiguration(
-        enabled: true,
         snapToDataPoint: true,
         showHorizontalLine: true,
         showVerticalLine: true,
         activationMode: FusionCrosshairActivationMode.longPress,
         showLabel: true,
+        // Custom Y-axis label formatter - show value with unit
+        yLabelFormatter: (value, point) => '${value.toStringAsFixed(0)} units',
+        // X-axis uses the point's label automatically (Jan, Feb, etc.)
+        // but we can also customize it:
+        xLabelFormatter: (value, point) =>
+            point?.label ?? 'Month ${value.toInt() + 1}',
       ),
     ),
   );
@@ -541,7 +551,6 @@ Widget _buildZoomPanChart() {
       enableZoom: true,
       enablePanning: true,
       zoomBehavior: FusionZoomConfiguration(
-        enabled: true,
         enablePinchZoom: true,
         enableMouseWheelZoom: true,
         enableDoubleTapZoom: true,
@@ -549,10 +558,7 @@ Widget _buildZoomPanChart() {
         maxZoomLevel: 5.0,
         zoomMode: FusionZoomMode.both,
       ),
-      panBehavior: FusionPanConfiguration(
-        enabled: true,
-        panMode: FusionPanMode.both,
-      ),
+      panBehavior: FusionPanConfiguration(panMode: FusionPanMode.both),
     ),
   );
 }

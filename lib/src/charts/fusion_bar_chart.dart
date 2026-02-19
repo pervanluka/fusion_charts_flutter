@@ -10,6 +10,8 @@ import '../configuration/fusion_tooltip_configuration.dart';
 import '../configuration/fusion_zoom_configuration.dart';
 import '../controllers/fusion_chart_controller.dart';
 import '../data/fusion_data_point.dart';
+import '../live/fusion_live_chart_controller.dart';
+import '../live/live_viewport_mode.dart';
 import '../rendering/engine/fusion_paint_pool.dart';
 import '../rendering/engine/fusion_shader_cache.dart';
 import '../rendering/fusion_coordinate_system.dart';
@@ -70,6 +72,8 @@ class FusionBarChart extends StatefulWidget {
     this.title,
     this.subtitle,
     this.controller,
+    this.liveController,
+    this.liveViewportMode,
     this.onBarTap,
     this.onBarLongPress,
   }) : assert(series.length > 0, 'At least one series is required');
@@ -104,11 +108,44 @@ class FusionBarChart extends StatefulWidget {
   /// Controller for programmatic zoom/pan control.
   final FusionChartController? controller;
 
+  /// Controller for live/real-time data streaming.
+  ///
+  /// When provided, data points are pulled from this controller instead of
+  /// the static [series] data. The series objects still define styling
+  /// (color, bar width, name), but data comes from the controller.
+  ///
+  /// Example:
+  /// ```dart
+  /// final liveController = FusionLiveChartController(
+  ///   retentionPolicy: RetentionPolicy.rollingCount(100),
+  /// );
+  ///
+  /// // Add data from any source
+  /// timer = Timer.periodic(Duration(seconds: 1), (_) {
+  ///   liveController.addPoint('sales', FusionDataPoint(index++, randomValue()));
+  /// });
+  ///
+  /// FusionBarChart(
+  ///   liveController: liveController,
+  ///   series: [FusionBarSeries(name: 'sales', color: Colors.blue)],
+  /// )
+  /// ```
+  final FusionLiveChartController? liveController;
+
+  /// Viewport behavior for live data mode.
+  ///
+  /// Defaults to [AutoScrollPointsViewport] with 10 visible points.
+  /// Only used when [liveController] is provided.
+  final LiveViewportMode? liveViewportMode;
+
   /// Callback when a bar is tapped.
   final void Function(FusionDataPoint point, String seriesName)? onBarTap;
 
   /// Callback when a bar is long-pressed.
   final void Function(FusionDataPoint point, String seriesName)? onBarLongPress;
+
+  /// Whether this chart is in live mode.
+  bool get isLiveMode => liveController != null;
 
   @override
   State<FusionBarChart> createState() => _FusionBarChartState();
@@ -127,6 +164,12 @@ class _FusionBarChartState extends State<FusionBarChart>
   Size? _cachedSize;
   int? _cachedSeriesHash;
   FusionCoordinateSystem? _cachedCoordSystem;
+
+  /// Cached series with live data merged in.
+  List<FusionBarSeries>? _liveSeries;
+
+  /// Whether user has interacted (pausing auto-scroll).
+  bool _userInteracted = false;
 
   /// Gets the bar-specific configuration or defaults.
   FusionBarChartConfiguration get _barConfig {
@@ -158,12 +201,36 @@ class _FusionBarChartState extends State<FusionBarChart>
     );
   }
 
+  /// Get the effective series (with live data if in live mode).
+  List<FusionBarSeries> get _effectiveSeries {
+    if (!widget.isLiveMode) {
+      return widget.series;
+    }
+
+    // Return cached if available
+    if (_liveSeries != null) return _liveSeries!;
+
+    // Build series with data from live controller
+    final controller = widget.liveController!;
+    _liveSeries = widget.series.map((series) {
+      final livePoints = controller.getPoints(series.name);
+      if (livePoints.isEmpty) {
+        return series;
+      }
+      // Create a copy of the series with live data
+      return series.copyWith(dataPoints: livePoints);
+    }).toList();
+
+    return _liveSeries!;
+  }
+
   @override
   void initState() {
     super.initState();
     _initAnimation();
     _initInteractiveState();
     _attachController();
+    _attachLiveController();
   }
 
   void _attachController() {
@@ -172,6 +239,162 @@ class _FusionBarChartState extends State<FusionBarChart>
 
   void _detachController() {
     widget.controller?.detach();
+  }
+
+  void _attachLiveController() {
+    widget.liveController?.addListener(_onLiveDataChanged);
+  }
+
+  void _detachLiveController() {
+    widget.liveController?.removeListener(_onLiveDataChanged);
+  }
+
+  void _onLiveDataChanged() {
+    // Invalidate cached series
+    _liveSeries = null;
+
+    // Invalidate coordinate system cache
+    _cachedCoordSystem = null;
+    _cachedSeriesHash = null;
+
+    // Update coordinate system for auto-scroll
+    if (widget.isLiveMode && !_userInteracted) {
+      _updateLiveViewport();
+    }
+
+    setState(() {});
+  }
+
+  /// Update viewport for live data auto-scroll.
+  void _updateLiveViewport() {
+    if (!widget.isLiveMode || _coordSystem == null) return;
+
+    final controller = widget.liveController!;
+    // Bar charts default to point-based scrolling since they're typically category-based
+    final viewportMode =
+        widget.liveViewportMode ??
+        const LiveViewportMode.autoScrollPoints(visiblePoints: 10);
+
+    // For bar charts, we use index-based positioning
+    final effectiveSeries = _effectiveSeries;
+    if (effectiveSeries.isEmpty) return;
+
+    // Get the number of points in the first series (all series should have same length)
+    final pointCount = effectiveSeries.first.dataPoints.length;
+    if (pointCount == 0) return;
+
+    switch (viewportMode) {
+      case AutoScrollViewport(
+        visibleDuration: final duration,
+        leadingPadding: final leading,
+      ):
+        // Get the latest data point across all series
+        double? latestX;
+        for (final series in widget.series) {
+          final latest = controller.getLatestPoint(series.name);
+          if (latest != null) {
+            if (latestX == null || latest.x > latestX) {
+              latestX = latest.x;
+            }
+          }
+        }
+        if (latestX == null) return;
+
+        // Calculate viewport range based on duration
+        final visibleMs = duration.inMilliseconds.toDouble();
+        final leadingMs = leading.inMilliseconds.toDouble();
+
+        final maxX = latestX + leadingMs;
+        final minX = maxX - visibleMs;
+
+        _interactiveState.setViewportRange(minX: minX, maxX: maxX);
+
+      case AutoScrollPointsViewport(
+        visiblePoints: final count,
+        leadingPoints: final leading,
+      ):
+        // For bar charts, use index-based positioning
+        final endIndex = pointCount - 1 + leading;
+        final startIndex = (endIndex - count + 1).clamp(0, endIndex);
+
+        final minX = startIndex - 0.5;
+        final maxX = endIndex + 0.5;
+
+        _interactiveState.setViewportRange(minX: minX, maxX: maxX);
+
+      case FixedViewport(initialRange: final range):
+        if (range != null) {
+          _interactiveState.setViewportRange(minX: range.$1, maxX: range.$2);
+        }
+      // Fixed viewport doesn't auto-scroll
+
+      case AutoScrollUntilInteractionViewport(
+        visibleDuration: final duration,
+        leadingPadding: final leading,
+      ):
+        if (_userInteracted) return; // User has taken control
+
+        // Get the latest data point
+        double? latestX;
+        for (final series in widget.series) {
+          final latest = controller.getLatestPoint(series.name);
+          if (latest != null) {
+            if (latestX == null || latest.x > latestX) {
+              latestX = latest.x;
+            }
+          }
+        }
+        if (latestX == null) return;
+
+        final visibleMs = duration.inMilliseconds.toDouble();
+        final leadingMs = leading.inMilliseconds.toDouble();
+
+        final maxX = latestX + leadingMs;
+        final minX = maxX - visibleMs;
+
+        _interactiveState.setViewportRange(minX: minX, maxX: maxX);
+
+      case FillThenScrollViewport(
+        maxDuration: final maxDuration,
+        leadingPadding: final leading,
+      ):
+        // Get oldest and latest points
+        double? oldestX;
+        double? latestX;
+        for (final series in widget.series) {
+          final oldest = controller.getOldestPoint(series.name);
+          final latest = controller.getLatestPoint(series.name);
+          if (oldest != null) {
+            if (oldestX == null || oldest.x < oldestX) {
+              oldestX = oldest.x;
+            }
+          }
+          if (latest != null) {
+            if (latestX == null || latest.x > latestX) {
+              latestX = latest.x;
+            }
+          }
+        }
+
+        if (oldestX == null || latestX == null) return;
+
+        final dataSpan = latestX - oldestX;
+        final maxMs = maxDuration.inMilliseconds.toDouble();
+        final leadingMs = leading.inMilliseconds.toDouble();
+
+        if (dataSpan < maxMs) {
+          // Still filling - show all data with some padding
+          _interactiveState.setViewportRange(
+            minX: oldestX,
+            maxX: latestX + leadingMs,
+          );
+        } else {
+          // Filled - now scroll
+          final maxX = latestX + leadingMs;
+          final minX = maxX - maxMs;
+          _interactiveState.setViewportRange(minX: minX, maxX: maxX);
+        }
+    }
   }
 
   void _initAnimation() {
@@ -203,7 +426,7 @@ class _FusionBarChartState extends State<FusionBarChart>
     _interactiveState = FusionBarInteractiveState(
       config: config,
       initialCoordSystem: _coordSystem!,
-      series: widget.series,
+      series: _effectiveSeries,
       enableSideBySideSeriesPlacement: config.enableSideBySideSeriesPlacement,
     );
     _interactiveState.initialize();
@@ -230,7 +453,8 @@ class _FusionBarChartState extends State<FusionBarChart>
 
   int _getMaxPointCount() {
     int max = 0;
-    for (final series in widget.series) {
+    final effectiveSeries = _effectiveSeries;
+    for (final series in effectiveSeries) {
       if (series.dataPoints.length > max) {
         max = series.dataPoints.length;
       }
@@ -240,7 +464,8 @@ class _FusionBarChartState extends State<FusionBarChart>
 
   double _getMaxYValue() {
     double max = 0;
-    for (final series in widget.series) {
+    final effectiveSeries = _effectiveSeries;
+    for (final series in effectiveSeries) {
       for (final point in series.dataPoints) {
         if (point.y > max) max = point.y;
       }
@@ -249,6 +474,17 @@ class _FusionBarChartState extends State<FusionBarChart>
   }
 
   void _onInteractionChanged() {
+    // Track user interaction for AutoScrollUntilInteraction mode
+    if (widget.isLiveMode && !_userInteracted) {
+      final viewportMode = widget.liveViewportMode;
+      if (viewportMode is AutoScrollUntilInteractionViewport) {
+        // Check if this is a zoom/pan interaction (not just tooltip/crosshair)
+        if (_interactiveState.isInteracting) {
+          _userInteracted = true;
+        }
+      }
+    }
+
     setState(() {});
   }
 
@@ -256,13 +492,24 @@ class _FusionBarChartState extends State<FusionBarChart>
   void didUpdateWidget(FusionBarChart oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    // Handle live controller changes
+    if (widget.liveController != oldWidget.liveController) {
+      oldWidget.liveController?.removeListener(_onLiveDataChanged);
+      widget.liveController?.addListener(_onLiveDataChanged);
+      _liveSeries = null; // Invalidate cache
+    }
+
     if (widget.series != oldWidget.series ||
         widget.config != oldWidget.config) {
       _cachedCoordSystem = null;
       _cachedSeriesHash = null;
+      _liveSeries = null; // Invalidate cache
 
-      _animationController.reset();
-      _animationController.forward();
+      // Only animate for non-live mode or significant series changes
+      if (!widget.isLiveMode) {
+        _animationController.reset();
+        _animationController.forward();
+      }
 
       _detachController();
       _interactiveState.dispose();
@@ -280,6 +527,7 @@ class _FusionBarChartState extends State<FusionBarChart>
   @override
   void dispose() {
     _detachController();
+    _detachLiveController();
     _animationController.dispose();
     _interactiveState.dispose();
     super.dispose();
@@ -316,47 +564,56 @@ class _FusionBarChartState extends State<FusionBarChart>
                       _interactiveState.updateCoordinateSystem(_coordSystem!);
                     }
 
-                    return Listener(
-                      onPointerDown: _interactiveState.handlePointerDown,
-                      onPointerMove: _interactiveState.handlePointerMove,
-                      onPointerUp: _interactiveState.handlePointerUp,
-                      onPointerCancel: _interactiveState.handlePointerCancel,
-                      onPointerHover: _interactiveState.handlePointerHover,
-                      onPointerSignal: _interactiveState.handlePointerSignal,
-                      child: RawGestureDetector(
-                        gestures: _interactiveState.getGestureRecognizers(),
-                        child: Stack(
-                          children: [
-                            CustomPaint(
-                              size: size,
-                              painter: FusionBarChartPainter(
-                                series: widget.series,
-                                coordSystem: _interactiveState.coordSystem,
-                                theme: theme,
-                                xAxis: widget.xAxis,
-                                yAxis: widget.yAxis,
-                                animationProgress: _animation.value,
-                                tooltipData: _interactiveState.tooltipData,
-                                crosshairPosition:
-                                    _interactiveState.crosshairPosition,
-                                crosshairPoint: _interactiveState.crosshairPoint,
-                                config: config,
-                                paintPool: _paintPool,
-                                shaderCache: _shaderCache,
-                              ),
-                            ),
-                            // Selection rectangle overlay
-                            if (_interactiveState.selectionRect != null)
-                              Positioned.fill(
-                                child: CustomPaint(
-                                  painter: FusionSelectionRectLayer(
-                                    selectionRect: _interactiveState.selectionRect!,
-                                    fillColor: theme.primaryColor.withValues(alpha: 0.1),
-                                    borderColor: theme.primaryColor,
-                                  ),
+                    return MouseRegion(
+                      onExit: _interactiveState.handlePointerExit,
+                      child: Listener(
+                        onPointerDown: _interactiveState.handlePointerDown,
+                        onPointerMove: _interactiveState.handlePointerMove,
+                        onPointerUp: _interactiveState.handlePointerUp,
+                        onPointerCancel: _interactiveState.handlePointerCancel,
+                        onPointerHover: _interactiveState.handlePointerHover,
+                        onPointerSignal: _interactiveState.handlePointerSignal,
+                        child: RawGestureDetector(
+                          gestures: _interactiveState.getGestureRecognizers(),
+                          child: Stack(
+                            children: [
+                              CustomPaint(
+                                size: size,
+                                painter: FusionBarChartPainter(
+                                  series: _effectiveSeries,
+                                  coordSystem: _interactiveState.coordSystem,
+                                  theme: theme,
+                                  xAxis: widget.xAxis,
+                                  yAxis: widget.yAxis,
+                                  animationProgress: widget.isLiveMode
+                                      ? 1.0
+                                      : _animation.value,
+                                  tooltipData: _interactiveState.tooltipData,
+                                  crosshairPosition:
+                                      _interactiveState.crosshairPosition,
+                                  crosshairPoint:
+                                      _interactiveState.crosshairPoint,
+                                  config: config,
+                                  paintPool: _paintPool,
+                                  shaderCache: _shaderCache,
                                 ),
                               ),
-                          ],
+                              // Selection rectangle overlay
+                              if (_interactiveState.selectionRect != null)
+                                Positioned.fill(
+                                  child: CustomPaint(
+                                    painter: FusionSelectionRectLayer(
+                                      selectionRect:
+                                          _interactiveState.selectionRect!,
+                                      fillColor: theme.primaryColor.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      borderColor: theme.primaryColor,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -371,7 +628,9 @@ class _FusionBarChartState extends State<FusionBarChart>
   }
 
   void _updateCoordinateSystem(Size size) {
-    final seriesHash = _calculateSeriesHash(widget.series);
+    // Use effective series for live mode
+    final effectiveSeries = _effectiveSeries;
+    final seriesHash = _calculateSeriesHash(effectiveSeries);
 
     if (_cachedSize == size &&
         _cachedSeriesHash == seriesHash &&
@@ -382,7 +641,7 @@ class _FusionBarChartState extends State<FusionBarChart>
 
     final config = _barConfig;
 
-    final allPoints = widget.series
+    final allPoints = effectiveSeries
         .where((s) => s.visible)
         .expand((s) => s.dataPoints)
         .toList();
@@ -400,7 +659,7 @@ class _FusionBarChartState extends State<FusionBarChart>
 
     // For bar charts, ALWAYS use index-based positioning (category axis)
     // X values are used for labels, not for positioning
-    final pointCount = widget.series.first.dataPoints.length;
+    final pointCount = effectiveSeries.first.dataPoints.length;
 
     // Coordinate system: bars centered at 0, 1, 2, 3...
     const minX = -0.5;
@@ -408,8 +667,8 @@ class _FusionBarChartState extends State<FusionBarChart>
 
     // For margin calculation, use the actual label values (first and last x values)
     // This ensures proper overflow calculation for first/last labels
-    final firstPoint = widget.series.first.dataPoints.first;
-    final lastPoint = widget.series.first.dataPoints.last;
+    final firstPoint = effectiveSeries.first.dataPoints.first;
+    final lastPoint = effectiveSeries.first.dataPoints.last;
     final marginMinX = firstPoint.label != null ? 0.0 : firstPoint.x;
     final marginMaxX = lastPoint.label != null
         ? (pointCount - 1).toDouble()

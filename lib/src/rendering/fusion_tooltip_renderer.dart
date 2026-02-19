@@ -130,7 +130,9 @@ class _FusionTooltipRendererState extends State<FusionTooltipRenderer>
 
   Widget _buildDefaultTooltip(TooltipRenderData data) {
     final backgroundColor = widget.behavior.color ?? Colors.black;
-    final textColor = _getContrastColor(backgroundColor);
+    final textColor = FusionColorPalette.getContrastingTextColor(
+      backgroundColor,
+    );
 
     String content;
     if (widget.behavior.format != null) {
@@ -224,10 +226,5 @@ class _FusionTooltipRendererState extends State<FusionTooltipRenderer>
       case ChartAlignment.center:
         return TextAlign.center;
     }
-  }
-
-  Color _getContrastColor(Color background) {
-    final luminance = background.computeLuminance();
-    return luminance > 0.5 ? Colors.black : Colors.white;
   }
 }

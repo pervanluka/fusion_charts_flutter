@@ -3,6 +3,7 @@
 <p align="center">
   <a href="https://pub.dev/packages/fusion_charts_flutter"><img src="https://img.shields.io/pub/v/fusion_charts_flutter.svg" alt="Pub Version"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
+  <img src="https://img.shields.io/badge/coverage-75.86%25-brightgreen.svg" alt="Test Coverage">
   <a href="https://github.com/pervanluka/fusion_charts_flutter"><img src="https://img.shields.io/github/stars/pervanluka/fusion_charts_flutter?style=social" alt="GitHub Stars"></a>
 </p>
 
@@ -13,6 +14,7 @@
 ## ✨ Features
 
 - 📊 **Chart Types**: Line, Bar, Stacked Bar, Pie, and Donut charts
+- 📡 **Live Streaming**: Real-time data with auto-scrolling viewport and LTTB downsampling
 - ⚡ **High Performance**: Optimized for 10,000+ data points with LTTB downsampling
 - 🎨 **Professional Themes**: Light and Dark themes out-of-the-box
 - 🎬 **Smooth Animations**: Configurable animations with cubic easing curves
@@ -30,7 +32,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  fusion_charts_flutter: ^1.0.0
+  fusion_charts_flutter: ^1.1.0
 ```
 
 Then run:
@@ -366,6 +368,97 @@ FusionLineChart(
       color: Colors.purple,
     ),
   ],
+)
+```
+
+---
+
+## 📡 Live Streaming Charts
+
+Create real-time charts with automatic viewport management:
+
+```dart
+class LiveChartDemo extends StatefulWidget {
+  @override
+  State<LiveChartDemo> createState() => _LiveChartDemoState();
+}
+
+class _LiveChartDemoState extends State<LiveChartDemo> {
+  late final FusionLiveChartController _controller;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = FusionLiveChartController(
+      windowDuration: const Duration(seconds: 30),
+      viewportMode: LiveViewportMode.sliding,
+      retentionPolicy: const DownsampledPolicy(
+        maxPoints: 500,
+        archivePoints: 1000,
+      ),
+    );
+    _startStreaming();
+  }
+
+  void _startStreaming() {
+    _timer = Timer.periodic(const Duration(milliseconds: 100), (_) {
+      _controller.addDataPoint(
+        FusionDataPoint(
+          DateTime.now().millisecondsSinceEpoch.toDouble(),
+          Random().nextDouble() * 100,
+        ),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FusionLineChart(
+      liveController: _controller,
+      series: [
+        FusionLineSeries(
+          name: 'Live Data',
+          dataPoints: [],  // Data managed by controller
+          color: Colors.blue,
+        ),
+      ],
+      config: const FusionChartConfiguration(
+        enableTooltip: true,
+      ),
+    );
+  }
+}
+```
+
+### Viewport Modes
+
+| Mode | Description |
+|------|-------------|
+| `sliding` | Fixed window that scrolls with new data |
+| `expanding` | Window expands to show all data |
+| `fixed` | Static viewport, data scrolls through |
+
+### Retention Policies
+
+```dart
+// Keep all points (memory intensive)
+const UnlimitedPolicy()
+
+// Keep last N points
+const SlidingWindowPolicy(maxPoints: 1000)
+
+// LTTB downsampling (recommended for long sessions)
+const DownsampledPolicy(
+  maxPoints: 500,      // Recent full-resolution points
+  archivePoints: 1000, // Downsampled historical points
 )
 ```
 

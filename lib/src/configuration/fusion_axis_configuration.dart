@@ -235,7 +235,8 @@ class FusionAxisConfiguration {
     AxisBounds bounds,
     double availableSize,
     bool isVertical,
-  )? labelGenerator;
+  )?
+  labelGenerator;
 
   // ==========================================================================
   // LABEL PROPERTIES

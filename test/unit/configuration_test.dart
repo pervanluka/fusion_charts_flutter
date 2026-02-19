@@ -294,16 +294,17 @@ void main() {
     group('copyWith', () {
       test('creates copy with modified values', () {
         const original = FusionTooltipBehavior(
-          enable: true,
           dismissStrategy: FusionDismissStrategy.onRelease,
+          shared: false,
         );
 
         final copy = original.copyWith(
           dismissStrategy: FusionDismissStrategy.never,
+          shared: true,
         );
 
-        expect(copy.enable, true);
         expect(copy.dismissStrategy, FusionDismissStrategy.never);
+        expect(copy.shared, true);
       });
     });
   });

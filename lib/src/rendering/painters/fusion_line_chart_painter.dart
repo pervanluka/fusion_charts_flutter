@@ -181,9 +181,7 @@ class FusionLineChartPainter extends CustomPainter {
           ),
 
         // Layer 1001: Crosshair (if enabled and showing)
-        if (crosshairPosition != null &&
-            effectiveConfig.enableCrosshair &&
-            effectiveConfig.crosshairBehavior.enabled)
+        if (crosshairPosition != null && effectiveConfig.enableCrosshair)
           FusionCrosshairLayer(
             position: crosshairPosition,
             snappedPoint: crosshairPoint,

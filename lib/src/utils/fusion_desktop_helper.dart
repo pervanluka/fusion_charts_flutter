@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform, kIsWeb;
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 
@@ -57,7 +58,8 @@ class FusionDesktopHelper {
 
   /// Returns true if the given pointer event is from a stylus.
   static bool isStylusEvent(PointerEvent event) {
-    return event.kind == PointerDeviceKind.stylus || event.kind == PointerDeviceKind.invertedStylus;
+    return event.kind == PointerDeviceKind.stylus ||
+        event.kind == PointerDeviceKind.invertedStylus;
   }
 
   /// Returns true if selection zoom should be activated for the given event.
