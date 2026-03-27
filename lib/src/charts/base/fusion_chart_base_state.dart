@@ -74,7 +74,7 @@ abstract class FusionChartBaseState<
   I extends FusionInteractiveStateBase
 >
     extends State<W>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   // ===========================================================================
   // SHARED RESOURCES
   // ===========================================================================

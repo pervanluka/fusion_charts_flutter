@@ -119,7 +119,7 @@ class FusionPieChart extends StatefulWidget {
 }
 
 class _FusionPieChartState extends State<FusionPieChart>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
   late FusionPieInteractiveState _interactiveState;

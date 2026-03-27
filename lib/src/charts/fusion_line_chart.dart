@@ -86,7 +86,7 @@ class FusionLineChart extends StatefulWidget {
 }
 
 class _FusionLineChartState extends State<FusionLineChart>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
   late FusionInteractiveChartState _interactiveState;
