@@ -172,13 +172,8 @@ class FusionSeriesLayer extends FusionRenderLayer {
       style: PaintingStyle.stroke,
     );
 
-    // Apply gradient to line if specified
-    if (series.gradient != null) {
-      paint.shader = context.shaderCache.getLinearGradient(
-        series.gradient!,
-        context.chartArea,
-      );
-    }
+    // Gradient is only applied to area fill, not the line stroke.
+    // This ensures the line retains its full solid color.
 
     canvas.drawPath(strokePath, paint);
     context.returnPaint(paint);

@@ -133,12 +133,15 @@ class FusionStackedBarSeriesRenderer {
             value = (value / total) * 100;
           }
 
+          final originalValue = pointIndex < series.dataPoints.length
+              ? series.dataPoints[pointIndex].y
+              : 0.0;
           final top = cumulativeBase + value;
           valuesAtPoint.add(
             _StackedValue(
               base: cumulativeBase,
               top: top,
-              originalValue: series.dataPoints[pointIndex].y,
+              originalValue: originalValue,
             ),
           );
           cumulativeBase = top;

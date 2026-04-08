@@ -142,7 +142,9 @@ class _FusionLineChartState extends State<FusionLineChart>
     // Update live tooltip AFTER viewport is updated (requires correct coordinate system)
     _interactiveState.updateLiveTooltip();
 
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   /// Get the effective series (with live data if in live mode).
@@ -392,9 +394,11 @@ class _FusionLineChartState extends State<FusionLineChart>
       }
     }
 
-    setState(() {
-      // Rebuild when interaction state changes (tooltip, crosshair, zoom, pan)
-    });
+    if (mounted) {
+      setState(() {
+        // Rebuild when interaction state changes (tooltip, crosshair, zoom, pan)
+      });
+    }
   }
 
   @override

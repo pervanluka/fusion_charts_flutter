@@ -18,6 +18,7 @@ import '../fusion_coordinate_system.dart';
 import '../layers/fusion_crosshair_layer.dart';
 import '../layers/fusion_data_label_layer.dart';
 import '../layers/fusion_marker_layer.dart';
+import '../layers/fusion_reference_line_layer.dart';
 import '../layers/fusion_render_layer.dart';
 import '../layers/fusion_series_layer.dart';
 import '../layers/fusion_tooltip_layer.dart';
@@ -148,8 +149,11 @@ class FusionLineChartPainter extends CustomPainter {
         FusionBackgroundLayer(color: theme.backgroundColor),
 
         // Layer 10: Grid (if enabled)
-        if (effectiveConfig.enableGrid)
-          FusionGridLayer(showHorizontal: true, showVertical: true),
+        if (effectiveConfig.enableGrid) FusionGridLayer(showHorizontal: true, showVertical: true),
+
+        // Layer 25: Reference line annotations
+        if (effectiveConfig.annotations.isNotEmpty)
+          FusionReferenceLineLayer(annotations: effectiveConfig.annotations),
 
         // Layer 50: Series (MAIN CONTENT)
         FusionSeriesLayer(
@@ -159,16 +163,14 @@ class FusionLineChartPainter extends CustomPainter {
         ),
 
         // Layer 60: Markers (if enabled)
-        if (enableMarkers)
-          FusionMarkerLayer(series: series.cast<SeriesWithDataPoints>()),
+        if (enableMarkers) FusionMarkerLayer(series: series.cast<SeriesWithDataPoints>()),
 
         // Layer 70: Data Labels (if enabled)
         if (effectiveConfig.enableDataLabels)
           FusionDataLabelLayer(series: series.cast<SeriesWithDataPoints>()),
 
         // Layer 90: Axes (if enabled)
-        if (effectiveConfig.enableAxis)
-          FusionAxisLayer(showXAxis: true, showYAxis: true),
+        if (effectiveConfig.enableAxis) FusionAxisLayer(showXAxis: true, showYAxis: true),
 
         // Layer 95: Border (if enabled)
         if (effectiveConfig.enableBorder) FusionBorderLayer(),
@@ -239,10 +241,7 @@ class FusionLineChartPainter extends CustomPainter {
 
   /// Calculates data bounds from all visible series.
   Rect _calculateDataBounds() {
-    final allPoints = series
-        .where((s) => s.visible)
-        .expand((s) => s.dataPoints)
-        .toList();
+    final allPoints = series.where((s) => s.visible).expand((s) => s.dataPoints).toList();
 
     if (allPoints.isEmpty) {
       return Rect.fromLTRB(0, 0, 10, 100);

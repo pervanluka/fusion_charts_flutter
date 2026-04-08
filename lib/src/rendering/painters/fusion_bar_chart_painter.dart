@@ -7,6 +7,7 @@ import '../engine/fusion_render_pipeline.dart';
 import '../engine/fusion_shader_cache.dart';
 import '../layers/fusion_crosshair_layer.dart';
 import '../layers/fusion_data_label_layer.dart';
+import '../layers/fusion_reference_line_layer.dart';
 import '../layers/fusion_render_layer.dart';
 import '../layers/fusion_series_layer.dart';
 import '../layers/fusion_tooltip_layer.dart';
@@ -166,6 +167,10 @@ class FusionBarChartPainter extends CustomPainter {
         // Layer 10: Grid (if enabled)
         if (effectiveConfig.enableGrid)
           FusionGridLayer(showHorizontal: true, showVertical: true),
+
+        // Layer 25: Reference line annotations
+        if (effectiveConfig.annotations.isNotEmpty)
+          FusionReferenceLineLayer(annotations: effectiveConfig.annotations),
 
         // Layer 50: Series (BARS)
         FusionSeriesLayer(

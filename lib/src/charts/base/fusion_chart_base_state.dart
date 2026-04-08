@@ -261,9 +261,11 @@ abstract class FusionChartBaseState<
   }
 
   void _onInteractionChanged() {
-    setState(() {
-      // Rebuild when interaction state changes (tooltip, crosshair, zoom, pan)
-    });
+    if (mounted) {
+      setState(() {
+        // Rebuild when interaction state changes (tooltip, crosshair, zoom, pan)
+      });
+    }
   }
 
   @override

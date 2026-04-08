@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../configuration/fusion_tooltip_configuration.dart';
+import '../../core/enums/fusion_data_label_display.dart';
 import '../../core/enums/fusion_tooltip_position.dart';
 import '../../data/fusion_data_point.dart';
 import '../../series/fusion_series.dart';
@@ -192,7 +193,8 @@ class FusionTooltipLayer extends FusionRenderLayer {
       ),
     );
 
-    if (tooltipBehavior.canShowMarker) {
+    if (tooltipBehavior.canShowMarker &&
+        !_hasDataLabelAtPoint(seriesName, point)) {
       _paintMarker(canvas, screenPos, seriesColor, theme.markerBorderColor);
     }
 
@@ -245,6 +247,7 @@ class FusionTooltipLayer extends FusionRenderLayer {
                 maxDecimals: tooltipBehavior.decimalPlaces,
               ),
         screenPosition: primaryScreenPos,
+        point: primaryPoint,
       ),
       ...sharedPoints.map(
         (sp) => _TooltipEntry(
@@ -257,6 +260,7 @@ class FusionTooltipLayer extends FusionRenderLayer {
                   maxDecimals: tooltipBehavior.decimalPlaces,
                 ),
           screenPosition: sp.screenPosition,
+          point: sp.point,
         ),
       ),
     ];
@@ -318,12 +322,15 @@ class FusionTooltipLayer extends FusionRenderLayer {
     // FIRST: Draw markers for all points (BEFORE tooltip so they don't overlap)
     if (tooltipBehavior.canShowMarker) {
       for (final entry in entries) {
-        _paintMarker(
-          canvas,
-          entry.screenPosition,
-          entry.color,
-          theme.markerBorderColor,
-        );
+        if (entry.point == null ||
+            !_hasDataLabelAtPoint(entry.seriesName, entry.point!)) {
+          _paintMarker(
+            canvas,
+            entry.screenPosition,
+            entry.color,
+            theme.markerBorderColor,
+          );
+        }
       }
     }
 
@@ -473,8 +480,9 @@ class FusionTooltipLayer extends FusionRenderLayer {
       );
     }
 
-    // Draw marker
-    if (tooltipBehavior.canShowMarker) {
+    // Draw marker (skip if data label exists at this point)
+    if (tooltipBehavior.canShowMarker &&
+        !_hasDataLabelAtPoint(seriesName, point)) {
       _paintMarker(canvas, screenPos, seriesColor, theme.markerBorderColor);
     }
 
@@ -552,6 +560,7 @@ class FusionTooltipLayer extends FusionRenderLayer {
                 maxDecimals: tooltipBehavior.decimalPlaces,
               ),
         screenPosition: primaryScreenPos,
+        point: primaryPoint,
       ),
       ...sharedPoints.map(
         (sp) => _TooltipEntry(
@@ -564,6 +573,7 @@ class FusionTooltipLayer extends FusionRenderLayer {
                   maxDecimals: tooltipBehavior.decimalPlaces,
                 ),
           screenPosition: sp.screenPosition,
+          point: sp.point,
         ),
       ),
     ];
@@ -622,15 +632,18 @@ class FusionTooltipLayer extends FusionRenderLayer {
       );
     }
 
-    // Draw markers for all points
+    // Draw markers for all points (skip if data label exists at that point)
     if (tooltipBehavior.canShowMarker) {
       for (final entry in entries) {
-        _paintMarker(
-          canvas,
-          entry.screenPosition,
-          entry.color,
-          theme.markerBorderColor,
-        );
+        if (entry.point == null ||
+            !_hasDataLabelAtPoint(entry.seriesName, entry.point!)) {
+          _paintMarker(
+            canvas,
+            entry.screenPosition,
+            entry.color,
+            theme.markerBorderColor,
+          );
+        }
       }
     }
 
@@ -881,6 +894,37 @@ class FusionTooltipLayer extends FusionRenderLayer {
     return context.theme.markerSize / 2;
   }
 
+  /// Whether the tooltip point has a data label that would overlap the marker.
+  bool _hasDataLabelAtPoint(String seriesName, FusionDataPoint point) {
+    for (final series in allSeries) {
+      if (series.name != seriesName) continue;
+      if (series is! FusionDataLabelSupport) return false;
+
+      final labelSupport = series as FusionDataLabelSupport;
+      if (!labelSupport.showDataLabels) return false;
+
+      final display = labelSupport.dataLabelDisplay;
+      if (display == FusionDataLabelDisplay.all) return true;
+      if (display == FusionDataLabelDisplay.none) return false;
+
+      final points = series.dataPoints;
+      if (points.isEmpty) return false;
+
+      final maxY = points.map((p) => p.y).reduce((a, b) => a > b ? a : b);
+      final minY = points.map((p) => p.y).reduce((a, b) => a < b ? a : b);
+
+      return switch (display) {
+        FusionDataLabelDisplay.maxOnly => point.y == maxY,
+        FusionDataLabelDisplay.minOnly => point.y == minY,
+        FusionDataLabelDisplay.maxAndMin => point.y == maxY || point.y == minY,
+        FusionDataLabelDisplay.firstAndLast =>
+          point == points.first || point == points.last,
+        _ => false,
+      };
+    }
+    return false;
+  }
+
   // ==========================================================================
   // RENDERING HELPERS
   // ==========================================================================
@@ -1088,12 +1132,14 @@ class _TooltipEntry {
     required this.color,
     required this.value,
     required this.screenPosition,
+    this.point,
   });
 
   final String seriesName;
   final Color color;
   final String value;
   final Offset screenPosition;
+  final FusionDataPoint? point;
 }
 
 /// Arrow direction for corner arrows.

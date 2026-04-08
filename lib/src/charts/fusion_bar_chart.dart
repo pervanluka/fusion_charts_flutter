@@ -262,7 +262,9 @@ class _FusionBarChartState extends State<FusionBarChart>
       _updateLiveViewport();
     }
 
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   /// Update viewport for live data auto-scroll.
@@ -485,7 +487,9 @@ class _FusionBarChartState extends State<FusionBarChart>
       }
     }
 
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override

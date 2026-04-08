@@ -350,6 +350,7 @@ class CategoryAxisRenderer extends FusionAxisRenderer {
     final path = Path();
 
     // Draw grid lines between categories
+    if (categories.isEmpty) return;
     for (int i = 0; i <= categories.length; i++) {
       final position = i / categories.length;
 

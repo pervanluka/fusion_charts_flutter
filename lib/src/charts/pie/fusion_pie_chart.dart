@@ -186,7 +186,9 @@ class _FusionPieChartState extends State<FusionPieChart>
   }
 
   void _onInteractionChanged() {
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override

@@ -121,7 +121,14 @@ class FusionCrosshairLayer extends FusionRenderLayer {
     final dx = end.dx - start.dx;
     final dy = end.dy - start.dy;
     final lineLength = (end - start).distance;
-    final dashCount = (lineLength / (dashArray[0] + dashArray[1])).ceil();
+
+    final dashSum = dashArray[0] + dashArray[1];
+    if (lineLength == 0 || dashSum == 0) {
+      canvas.drawLine(start, end, paint);
+      return;
+    }
+
+    final dashCount = (lineLength / dashSum).ceil();
 
     double currentDistance = 0;
     bool drawDash = true;

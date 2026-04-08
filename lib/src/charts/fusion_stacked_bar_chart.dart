@@ -281,7 +281,9 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
   }
 
   void _onInteractionChanged() {
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
