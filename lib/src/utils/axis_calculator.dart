@@ -322,7 +322,7 @@ class AxisCalculator {
     double interval,
     int minorTicksPerInterval,
   ) {
-    assert(minorTicksPerInterval > 0, 'Minor ticks count must be positive');
+    assert(minorTicksPerInterval >= 0, 'Minor ticks count must not be negative');
 
     if (minorTicksPerInterval == 0) {
       return [];

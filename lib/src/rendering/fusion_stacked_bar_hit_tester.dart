@@ -163,8 +163,11 @@ class FusionStackedBarHitTester {
 
     // Get category label
     String? categoryLabel;
-    if (visibleSeries.first.dataPoints[categoryIndex].label != null) {
-      categoryLabel = visibleSeries.first.dataPoints[categoryIndex].label;
+    final firstSeries = visibleSeries.first;
+    if (categoryIndex >= 0 &&
+        categoryIndex < firstSeries.dataPoints.length &&
+        firstSeries.dataPoints[categoryIndex].label != null) {
+      categoryLabel = firstSeries.dataPoints[categoryIndex].label;
     }
 
     return StackedBarHitTestResult(

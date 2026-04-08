@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../annotations/fusion_reference_line.dart';
 import '../core/enums/interaction_anchor_mode.dart';
 import '../themes/fusion_chart_theme.dart';
 import 'fusion_chart_configuration.dart';
@@ -58,6 +59,7 @@ class FusionLineChartConfiguration extends FusionChartConfiguration {
     super.enableBorder,
     super.enableGrid,
     super.enableAxis,
+    super.annotations,
     super.padding,
     super.animationDuration,
     super.animationCurve,
@@ -169,6 +171,7 @@ class FusionLineChartConfiguration extends FusionChartConfiguration {
     bool? enableBorder,
     bool? enableGrid,
     bool? enableAxis,
+    List<FusionReferenceLine>? annotations,
     EdgeInsets? padding,
     Duration? animationDuration,
     Curve? animationCurve,
@@ -201,6 +204,7 @@ class FusionLineChartConfiguration extends FusionChartConfiguration {
       enableBorder: enableBorder ?? this.enableBorder,
       enableGrid: enableGrid ?? this.enableGrid,
       enableAxis: enableAxis ?? this.enableAxis,
+      annotations: annotations ?? this.annotations,
       padding: padding ?? this.padding,
       animationDuration: animationDuration ?? this.animationDuration,
       animationCurve: animationCurve ?? this.animationCurve,

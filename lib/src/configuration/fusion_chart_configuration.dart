@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:fusion_charts_flutter/src/configuration/fusion_tooltip_configuration.dart';
+import '../annotations/fusion_reference_line.dart';
 import '../core/enums/interaction_anchor_mode.dart';
 import '../themes/fusion_chart_theme.dart';
 import '../themes/fusion_light_theme.dart';
@@ -66,6 +67,7 @@ class FusionChartConfiguration {
     this.enableBorder = false,
     this.enableGrid = true,
     this.enableAxis = true,
+    this.annotations = const [],
     this.padding = const EdgeInsets.all(4),
     this.animationDuration,
     this.animationCurve,
@@ -212,6 +214,16 @@ class FusionChartConfiguration {
   final bool enableAxis;
 
   // ==========================================================================
+  // ANNOTATIONS
+  // ==========================================================================
+
+  /// List of reference line annotations to render on the chart.
+  ///
+  /// Each [FusionReferenceLine] draws a horizontal dashed line with an
+  /// optional label badge at a specific Y value.
+  final List<FusionReferenceLine> annotations;
+
+  // ==========================================================================
   // LAYOUT
   // ==========================================================================
 
@@ -276,6 +288,7 @@ class FusionChartConfiguration {
     bool? enableBorder,
     bool? enableGrid,
     bool? enableAxis,
+    List<FusionReferenceLine>? annotations,
     EdgeInsets? padding,
     Duration? animationDuration,
     Curve? animationCurve,
@@ -299,6 +312,7 @@ class FusionChartConfiguration {
       enableBorder: enableBorder ?? this.enableBorder,
       enableGrid: enableGrid ?? this.enableGrid,
       enableAxis: enableAxis ?? this.enableAxis,
+      annotations: annotations ?? this.annotations,
       padding: padding ?? this.padding,
       animationDuration: animationDuration ?? this.animationDuration,
       animationCurve: animationCurve ?? this.animationCurve,

@@ -84,6 +84,9 @@ export 'package:flutter/material.dart'
         Rect,
         TextStyle;
 
+/// Reference line annotation for horizontal markers.
+export 'src/annotations/fusion_reference_line.dart';
+
 /// Bar chart widget.
 export 'src/charts/fusion_bar_chart.dart';
 
@@ -162,6 +165,9 @@ export 'src/core/enums/axis_type.dart';
 /// Range padding strategies.
 export 'src/core/enums/chart_range_padding.dart';
 
+/// Annotation overlap resolution strategies.
+export 'src/core/enums/fusion_annotation_overlap_strategy.dart';
+
 /// Data label display modes (all, maxOnly, minOnly, maxAndMin, etc.).
 export 'src/core/enums/fusion_data_label_display.dart';
 
@@ -170,6 +176,9 @@ export 'src/core/enums/fusion_dismiss_strategy.dart';
 
 /// Label alignment strategies.
 export 'src/core/enums/fusion_label_alignment_strategy.dart';
+
+/// Label position for reference line annotations.
+export 'src/core/enums/fusion_label_position.dart';
 
 /// Pan edge behavior (stop, bounce, continuous).
 export 'src/core/enums/fusion_pan_edge_behavior.dart';
@@ -318,8 +327,7 @@ const String fusionChartsDescription =
     'Professional Flutter charting library with stunning visuals and enterprise-grade features';
 
 /// Repository URL.
-const String fusionChartsRepository =
-    'https://github.com/pervanluka/fusion_charts_flutter';
+const String fusionChartsRepository = 'https://github.com/pervanluka/fusion_charts_flutter';
 
 /// License.
 const String fusionChartsLicense = 'MIT';
@@ -328,5 +336,4 @@ const String fusionChartsLicense = 'MIT';
 const String fusionChartsAuthor = 'Luka Pervan';
 
 /// Homepage.
-const String fusionChartsHomepage =
-    'https://github.com/pervanluka/fusion_charts_flutter';
+const String fusionChartsHomepage = 'https://github.com/pervanluka/fusion_charts_flutter';

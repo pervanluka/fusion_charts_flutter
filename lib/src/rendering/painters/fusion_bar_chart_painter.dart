@@ -7,6 +7,7 @@ import '../engine/fusion_render_pipeline.dart';
 import '../engine/fusion_shader_cache.dart';
 import '../layers/fusion_crosshair_layer.dart';
 import '../layers/fusion_data_label_layer.dart';
+import '../layers/fusion_reference_line_layer.dart';
 import '../layers/fusion_render_layer.dart';
 import '../layers/fusion_series_layer.dart';
 import '../layers/fusion_tooltip_layer.dart';
@@ -167,6 +168,10 @@ class FusionBarChartPainter extends CustomPainter {
         if (effectiveConfig.enableGrid)
           FusionGridLayer(showHorizontal: true, showVertical: true),
 
+        // Layer 25: Reference line dashed lines (behind series)
+        if (effectiveConfig.annotations.isNotEmpty)
+          FusionReferenceLineLayer(annotations: effectiveConfig.annotations),
+
         // Layer 50: Series (BARS)
         FusionSeriesLayer(
           series: series.cast<SeriesWithDataPoints>(),
@@ -178,6 +183,10 @@ class FusionBarChartPainter extends CustomPainter {
         // Layer 70: Data Labels (if enabled)
         if (effectiveConfig.enableDataLabels)
           FusionDataLabelLayer(series: series.cast<SeriesWithDataPoints>()),
+
+        // Layer 75: Reference line label badges (above data labels)
+        if (effectiveConfig.annotations.isNotEmpty)
+          FusionReferenceLineLabelLayer(annotations: effectiveConfig.annotations),
 
         // Layer 90: Axes (if enabled)
         if (effectiveConfig.enableAxis)
@@ -191,6 +200,7 @@ class FusionBarChartPainter extends CustomPainter {
           FusionTooltipLayer(
             tooltipData: tooltipData,
             tooltipBehavior: effectiveConfig.tooltipBehavior,
+            allSeries: series.cast<SeriesWithDataPoints>(),
           ),
 
         // Layer 1001: Crosshair (if showing)

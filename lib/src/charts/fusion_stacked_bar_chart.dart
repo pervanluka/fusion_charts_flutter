@@ -132,7 +132,7 @@ class FusionStackedBarChart extends StatefulWidget {
 }
 
 class _FusionStackedBarChartState extends State<FusionStackedBarChart>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
   late FusionStackedBarInteractiveState _interactiveState;
@@ -281,7 +281,9 @@ class _FusionStackedBarChartState extends State<FusionStackedBarChart>
   }
 
   void _onInteractionChanged() {
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override

@@ -152,7 +152,7 @@ class FusionBarChart extends StatefulWidget {
 }
 
 class _FusionBarChartState extends State<FusionBarChart>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
   late FusionBarInteractiveState _interactiveState;
@@ -262,7 +262,9 @@ class _FusionBarChartState extends State<FusionBarChart>
       _updateLiveViewport();
     }
 
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   /// Update viewport for live data auto-scroll.
@@ -485,7 +487,9 @@ class _FusionBarChartState extends State<FusionBarChart>
       }
     }
 
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override

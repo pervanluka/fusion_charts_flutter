@@ -119,7 +119,7 @@ class FusionPieChart extends StatefulWidget {
 }
 
 class _FusionPieChartState extends State<FusionPieChart>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
   late FusionPieInteractiveState _interactiveState;
@@ -186,7 +186,9 @@ class _FusionPieChartState extends State<FusionPieChart>
   }
 
   void _onInteractionChanged() {
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
