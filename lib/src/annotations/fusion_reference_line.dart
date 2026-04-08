@@ -33,6 +33,9 @@ class FusionReferenceLine {
     this.labelBorderRadius = 4.0,
     this.labelPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
     this.labelMaxWidth,
+    this.showDot = false,
+    this.dotRadius = 4.0,
+    this.dotColor,
     this.overlapStrategy = FusionAnnotationOverlapStrategy.annotationWins,
     this.overlapThreshold = 0.02,
     this.visible = true,
@@ -93,6 +96,19 @@ class FusionReferenceLine {
   final double? labelMaxWidth;
 
   // ==========================================================================
+  // DOT MARKER
+  // ==========================================================================
+
+  /// Whether to show a dot where the annotation value matches a data point.
+  final bool showDot;
+
+  /// Radius of the dot marker.
+  final double dotRadius;
+
+  /// Color of the dot. Falls back to [lineColor], then theme primary color.
+  final Color? dotColor;
+
+  // ==========================================================================
   // OVERLAP RESOLUTION
   // ==========================================================================
 
@@ -134,6 +150,9 @@ class FusionReferenceLine {
     double? labelBorderRadius,
     EdgeInsets? labelPadding,
     double? labelMaxWidth,
+    bool? showDot,
+    double? dotRadius,
+    Color? dotColor,
     FusionAnnotationOverlapStrategy? overlapStrategy,
     double? overlapThreshold,
     bool? visible,
@@ -151,6 +170,9 @@ class FusionReferenceLine {
       labelBorderRadius: labelBorderRadius ?? this.labelBorderRadius,
       labelPadding: labelPadding ?? this.labelPadding,
       labelMaxWidth: labelMaxWidth ?? this.labelMaxWidth,
+      showDot: showDot ?? this.showDot,
+      dotRadius: dotRadius ?? this.dotRadius,
+      dotColor: dotColor ?? this.dotColor,
       overlapStrategy: overlapStrategy ?? this.overlapStrategy,
       overlapThreshold: overlapThreshold ?? this.overlapThreshold,
       visible: visible ?? this.visible,

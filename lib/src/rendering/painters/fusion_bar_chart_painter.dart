@@ -186,7 +186,10 @@ class FusionBarChartPainter extends CustomPainter {
 
         // Layer 75: Reference line label badges (above data labels)
         if (effectiveConfig.annotations.isNotEmpty)
-          FusionReferenceLineLabelLayer(annotations: effectiveConfig.annotations),
+          FusionReferenceLineLabelLayer(
+            annotations: effectiveConfig.annotations,
+            allSeries: series.cast<SeriesWithDataPoints>(),
+          ),
 
         // Layer 90: Axes (if enabled)
         if (effectiveConfig.enableAxis)
