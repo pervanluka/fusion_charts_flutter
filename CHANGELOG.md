@@ -5,6 +5,90 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-04-09
+
+### Added
+
+#### Reference Line Annotations
+- **`FusionReferenceLine`** — Customizable horizontal reference lines for marking specific Y-axis values (e.g., current price, target price, stop loss)
+  - Dashed or solid lines with configurable color, width, and dash pattern
+  - Label badge with background color, border radius, padding, and text styling
+  - `FusionLabelPosition` — Label placement: `left`, `right`, `topLeft`, `topRight`
+  - `showDot` — Dot marker on the last data point matching the annotation value (avoids duplicates)
+  - Dot automatically skips rendering when it would overlap the label badge
+  - `FusionAnnotationOverlapStrategy` — Overlap resolution with data labels: `annotationWins`, `dataLabelWins`, `offset`, `showBoth`
+  - Labels render above series and data labels (zIndex 75), lines render behind series (zIndex 25)
+  - Annotation added via `FusionChartConfiguration.annotations` list — works on all chart types
+
+#### Edge Label Placement
+- **`EdgeLabelPlacement`** — Controls how first/last X-axis labels handle overflow at chart boundaries
+  - `none` — Labels at exact position, margin expands to fit (default, backward compatible)
+  - `shift` — Edge labels shift inward to stay within chart area, no extra margin
+  - `hide` — Edge labels that would overflow are hidden
+- Added to `FusionAxisConfiguration.edgeLabelPlacement` with `copyWith` support
+
+#### Annotation Showcase
+
+```dart
+FusionLineChart(
+  series: [
+    FusionLineSeries(
+      dataPoints: data,
+      color: Colors.green,
+      showArea: true,
+      gradient: LinearGradient(
+        colors: [Colors.green, Colors.green.withValues(alpha: 0)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ),
+      showDataLabels: true,
+      dataLabelDisplay: FusionDataLabelDisplay.maxAndMin,
+    ),
+  ],
+  config: FusionChartConfiguration(
+    padding: EdgeInsets.zero,
+    annotations: [
+      FusionReferenceLine(
+        value: 9642.24,
+        label: '9,642.24 €',
+        lineColor: Colors.grey,
+        lineDashPattern: [4, 4],
+        labelPosition: FusionLabelPosition.left,
+        labelBackgroundColor: Colors.black87,
+        labelStyle: TextStyle(color: Colors.white, fontSize: 11),
+        showDot: true,
+        dotColor: Colors.black87,
+      ),
+    ],
+  ),
+  xAxis: FusionAxisConfiguration(
+    edgeLabelPlacement: EdgeLabelPlacement.shift,
+  ),
+)
+```
+
+### Fixed
+- **Gradient overriding alpha values** — When a gradient is explicitly provided on `FusionLineSeries`, its color alpha values are now used as-is. `areaOpacity` only applies to the solid color fallback (no gradient)
+- **Gradient bleeding into line stroke** — Gradient shader is no longer applied to the line stroke paint, keeping the line at full solid color
+- **Tooltip marker dot overlapping data labels** — Tooltip marker is suppressed when the active series has a data label at the hovered point (respects all `FusionDataLabelDisplay` modes)
+- **Tooltip allSeries not passed** — Both line and bar chart painters now pass series list to `FusionTooltipLayer`, enabling data label overlap detection
+- **Hidden axis still reserving margin** — `FusionMarginCalculator` now respects `visible: false` on both X and Y axes, eliminating gap where axis was
+- **Animation sync for overlays** — Reference lines, label badges, dots, and data labels all fade in with `animationProgress` instead of appearing instantly before the series animates
+
+### Stability
+- Added `mounted` guard to all `setState()` calls across chart widgets (line, bar, stacked bar, pie, base state)
+- Added bounds check in stacked bar hit tester for category label access
+- Added empty categories guard in category axis renderer grid drawing
+- Added zero-length/zero-dashSum guard in crosshair dashed line painting
+- Fixed axis calculator assertion from `>0` to `>=0` for minor ticks count
+
+### Tests
+- 20 unit tests for `FusionReferenceLine` (construction, assertions, copyWith, effective colors, equality)
+- 12 unit tests for annotation config integration across all chart configuration types
+- All 2,950+ existing unit tests continue to pass
+
+---
+
 ## [1.1.1] - 2026-03-27
 
 ### Fixed
@@ -236,7 +320,7 @@ The following fields are ignored and will be removed in v2.0.0. Use the top-leve
 - Gauge charts
 - Funnel charts
 - Multiple Y-axes
-- Annotations and plot bands
+- Plot bands
 - Export to image (PNG, SVG)
 - Accessibility improvements (Semantics)
 
@@ -246,6 +330,8 @@ The following fields are ignored and will be removed in v2.0.0. Use the top-leve
 
 | Version | Date       | Description                                                      |
 |---------|------------|------------------------------------------------------------------|
+| 1.2.0   | 2026-04-09 | Reference line annotations, edge label placement, gradient fixes |
+| 1.1.1   | 2026-03-27 | SingleTickerProviderStateMixin crash fix                         |
 | 1.1.0   | 2026-02-19 | Live chart streaming, LTTB downsampling, 75.86% test coverage    |
 | 1.0.1   | 2026-01-13 | Programmatic control API, labelGenerator, zoom/pan fixes, deprecations |
 | 1.0.0   | 2026-01-01 | Initial release                                                  |

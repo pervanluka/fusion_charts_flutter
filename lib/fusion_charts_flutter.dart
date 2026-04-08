@@ -320,7 +320,7 @@ export 'src/widgets/fusion_zoom_controls.dart';
 // ============================================================================
 
 /// Current version of fusion_charts_flutter.
-const String fusionChartsVersion = '1.0.1';
+const String fusionChartsVersion = '1.2.0';
 
 /// Library name.
 const String fusionChartsName = 'fusion_charts_flutter';
