@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/axis/base/fusion_axis_base.dart';
 import '../core/enums/axis_position.dart';
+import '../core/enums/edge_label_placement.dart';
 import '../core/enums/label_alignment.dart';
 import '../core/models/axis_bounds.dart';
 
@@ -66,6 +67,7 @@ class FusionAxisConfiguration {
     this.axisLineColor,
     this.axisLineWidth,
     this.rangePadding,
+    this.edgeLabelPlacement = EdgeLabelPlacement.none,
     this.labelGenerator,
   });
 
@@ -159,6 +161,15 @@ class FusionAxisConfiguration {
   ///
   /// If null, padding is determined automatically based on data.
   final double? rangePadding;
+
+  /// Controls how labels at the chart edges (first and last) are handled.
+  ///
+  /// - [EdgeLabelPlacement.none] — labels render at exact position, margin
+  ///   expands to fit overflow (default).
+  /// - [EdgeLabelPlacement.shift] — edge labels shift inward so they stay
+  ///   within the chart area without adding extra margin.
+  /// - [EdgeLabelPlacement.hide] — edge labels that would overflow are hidden.
+  final EdgeLabelPlacement edgeLabelPlacement;
 
   // ==========================================================================
   // LABEL GENERATION
@@ -546,6 +557,7 @@ class FusionAxisConfiguration {
     Color? axisLineColor,
     double? axisLineWidth,
     double? rangePadding,
+    EdgeLabelPlacement? edgeLabelPlacement,
     List<double> Function(AxisBounds, double, bool)? labelGenerator,
   }) {
     return FusionAxisConfiguration(
@@ -587,6 +599,7 @@ class FusionAxisConfiguration {
       axisLineColor: axisLineColor ?? this.axisLineColor,
       axisLineWidth: axisLineWidth ?? this.axisLineWidth,
       rangePadding: rangePadding ?? this.rangePadding,
+      edgeLabelPlacement: edgeLabelPlacement ?? this.edgeLabelPlacement,
       labelGenerator: labelGenerator ?? this.labelGenerator,
     );
   }

@@ -6,6 +6,7 @@ import '../../configuration/fusion_axis_configuration.dart';
 import '../../core/axis/base/fusion_axis_renderer.dart';
 import '../../core/axis/fusion_axis_renderer_factory.dart';
 import '../../core/enums/axis_position.dart';
+import '../../core/enums/edge_label_placement.dart';
 import '../../core/enums/label_alignment.dart';
 import '../../core/models/axis_label.dart';
 import '../engine/fusion_render_context.dart';
@@ -808,15 +809,39 @@ class FusionAxisLayer extends FusionRenderLayer {
           continue;
         }
 
+        final edgePlacement = config.edgeLabelPlacement;
+        final halfWidth = textPainter.width / 2;
+        final isFirstLabel = label == labels.first;
+        final isLastLabel = label == labels.last;
+        final overflowsLeft = screenX - halfWidth < chartArea.left;
+        final overflowsRight = screenX + halfWidth > chartArea.right;
+        final isEdgeOverflow =
+            (isFirstLabel && overflowsLeft) || (isLastLabel && overflowsRight);
+
+        // Hide edge labels that overflow
+        if (edgePlacement == EdgeLabelPlacement.hide && isEdgeOverflow) {
+          continue;
+        }
+
         // Apply labelAlignment for horizontal axis
         double xOffset;
         switch (alignment) {
           case LabelAlignment.start:
-            xOffset = screenX; // Left aligned
+            xOffset = screenX;
           case LabelAlignment.end:
-            xOffset = screenX - textPainter.width; // Right aligned
+            xOffset = screenX - textPainter.width;
           case LabelAlignment.center:
-            xOffset = screenX - (textPainter.width / 2); // Center aligned
+            xOffset = screenX - halfWidth;
+        }
+
+        // Shift edge labels inward to stay within chart area
+        if (edgePlacement == EdgeLabelPlacement.shift) {
+          if (isFirstLabel && xOffset < chartArea.left) {
+            xOffset = chartArea.left;
+          } else if (isLastLabel &&
+              xOffset + textPainter.width > chartArea.right) {
+            xOffset = chartArea.right - textPainter.width;
+          }
         }
 
         if (rotation != 0.0) {

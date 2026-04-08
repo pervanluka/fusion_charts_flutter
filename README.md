@@ -20,6 +20,7 @@
 - 🎬 **Smooth Animations**: Configurable animations with cubic easing curves
 - 📱 **Fully Responsive**: Adapts to mobile, tablet, and desktop
 - 🎯 **Interactive**: Tooltips, crosshair, zoom, and pan gestures
+- 📌 **Annotations**: Reference lines with label badges, dot markers, and overlap resolution
 - 🔧 **Highly Customizable**: Themes, colors, markers, gradients, and more
 - 🌈 **6 Color Palettes**: Material, Professional, Vibrant, Pastel, Warm, Cool
 - 🏗️ **SOLID Architecture**: Clean, maintainable, extensible code
@@ -32,7 +33,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  fusion_charts_flutter: ^1.1.0
+  fusion_charts_flutter: ^1.2.0
 ```
 
 Then run:
@@ -346,6 +347,90 @@ config: FusionChartConfiguration(
   ),
 )
 ```
+
+---
+
+## 📌 Annotations & Data Labels
+
+Add horizontal reference lines with label badges to highlight important values:
+
+```dart
+FusionLineChart(
+  series: [
+    FusionLineSeries(
+      name: 'Portfolio',
+      dataPoints: portfolioData,
+      color: Colors.green,
+      showArea: true,
+      gradient: LinearGradient(
+        colors: [
+          Colors.green,
+          Colors.green.withValues(alpha: 0.4),
+          Colors.green.withValues(alpha: 0.0),
+        ],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ),
+      // Show labels only at max and min data points
+      showDataLabels: true,
+      dataLabelDisplay: FusionDataLabelDisplay.maxAndMin,
+      dataLabelFormatter: (v) => '${v.toStringAsFixed(2)} €',
+    ),
+  ],
+  config: FusionChartConfiguration(
+    padding: EdgeInsets.zero,
+    annotations: [
+      FusionReferenceLine(
+        value: 9642.24,
+        label: '9,642.24 €',
+        lineColor: Colors.grey.withValues(alpha: 0.4),
+        lineDashPattern: [4, 4],
+        labelPosition: FusionLabelPosition.left,
+        labelBackgroundColor: Colors.black87,
+        labelStyle: TextStyle(color: Colors.white, fontSize: 11),
+        labelBorderRadius: 4,
+        // Show dot on the last data point matching this value
+        showDot: true,
+        dotColor: Colors.black87,
+      ),
+    ],
+  ),
+  xAxis: FusionAxisConfiguration(
+    // Shift edge labels inward instead of adding margin
+    edgeLabelPlacement: EdgeLabelPlacement.shift,
+  ),
+  yAxis: FusionAxisConfiguration(visible: false),
+)
+```
+
+### Reference Line Options
+
+| Property | Description |
+|----------|-------------|
+| `value` | Y-axis value where the line is drawn |
+| `label` | Text displayed in the label badge |
+| `lineColor` | Line color (falls back to theme grid color) |
+| `lineDashPattern` | Dash pattern, e.g. `[4, 4]`. Null for solid |
+| `labelPosition` | `left`, `right`, `topLeft`, `topRight` |
+| `labelBackgroundColor` | Badge background (falls back to line color) |
+| `showDot` | Show dot on the last matching data point |
+| `overlapStrategy` | How to resolve overlap with data labels |
+
+### Edge Label Placement
+
+Control how labels at chart boundaries handle overflow:
+
+```dart
+FusionAxisConfiguration(
+  edgeLabelPlacement: EdgeLabelPlacement.shift,  // or .hide, .none
+)
+```
+
+| Mode | Description |
+|------|-------------|
+| `none` | Margin expands to fit overflow (default) |
+| `shift` | Edge labels shift inward to stay within chart area |
+| `hide` | Edge labels that would overflow are hidden |
 
 ---
 

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../configuration/fusion_axis_configuration.dart';
 import '../core/enums/axis_position.dart';
+import '../core/enums/edge_label_placement.dart';
 
 /// Utility class for calculating dynamic chart margins based on axis labels.
 ///
@@ -38,53 +39,60 @@ class FusionMarginCalculator {
     final yAxisPosition = yAxis?.position ?? AxisPosition.left;
     final xAxisPosition = xAxis?.position ?? AxisPosition.bottom;
 
-    // Calculate Y-axis label metrics
-    final yLabelMetrics = _calculateYAxisLabelMetrics(
-      minY: minY,
-      maxY: maxY,
-      yAxis: yAxis,
-    );
-    // Margin = label width + tick length (5) + small gap (2)
-    final yAxisMargin = yLabelMetrics.maxWidth + 7;
+    // Calculate Y-axis label metrics (only if visible)
+    final yVisible = yAxis?.visible ?? true;
+    final yAxisMargin = yVisible
+        ? _calculateYAxisLabelMetrics(minY: minY, maxY: maxY, yAxis: yAxis)
+                .maxWidth +
+            7
+        : 4.0;
 
-    // Calculate X-axis label metrics (height + first/last label overflow)
-    final xLabelMetrics = _calculateXAxisLabelMetrics(
-      minX: minX,
-      maxX: maxX,
-      xAxis: xAxis,
-    );
-    // Margin = label height + tick length (5) + gap (7)
-    final xAxisMargin = xLabelMetrics.maxHeight + 12;
+    // Calculate X-axis label metrics (only if visible)
+    final xVisible = xAxis?.visible ?? true;
+    final xLabelMetrics = xVisible
+        ? _calculateXAxisLabelMetrics(minX: minX, maxX: maxX, xAxis: xAxis)
+        : const _AxisLabelMetrics(
+            maxWidth: 0, maxHeight: 0, firstLabelWidth: 0, lastLabelWidth: 0);
+    final xAxisMargin = xVisible ? xLabelMetrics.maxHeight + 12 : 4.0;
 
     // Build margins based on axis positions
-    double left = 4.0;
-    double right = 4.0;
+    // When edge labels handle their own overflow, no horizontal base margin needed
+    final edgePlacement =
+        xAxis?.edgeLabelPlacement ?? EdgeLabelPlacement.none;
+    final hasEdgeHandling = edgePlacement != EdgeLabelPlacement.none;
+    double left = hasEdgeHandling ? 0.0 : 4.0;
+    double right = hasEdgeHandling ? 0.0 : 4.0;
     double top = 4.0;
     double bottom = 4.0;
 
     // Y-axis margin goes on the side where Y-axis is positioned
-    if (yAxisPosition == AxisPosition.left) {
-      left = yAxisMargin;
-    } else if (yAxisPosition == AxisPosition.right) {
-      right = yAxisMargin;
+    if (yVisible) {
+      if (yAxisPosition == AxisPosition.left) {
+        left = yAxisMargin;
+      } else if (yAxisPosition == AxisPosition.right) {
+        right = yAxisMargin;
+      }
     }
 
     // X-axis margin goes on the side where X-axis is positioned
-    if (xAxisPosition == AxisPosition.bottom) {
-      bottom = xAxisMargin;
-    } else if (xAxisPosition == AxisPosition.top) {
-      top = xAxisMargin;
+    if (xVisible) {
+      if (xAxisPosition == AxisPosition.bottom) {
+        bottom = xAxisMargin;
+      } else if (xAxisPosition == AxisPosition.top) {
+        top = xAxisMargin;
+      }
+
+      // Add X-axis label overflow to left/right margins
+      // Skip when edgeLabelPlacement handles overflow (shift/hide)
+      final edgePlacement =
+          xAxis?.edgeLabelPlacement ?? EdgeLabelPlacement.none;
+      if (edgePlacement == EdgeLabelPlacement.none) {
+        final firstLabelOverflow = xLabelMetrics.firstLabelWidth / 2;
+        final lastLabelOverflow = xLabelMetrics.lastLabelWidth / 2;
+        left = max(left, firstLabelOverflow + 2);
+        right = max(right, lastLabelOverflow + 2);
+      }
     }
-
-    // Add X-axis label overflow to left/right margins
-    // First label's left half may extend beyond chart area
-    // Last label's right half may extend beyond chart area
-    final firstLabelOverflow = xLabelMetrics.firstLabelWidth / 2;
-    final lastLabelOverflow = xLabelMetrics.lastLabelWidth / 2;
-
-    // Only add overflow if it's larger than existing margin
-    left = max(left, firstLabelOverflow + 2);
-    right = max(right, lastLabelOverflow + 2);
 
     return EdgeInsets.fromLTRB(left, top, right, bottom);
   }
