@@ -151,7 +151,7 @@ class FusionLineChartPainter extends CustomPainter {
         // Layer 10: Grid (if enabled)
         if (effectiveConfig.enableGrid) FusionGridLayer(showHorizontal: true, showVertical: true),
 
-        // Layer 25: Reference line annotations
+        // Layer 25: Reference line dashed lines (behind series)
         if (effectiveConfig.annotations.isNotEmpty)
           FusionReferenceLineLayer(annotations: effectiveConfig.annotations),
 
@@ -169,6 +169,10 @@ class FusionLineChartPainter extends CustomPainter {
         if (effectiveConfig.enableDataLabels)
           FusionDataLabelLayer(series: series.cast<SeriesWithDataPoints>()),
 
+        // Layer 75: Reference line label badges (above data labels)
+        if (effectiveConfig.annotations.isNotEmpty)
+          FusionReferenceLineLabelLayer(annotations: effectiveConfig.annotations),
+
         // Layer 90: Axes (if enabled)
         if (effectiveConfig.enableAxis) FusionAxisLayer(showXAxis: true, showYAxis: true),
 
@@ -180,6 +184,7 @@ class FusionLineChartPainter extends CustomPainter {
           FusionTooltipLayer(
             tooltipData: tooltipData,
             tooltipBehavior: effectiveConfig.tooltipBehavior,
+            allSeries: series.cast<SeriesWithDataPoints>(),
           ),
 
         // Layer 1001: Crosshair (if enabled and showing)
