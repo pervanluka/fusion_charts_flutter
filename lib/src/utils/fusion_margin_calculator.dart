@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../configuration/fusion_axis_configuration.dart';
 import '../core/enums/axis_position.dart';
+import '../core/enums/edge_label_placement.dart';
 
 /// Utility class for calculating dynamic chart margins based on axis labels.
 ///
@@ -55,8 +56,12 @@ class FusionMarginCalculator {
     final xAxisMargin = xVisible ? xLabelMetrics.maxHeight + 12 : 4.0;
 
     // Build margins based on axis positions
-    double left = 4.0;
-    double right = 4.0;
+    // When edge labels handle their own overflow, no horizontal base margin needed
+    final edgePlacement =
+        xAxis?.edgeLabelPlacement ?? EdgeLabelPlacement.none;
+    final hasEdgeHandling = edgePlacement != EdgeLabelPlacement.none;
+    double left = hasEdgeHandling ? 0.0 : 4.0;
+    double right = hasEdgeHandling ? 0.0 : 4.0;
     double top = 4.0;
     double bottom = 4.0;
 
@@ -78,10 +83,15 @@ class FusionMarginCalculator {
       }
 
       // Add X-axis label overflow to left/right margins
-      final firstLabelOverflow = xLabelMetrics.firstLabelWidth / 2;
-      final lastLabelOverflow = xLabelMetrics.lastLabelWidth / 2;
-      left = max(left, firstLabelOverflow + 2);
-      right = max(right, lastLabelOverflow + 2);
+      // Skip when edgeLabelPlacement handles overflow (shift/hide)
+      final edgePlacement =
+          xAxis?.edgeLabelPlacement ?? EdgeLabelPlacement.none;
+      if (edgePlacement == EdgeLabelPlacement.none) {
+        final firstLabelOverflow = xLabelMetrics.firstLabelWidth / 2;
+        final lastLabelOverflow = xLabelMetrics.lastLabelWidth / 2;
+        left = max(left, firstLabelOverflow + 2);
+        right = max(right, lastLabelOverflow + 2);
+      }
     }
 
     return EdgeInsets.fromLTRB(left, top, right, bottom);

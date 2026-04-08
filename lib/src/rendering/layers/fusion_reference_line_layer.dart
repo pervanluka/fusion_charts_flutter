@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../annotations/fusion_reference_line.dart';
 import '../../core/enums/fusion_label_position.dart';
+import '../../data/fusion_data_point.dart';
 import '../../series/series_with_data_points.dart';
 import '../engine/fusion_render_context.dart';
 import 'fusion_render_layer.dart';
@@ -18,7 +19,15 @@ class FusionReferenceLineLayer extends FusionRenderLayer {
 
   @override
   void paint(Canvas canvas, Size size, FusionRenderContext context) {
+    final progress = context.animationProgress;
+    if (progress <= 0) return;
+
     final chartArea = context.chartArea;
+
+    // Fade in with animation so lines don't appear before the series
+    if (progress < 1.0) {
+      canvas.saveLayer(null, Paint()..color = Color.fromRGBO(0, 0, 0, progress));
+    }
 
     for (final annotation in annotations) {
       if (!annotation.visible) continue;
@@ -27,6 +36,10 @@ class FusionReferenceLineLayer extends FusionRenderLayer {
       if (screenY < chartArea.top || screenY > chartArea.bottom) continue;
 
       _paintLine(canvas, chartArea, screenY, annotation, context);
+    }
+
+    if (progress < 1.0) {
+      canvas.restore();
     }
   }
 
@@ -114,7 +127,15 @@ class FusionReferenceLineLabelLayer extends FusionRenderLayer {
 
   @override
   void paint(Canvas canvas, Size size, FusionRenderContext context) {
+    final progress = context.animationProgress;
+    if (progress <= 0) return;
+
     final chartArea = context.chartArea;
+
+    // Fade in with animation so labels/dots don't appear before the series
+    if (progress < 1.0) {
+      canvas.saveLayer(null, Paint()..color = Color.fromRGBO(0, 0, 0, progress));
+    }
 
     for (final annotation in annotations) {
       if (!annotation.visible) continue;
@@ -132,6 +153,10 @@ class FusionReferenceLineLabelLayer extends FusionRenderLayer {
         _paintDot(canvas, chartArea, screenY, annotation, context, badgeRect);
       }
     }
+
+    if (progress < 1.0) {
+      canvas.restore();
+    }
   }
 
   /// Paints a dot on data points that match the annotation value.
@@ -148,41 +173,43 @@ class FusionReferenceLineLabelLayer extends FusionRenderLayer {
         context.theme.primaryColor;
     final radius = annotation.dotRadius;
 
-    // Find data points that match the annotation Y value
+    // Find the LAST data point that matches the annotation Y value
+    FusionDataPoint? lastMatch;
     for (final series in allSeries) {
       if (!series.visible) continue;
       for (final point in series.dataPoints) {
-        if (point.y != annotation.value) continue;
-
-        final screenX = context.coordSystem.dataXToScreenX(point.x);
-        if (screenX < chartArea.left || screenX > chartArea.right) continue;
-
-        final dotCenter = Offset(screenX, screenY);
-
-        // Skip if dot would overlap the badge
-        if (badgeRect != null) {
-          final dotBounds = Rect.fromCircle(center: dotCenter, radius: radius);
-          if (badgeRect.overlaps(dotBounds)) continue;
-        }
-
-        // Outer border
-        canvas.drawCircle(
-          dotCenter,
-          radius + 1.5,
-          Paint()
-            ..color = context.theme.backgroundColor
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 1.5,
-        );
-
-        // Filled dot
-        canvas.drawCircle(
-          dotCenter,
-          radius,
-          Paint()..color = dotColor,
-        );
+        if (point.y == annotation.value) lastMatch = point;
       }
     }
+    if (lastMatch == null) return;
+
+    final screenX = context.coordSystem.dataXToScreenX(lastMatch.x);
+    if (screenX < chartArea.left || screenX > chartArea.right) return;
+
+    final dotCenter = Offset(screenX, screenY);
+
+    // Skip if dot would overlap the badge
+    if (badgeRect != null) {
+      final dotBounds = Rect.fromCircle(center: dotCenter, radius: radius);
+      if (badgeRect.overlaps(dotBounds)) return;
+    }
+
+    // Outer border
+    canvas.drawCircle(
+      dotCenter,
+      radius + 1.5,
+      Paint()
+        ..color = context.theme.backgroundColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+
+    // Filled dot
+    canvas.drawCircle(
+      dotCenter,
+      radius,
+      Paint()..color = dotColor,
+    );
   }
 
   /// Paints the label badge and returns its rect for overlap detection.

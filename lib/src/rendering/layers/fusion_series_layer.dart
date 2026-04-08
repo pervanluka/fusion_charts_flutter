@@ -230,13 +230,12 @@ class FusionSeriesLayer extends FusionRenderLayer {
       style: PaintingStyle.fill,
     );
 
-    // Apply gradient if specified
+    // Apply gradient if specified — use gradient colors as-is since
+    // the developer already controls alpha in the gradient definition.
+    // areaOpacity only affects the solid color fallback (no gradient).
     if (series.gradient != null) {
-      // Create gradient with opacity applied to each color stop
-      final gradientWithOpacity = LinearGradient(
-        colors: series.gradient!.colors
-            .map((c) => c.withValues(alpha: series.areaOpacity))
-            .toList(),
+      final gradientDirect = LinearGradient(
+        colors: series.gradient!.colors,
         stops: series.gradient!.stops,
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
@@ -244,7 +243,7 @@ class FusionSeriesLayer extends FusionRenderLayer {
       );
 
       areaPaint.shader = context.shaderCache.getLinearGradient(
-        gradientWithOpacity,
+        gradientDirect,
         context.chartArea,
       );
     }

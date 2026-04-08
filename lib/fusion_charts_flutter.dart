@@ -165,6 +165,9 @@ export 'src/core/enums/axis_type.dart';
 /// Range padding strategies.
 export 'src/core/enums/chart_range_padding.dart';
 
+/// Edge label placement for axis labels at chart boundaries.
+export 'src/core/enums/edge_label_placement.dart';
+
 /// Annotation overlap resolution strategies.
 export 'src/core/enums/fusion_annotation_overlap_strategy.dart';
 

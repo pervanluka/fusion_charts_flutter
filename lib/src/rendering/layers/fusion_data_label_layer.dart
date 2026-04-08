@@ -90,6 +90,9 @@ class FusionDataLabelLayer extends FusionRenderLayer {
 
   @override
   void paint(Canvas canvas, Size size, FusionRenderContext context) {
+    final progress = context.animationProgress;
+    if (progress <= 0) return;
+
     // Clear cache from previous frame
     _textPainterCache.clear();
 
@@ -118,11 +121,20 @@ class FusionDataLabelLayer extends FusionRenderLayer {
       _resolveCollisions(allLabels);
     }
 
+    // Fade in with animation so labels don't appear before the series
+    if (progress < 1.0) {
+      canvas.saveLayer(null, Paint()..color = Color.fromRGBO(0, 0, 0, progress));
+    }
+
     // Render all labels
     for (final label in allLabels) {
       if (label.visible) {
         _renderLabel(canvas, context, label);
       }
+    }
+
+    if (progress < 1.0) {
+      canvas.restore();
     }
   }
 
