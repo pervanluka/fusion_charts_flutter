@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fusion_charts_flutter/src/annotations/fusion_reference_line.dart';
 import 'package:fusion_charts_flutter/src/configuration/fusion_bar_chart_configuration.dart';
@@ -29,21 +28,15 @@ void main() {
     });
 
     test('copyWith preserves annotations when not overridden', () {
-      const config = FusionChartConfiguration(
-        annotations: [FusionReferenceLine(value: 100)],
-      );
+      const config = FusionChartConfiguration(annotations: [FusionReferenceLine(value: 100)]);
       final copy = config.copyWith(enableGrid: false);
       expect(copy.annotations, hasLength(1));
       expect(copy.annotations[0].value, 100);
     });
 
     test('copyWith replaces annotations', () {
-      const config = FusionChartConfiguration(
-        annotations: [FusionReferenceLine(value: 100)],
-      );
-      final copy = config.copyWith(
-        annotations: [FusionReferenceLine(value: 200)],
-      );
+      const config = FusionChartConfiguration(annotations: [FusionReferenceLine(value: 100)]);
+      final copy = config.copyWith(annotations: [FusionReferenceLine(value: 200)]);
       expect(copy.annotations, hasLength(1));
       expect(copy.annotations[0].value, 200);
     });
@@ -54,16 +47,12 @@ void main() {
   // ===========================================================================
   group('FusionLineChartConfiguration - annotations', () {
     test('supports annotations through super', () {
-      const config = FusionLineChartConfiguration(
-        annotations: [FusionReferenceLine(value: 42)],
-      );
+      const config = FusionLineChartConfiguration(annotations: [FusionReferenceLine(value: 42)]);
       expect(config.annotations, hasLength(1));
     });
 
     test('copyWith preserves annotations', () {
-      const config = FusionLineChartConfiguration(
-        annotations: [FusionReferenceLine(value: 42)],
-      );
+      const config = FusionLineChartConfiguration(annotations: [FusionReferenceLine(value: 42)]);
       final copy = config.copyWith(enableMarkers: true);
       expect(copy.annotations, hasLength(1));
       expect(copy.annotations[0].value, 42);
@@ -75,16 +64,12 @@ void main() {
   // ===========================================================================
   group('FusionBarChartConfiguration - annotations', () {
     test('supports annotations through super', () {
-      const config = FusionBarChartConfiguration(
-        annotations: [FusionReferenceLine(value: 75)],
-      );
+      const config = FusionBarChartConfiguration(annotations: [FusionReferenceLine(value: 75)]);
       expect(config.annotations, hasLength(1));
     });
 
     test('copyWith preserves annotations', () {
-      const config = FusionBarChartConfiguration(
-        annotations: [FusionReferenceLine(value: 75)],
-      );
+      const config = FusionBarChartConfiguration(annotations: [FusionReferenceLine(value: 75)]);
       final copy = config.copyWith(barWidthRatio: 0.5);
       expect(copy.annotations, hasLength(1));
       expect(copy.annotations[0].value, 75);
@@ -122,9 +107,7 @@ void main() {
     });
 
     test('isNotEmpty returns true when annotations present', () {
-      const config = FusionChartConfiguration(
-        annotations: [FusionReferenceLine(value: 100)],
-      );
+      const config = FusionChartConfiguration(annotations: [FusionReferenceLine(value: 100)]);
       expect(config.annotations.isNotEmpty, isTrue);
     });
   });
