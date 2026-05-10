@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-05-10
+
+### Fixed
+
+- **Pie/donut: single 100% slice rendered nothing.**
+  `FusionPolarMath.createSegmentPath` built segments from two `Path.arcTo`
+  calls, but Skia collapses `arcTo` to a degenerate (empty) path when the
+  sweep is a full revolution (2π) — start and end coincide. Any series
+  with exactly one active slice and the default `gapBetweenSlices: 0`
+  therefore produced an invisible chart. The full-circle case now uses
+  `Path.addOval` (plus `PathFillType.evenOdd` for donuts so the centre
+  punches out), which Skia handles correctly. All other sweeps fall
+  through to the existing path-builder unchanged. Regression tests added
+  in `fusion_polar_math_test.dart` (full pie, full donut, near-full
+  donut at 359.99°) assert the path actually contains the expected
+  fill region — the old "creates full circle for 360° sweep" test only
+  checked bounds, which still reported non-zero on the broken path.
+
 ## [1.2.0] - 2026-04-09
 
 ### Added
@@ -330,6 +348,7 @@ The following fields are ignored and will be removed in v2.0.0. Use the top-leve
 
 | Version | Date       | Description                                                      |
 |---------|------------|------------------------------------------------------------------|
+| 1.2.1   | 2026-05-10 | Pie/donut single-100%-slice rendering fix                        |
 | 1.2.0   | 2026-04-09 | Reference line annotations, edge label placement, gradient fixes |
 | 1.1.1   | 2026-03-27 | SingleTickerProviderStateMixin crash fix                         |
 | 1.1.0   | 2026-02-19 | Live chart streaming, LTTB downsampling, 75.86% test coverage    |

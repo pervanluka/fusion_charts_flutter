@@ -33,7 +33,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  fusion_charts_flutter: ^1.2.0
+  fusion_charts_flutter: ^1.2.1
 ```
 
 Then run:
