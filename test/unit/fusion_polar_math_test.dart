@@ -664,6 +664,71 @@ void main() {
       expect(bounds.width, greaterThan(0));
       expect(bounds.height, greaterThan(0));
     });
+
+    // Regression — single 100% slice rendered nothing because Skia's
+    // `Path.arcTo` collapses on a 2π sweep. The previous "full circle"
+    // test only checked `getBounds()`, which still reported a non-zero
+    // box for the broken path. These tests assert the path actually
+    // FILLS the disk (pie) or RING (donut) so the visual rendering
+    // can't regress silently.
+    test('full pie at 360° actually fills the disk', () {
+      final path = FusionPolarMath.createSegmentPath(
+        center: center,
+        innerRadius: 0,
+        outerRadius: 100,
+        startAngle: 0,
+        sweepAngle: 360,
+      );
+
+      // Centre is inside the pie.
+      expect(path.contains(center), isTrue);
+      // A point well inside the disc is inside.
+      expect(path.contains(center + const Offset(50, 0)), isTrue);
+      // A point outside the disc is outside.
+      expect(path.contains(center + const Offset(150, 0)), isFalse);
+      // Bounds should match the disc diameter.
+      final bounds = path.getBounds();
+      expect(bounds.width, closeTo(200, 1));
+      expect(bounds.height, closeTo(200, 1));
+    });
+
+    test('full donut at 360° actually fills the ring', () {
+      final path = FusionPolarMath.createSegmentPath(
+        center: center,
+        innerRadius: 40,
+        outerRadius: 100,
+        startAngle: 0,
+        sweepAngle: 360,
+      );
+
+      // Centre is in the hole — must NOT be contained.
+      expect(path.contains(center), isFalse);
+      // A point inside the inner radius is in the hole.
+      expect(path.contains(center + const Offset(20, 0)), isFalse);
+      // A point in the ring band IS contained.
+      expect(path.contains(center + const Offset(70, 0)), isTrue);
+      // A point outside the outer radius is not contained.
+      expect(path.contains(center + const Offset(150, 0)), isFalse);
+      // Bounds should match the outer disc diameter.
+      final bounds = path.getBounds();
+      expect(bounds.width, closeTo(200, 1));
+      expect(bounds.height, closeTo(200, 1));
+    });
+
+    test('near-full donut sweep (359.99°) also renders correctly', () {
+      // The full-circle short-circuit uses an epsilon so values that
+      // round to 360° from float math hit the same code path.
+      final path = FusionPolarMath.createSegmentPath(
+        center: center,
+        innerRadius: 40,
+        outerRadius: 100,
+        startAngle: -90,
+        sweepAngle: 359.99,
+      );
+
+      expect(path.contains(center), isFalse);
+      expect(path.contains(center + const Offset(70, 0)), isTrue);
+    });
   });
 
   // ===========================================================================
