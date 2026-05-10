@@ -307,6 +307,27 @@ abstract final class FusionPolarMath {
     final startRad = toRadians(startAngle);
     final sweepRad = toRadians(sweepAngle);
 
+    // Skia's `Path.arcTo` collapses to a degenerate (empty) path when the
+    // sweep is a full revolution (2π) because the start and end points
+    // coincide. That happens whenever a series has exactly one active
+    // slice with no gap between slices, which renders as an invisible
+    // pie/donut. `addOval` handles the wrap correctly, so detect the
+    // full-circle case and use it instead.
+    const fullCircleTolerance = 0.01;
+    if (sweepAngle.abs() >= fullCircle - fullCircleTolerance) {
+      if (innerRadius <= 0) {
+        // Full pie — solid disk.
+        path.addOval(Rect.fromCircle(center: center, radius: outerRadius));
+      } else {
+        // Full donut — outer disk minus inner disk via the even-odd
+        // fill rule so the centre punches out.
+        path.fillType = PathFillType.evenOdd;
+        path.addOval(Rect.fromCircle(center: center, radius: outerRadius));
+        path.addOval(Rect.fromCircle(center: center, radius: innerRadius));
+      }
+      return path;
+    }
+
     if (innerRadius <= 0) {
       // PIE mode: wedge from center
       if (cornerRadius > 0 && sweepAngle < 360) {
