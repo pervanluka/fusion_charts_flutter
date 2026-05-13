@@ -421,8 +421,15 @@ class _FusionLineChartState extends State<FusionLineChart>
     if (widget.series != oldWidget.series) {
       _liveSeries = null; // Invalidate cache
 
-      // Only animate for non-live mode or significant series changes
-      if (!widget.isLiveMode) {
+      // Only re-run entry animation on significant data changes (e.g. time-range
+      // switch). A bare reference change with effectively identical data — for
+      // example a cache-aside cubit emitting cached then fresh values — should
+      // repaint without restarting the entry animation from zero. Honor the
+      // user's animation toggle: when disabled, never run the controller.
+      final config = widget.config ?? const FusionChartConfiguration();
+      if (!widget.isLiveMode &&
+          config.enableAnimation &&
+          _isSignificantSeriesChange(widget.series, oldWidget.series)) {
         _animationController.reset();
         _animationController.forward();
       }
@@ -434,7 +441,8 @@ class _FusionLineChartState extends State<FusionLineChart>
       _attachController();
     }
 
-    if (widget.config != oldWidget.config) {
+    if (widget.config != oldWidget.config &&
+        _isAnimationConfigChange(widget.config, oldWidget.config)) {
       _initAnimation();
     }
 
@@ -452,6 +460,53 @@ class _FusionLineChartState extends State<FusionLineChart>
     _animationController.dispose();
     _interactiveState.dispose();
     super.dispose();
+  }
+
+  /// Returns true when the series differ enough to warrant a fresh entry
+  /// animation. Wrapping widgets in cache-aside BLoC flows often hand us a new
+  /// `series` list reference on every parent rebuild even when the underlying
+  /// points are equivalent; treating those as "significant" causes the chart
+  /// to flicker by restarting its entry sweep from zero.
+  ///
+  /// Heuristic: animate when the data shape changes meaningfully — point count
+  /// or x-axis bounds shift by more than 10%. Pure refresh of the same series
+  /// (cache → fresh) does not cross that threshold.
+  bool _isSignificantSeriesChange(
+    List<FusionLineSeries> next,
+    List<FusionLineSeries> prev,
+  ) {
+    if (prev.isEmpty || next.isEmpty) return true;
+    if (prev.length != next.length) return true;
+
+    final prevPoints = prev.first.dataPoints;
+    final nextPoints = next.first.dataPoints;
+    if (prevPoints.isEmpty || nextPoints.isEmpty) return true;
+
+    final prevCount = prevPoints.length;
+    final countDelta = (nextPoints.length - prevCount).abs() / prevCount;
+    if (countDelta > 0.1) return true;
+
+    final prevSpan = prevPoints.last.x - prevPoints.first.x;
+    if (prevSpan == 0) return true;
+
+    final minShift = (nextPoints.first.x - prevPoints.first.x).abs() / prevSpan;
+    final maxShift = (nextPoints.last.x - prevPoints.last.x).abs() / prevSpan;
+    return minShift > 0.1 || maxShift > 0.1;
+  }
+
+  /// Returns true when the animation-relevant fields of the config changed.
+  /// Without this gate, wrappers that rebuild a fresh [FusionChartConfiguration]
+  /// every frame would re-init the animation controller on every parent
+  /// rebuild, restarting the entry animation each time.
+  bool _isAnimationConfigChange(
+    FusionChartConfiguration? next,
+    FusionChartConfiguration? prev,
+  ) {
+    final n = next ?? const FusionChartConfiguration();
+    final p = prev ?? const FusionChartConfiguration();
+    return n.enableAnimation != p.enableAnimation ||
+        n.effectiveAnimationDuration != p.effectiveAnimationDuration ||
+        n.effectiveAnimationCurve != p.effectiveAnimationCurve;
   }
 
   @override

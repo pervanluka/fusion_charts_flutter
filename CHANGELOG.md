@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2] - 2026-05-13
+
+### Fixed
+
+- **Line chart: entry animation restarted on every parent rebuild.**
+  `FusionLineChart.didUpdateWidget` compared `widget.series` and
+  `widget.config` by reference, then unconditionally called
+  `_animationController.reset() + forward()` (and `_initAnimation()`)
+  on any inequality. Wrappers that recreate the series list or
+  configuration on every build — e.g. consumers driven by a
+  cache-aside BLoC that emits cached then fresh values 600 ms apart —
+  hand the chart a fresh reference each frame, so the entry sweep
+  restarted from zero on every emit and produced a visible
+  "double render" flicker.
+  - Entry animation now only restarts on a *significant* series
+    change: point-count delta > 10% or x-axis-bounds shift > 10% of
+    the previous span. Pure refresh of the same view (cache → fresh,
+    same time range, same instrument) repaints without restarting
+    the animation. A real time-range switch (e.g. 1D → 1W) still
+    animates as before because both point count and x-bounds shift.
+  - `_initAnimation()` only runs when the animation-relevant config
+    fields actually change (`enableAnimation`,
+    `effectiveAnimationDuration`, `effectiveAnimationCurve`). A fresh
+    `FusionChartConfiguration` instance with identical animation
+    fields is now a no-op.
+  - Both gates honour `enableAnimation: false`: when animation is
+    disabled, neither path touches `_animationController`, so the
+    "no animation" semantics are preserved.
+
 ## [1.2.1] - 2026-05-10
 
 ### Fixed
